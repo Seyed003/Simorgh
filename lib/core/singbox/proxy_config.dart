@@ -80,6 +80,13 @@ class ProxyConfig {
     return parts.join(' · ');
   }
 
+  /// Skips the server's certificate check (`insecure` / `allowInsecure`),
+  /// so whoever sits in the middle can read the traffic.
+  bool get isInsecure {
+    final tls = outbound['tls'];
+    return tls is Map && tls['insecure'] == true;
+  }
+
   /// Host name the server is reached by in TLS (SNI), else the address.
   String get tlsHost {
     if (outbound.isXray) {

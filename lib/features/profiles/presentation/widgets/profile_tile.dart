@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/branding/phoenix.dart';
 import '../../../../core/singbox/proxy_config.dart';
 import '../../../../core/theme/glass.dart';
+import '../../../../core/theme/status_colors.dart';
 import '../../../../core/utils/context_ext.dart';
 import '../../../latency/presentation/latency_badge.dart';
 import '../../../latency/presentation/speed_badge.dart';
@@ -81,6 +82,7 @@ class ProfileTile extends StatelessWidget {
                       color: colors.onSurfaceVariant,
                     ),
                   ),
+                  if (config.isInsecure) const InsecureBadge(),
                   SpeedBadge(profileId: profile.id),
                 ],
               ),
@@ -92,6 +94,37 @@ class ProfileTile extends StatelessWidget {
               icon: const Icon(Icons.more_vert_rounded),
               color: colors.onSurfaceVariant,
               onPressed: onMore,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Marks a config that does not verify the server certificate.
+class InsecureBadge extends StatelessWidget {
+  const InsecureBadge({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = StatusColors.of(context).error;
+    return Tooltip(
+      message: context.l10n.insecureHint,
+      triggerMode: TooltipTriggerMode.tap,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 2),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.gpp_maybe_rounded, size: 13, color: color),
+            const SizedBox(width: 3),
+            Text(
+              context.l10n.insecure,
+              style: context.theme.textTheme.labelSmall?.copyWith(
+                color: color,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ],
         ),

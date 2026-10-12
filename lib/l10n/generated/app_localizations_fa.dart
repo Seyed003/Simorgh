@@ -660,4 +660,49 @@ class AppLocalizationsFa extends AppLocalizations {
   @override
   String get brandStory =>
       'ققنوس از خاکستر خود برمی‌خیزد؛ هیچ فیلتری نمی‌تواند اینترنت را برای همیشه از شما دور نگه دارد.';
+
+  @override
+  String get proxyPassword => 'درخواست رمز عبور';
+
+  @override
+  String get proxyPasswordHint =>
+      'بدون رمز، هر برنامه‌ای روی این دستگاه می‌تواند از پراکسی استفاده کند و آدرس سرور شما را بفهمد';
+
+  @override
+  String proxyCredentials(String user, String password) {
+    return 'نام کاربری: $user · رمز: $password';
+  }
+
+  @override
+  String get killSwitch => 'قطع اینترنت بدون VPN';
+
+  @override
+  String get killSwitchOn =>
+      'روشن: وقتی VPN قطع است، برنامه‌ها به اینترنت وصل نمی‌شوند';
+
+  @override
+  String get killSwitchOff =>
+      'خاموش: اگر VPN قطع شود، برنامه‌ها بدون آن به اینترنت وصل می‌شوند';
+
+  @override
+  String get killSwitchUnknown =>
+      'با «VPN همیشه روشن» اندروید کار می‌کند؛ برای تنظیم لمس کنید';
+
+  @override
+  String killSwitchSteps(String app) {
+    return 'در صفحه بعد، چرخ‌دنده کنار «$app» را بزنید و «VPN همیشه روشن» و «مسدود کردن اتصال‌های بدون VPN» را روشن کنید. اندروید فقط از همان‌جا اجازه این تنظیم را می‌دهد.';
+  }
+
+  @override
+  String get openSettings => 'باز کردن تنظیمات';
+
+  @override
+  String get insecure => 'ناامن';
+
+  @override
+  String get insecureHint =>
+      'این کانفیگ گواهی سرور را بررسی نمی‌کند: ممکن است کسی در مسیر، ترافیک آن را بخواند یا تغییر دهد';
+
+  @override
+  String get autoReconnecting => 'اتصال قطع شد؛ در حال وصل شدن دوباره…';
 }

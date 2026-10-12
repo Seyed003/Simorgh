@@ -108,6 +108,28 @@ void main() {
     expect(state.error!.message, 'boom');
   });
 
+  test('a dropped connection reconnects once, not in a loop', () async {
+    VpnController.reconnectDelay = const Duration(milliseconds: 10);
+    addTearDown(
+      () => VpnController.reconnectDelay = const Duration(seconds: 2),
+    );
+    final c = await create(links: trojanBare);
+    await c.read(vpnControllerProvider.notifier).connect();
+    await _settle();
+    platform.emit(const VpnStopped(VpnError(VpnErrorCode.coreExited, 'boom')));
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    await _settle();
+    expect(platform.requests, hasLength(2));
+    expect(c.read(vpnControllerProvider).status, VpnStatus.connected);
+
+    // Dying again right away is left to the user.
+    platform.emit(const VpnStopped(VpnError(VpnErrorCode.coreExited, 'boom')));
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    await _settle();
+    expect(platform.requests, hasLength(2));
+    expect(c.read(vpnControllerProvider).status, VpnStatus.disconnected);
+  });
+
   test('selecting another profile while connected reconnects to it', () async {
     final c = await create(links: '$trojanBare\n$socks');
     await c.read(vpnControllerProvider.notifier).connect();

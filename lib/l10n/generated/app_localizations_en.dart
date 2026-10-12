@@ -669,4 +669,48 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get brandStory =>
       'The phoenix rises from its ashes: no filter can keep the internet from you for long.';
+
+  @override
+  String get proxyPassword => 'Require a password';
+
+  @override
+  String get proxyPasswordHint =>
+      'Without it, any app on this device can use the proxy and find out your server';
+
+  @override
+  String proxyCredentials(String user, String password) {
+    return 'User: $user · Password: $password';
+  }
+
+  @override
+  String get killSwitch => 'Block internet without VPN';
+
+  @override
+  String get killSwitchOn => 'On: apps cannot go online while the VPN is off';
+
+  @override
+  String get killSwitchOff =>
+      'Off: if the VPN stops, apps go online without it';
+
+  @override
+  String get killSwitchUnknown =>
+      'Uses Android\'s Always-on VPN; tap to set up';
+
+  @override
+  String killSwitchSteps(String app) {
+    return 'On the next screen, tap the gear next to \"$app\", then turn on \"Always-on VPN\" and \"Block connections without VPN\". Android only lets you change this there.';
+  }
+
+  @override
+  String get openSettings => 'Open settings';
+
+  @override
+  String get insecure => 'Insecure';
+
+  @override
+  String get insecureHint =>
+      'This config does not check the server\'s certificate: someone on the way could read or change its traffic';
+
+  @override
+  String get autoReconnecting => 'The connection dropped; reconnecting…';
 }

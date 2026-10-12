@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/singbox/builder/config_builder.dart';
@@ -312,12 +313,36 @@ class VpnController extends Notifier<VpnState> {
       case VpnStopped(:final error):
         // A stale stop from the platform must not end a server search.
         if (state.findingServer) return;
+        final dropped = error != null && state.isConnected && !_restartPending;
         state = VpnState(error: error);
         _connectIfRestartPending(error);
+        if (dropped) unawaited(_reconnectAfterDrop());
       case VpnLogLine():
         break;
     }
   }
+
+  /// When the core dies under a live connection, apps would carry on
+  /// without the tunnel: reconnect once, unless that just happened.
+  Future<void> _reconnectAfterDrop() async {
+    final now = DateTime.now();
+    final last = _lastDropReconnect;
+    if (last != null && now.difference(last) < reconnectCooldown) return;
+    _lastDropReconnect = now;
+    final attempt = _attempt;
+    await Future<void>.delayed(reconnectDelay);
+    if (!ref.mounted ||
+        attempt != _attempt ||
+        state.status != VpnStatus.disconnected) {
+      return;
+    }
+    await connect();
+  }
+
+  @visibleForTesting
+  static Duration reconnectDelay = const Duration(seconds: 2);
+  static const reconnectCooldown = Duration(minutes: 2);
+  DateTime? _lastDropReconnect;
 
   void _connectIfRestartPending(VpnError? error) {
     if (!_restartPending) return;

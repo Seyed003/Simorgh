@@ -290,6 +290,8 @@ void main() {
         'server_name': 'sni.example.com',
         'insecure': true,
       });
+      expect(p.isInsecure, isTrue);
+      expect(LinkParser.parse(trojanBare).isInsecure, isFalse);
     });
 
     test('TLS is implied when security is absent', () {

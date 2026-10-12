@@ -67,10 +67,13 @@ class SpeedTester {
           secret: randomHexSecret(),
         ),
       );
+      // Other apps on the device must not borrow the servers meanwhile.
+      final auth = (username: randomHexSecret(), password: randomHexSecret());
       final (:config, :rejected) = await startTestCore(
         platform: platform,
         proxies: proxies,
-        build: (pending) => builder.build(pending, localPorts: ports),
+        build: (pending) =>
+            builder.build(pending, localPorts: ports, localAuth: auth),
       );
       try {
         for (final MapEntry(key: id, value: reason) in rejected.entries) {
@@ -86,7 +89,7 @@ class SpeedTester {
           if (cancelled) return;
           final client = active = _httpClientFactory();
           // Hard stop per server, whatever the network does.
-          final result = await _measure(client, ports[id]!).timeout(
+          final result = await _measure(client, ports[id]!, auth).timeout(
             connectTimeout * 2 + duration + stallTimeout,
             onTimeout: () {
               client.close(force: true);
@@ -132,9 +135,14 @@ class SpeedTester {
     return results.stream;
   }
 
-  Future<SpeedResult> _measure(HttpClient client, int port) async {
+  Future<SpeedResult> _measure(
+    HttpClient client,
+    int port,
+    ({String username, String password}) auth,
+  ) async {
     client
-      ..findProxy = ((_) => 'PROXY 127.0.0.1:$port')
+      ..findProxy = ((_) =>
+          'PROXY ${auth.username}:${auth.password}@127.0.0.1:$port')
       ..connectionTimeout = connectTimeout;
     final watch = Stopwatch();
     var bytes = 0;

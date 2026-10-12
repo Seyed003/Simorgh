@@ -378,5 +378,34 @@
   "advanced": "Advanced",
   "server": "Server",
   "tagline": "Freedom to reach the whole internet",
-  "brandStory": "The phoenix rises from its ashes: no filter can keep the internet from you for long."
+  "brandStory": "The phoenix rises from its ashes: no filter can keep the internet from you for long.",
+  "proxyPassword": "Require a password",
+  "proxyPasswordHint": "Without it, any app on this device can use the proxy and find out your server",
+  "proxyCredentials": "User: {user} · Password: {password}",
+  "@proxyCredentials": {
+    "placeholders": {
+      "user": {
+        "type": "String"
+      },
+      "password": {
+        "type": "String"
+      }
+    }
+  },
+  "killSwitch": "Block internet without VPN",
+  "killSwitchOn": "On: apps cannot go online while the VPN is off",
+  "killSwitchOff": "Off: if the VPN stops, apps go online without it",
+  "killSwitchUnknown": "Uses Android's Always-on VPN; tap to set up",
+  "killSwitchSteps": "On the next screen, tap the gear next to \"{app}\", then turn on \"Always-on VPN\" and \"Block connections without VPN\". Android only lets you change this there.",
+  "@killSwitchSteps": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "openSettings": "Open settings",
+  "insecure": "Insecure",
+  "insecureHint": "This config does not check the server's certificate: someone on the way could read or change its traffic",
+  "autoReconnecting": "The connection dropped; reconnecting…"
 }

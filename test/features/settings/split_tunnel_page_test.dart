@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:aghelan_ghiamat/app.dart';
+import 'package:aghelan_ghiamat/core/platform/system_bridge.dart';
 import 'package:aghelan_ghiamat/core/singbox/builder/core_options.dart';
 import 'package:aghelan_ghiamat/core/storage/preferences.dart';
 import 'package:aghelan_ghiamat/features/connection/application/vpn_controller.dart';
@@ -13,6 +14,20 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../fakes.dart';
 import '../../helpers.dart';
+
+class _FakeSystem extends SystemBridge {
+  _FakeSystem(this.lockdown);
+
+  final bool? lockdown;
+  var opened = 0;
+
+  @override
+  Future<({bool alwaysOn, bool lockdown})?> vpnLockdown() async =>
+      lockdown == null ? null : (alwaysOn: lockdown!, lockdown: lockdown!);
+
+  @override
+  Future<void> openVpnSettings() async => opened++;
+}
 
 class _FakeApps implements InstalledAppsSource {
   @override
@@ -114,6 +129,8 @@ void main() {
     await tester.tap(find.byIcon(Icons.settings_outlined));
     await tester.pumpAndSettle();
 
+    await tester.ensureVisible(find.text('Direct DNS'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Direct DNS'));
     await tester.pumpAndSettle();
     expect(find.text('Shecan'), findsOneWidget);
@@ -122,6 +139,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(container.read(coreOptionsProvider).directDns, '178.22.122.100');
 
+    await tester.ensureVisible(find.text('Remote DNS'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Remote DNS'));
     await tester.pumpAndSettle();
     expect(find.text('AdGuard · blocks ads'), findsOneWidget);
@@ -134,5 +153,46 @@ void main() {
       container.read(coreOptionsProvider).remoteDns,
       'https://dns.example/q',
     );
+  });
+
+  testWidgets('kill switch row shows the state and opens settings', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(420, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final system = _FakeSystem(false);
+    final container = ProviderContainer(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(
+          await mockPreferences({'settings.language': 'en'}),
+        ),
+        profileStoreProvider.overrideWithValue(MemoryProfileStore()),
+        vpnPlatformProvider.overrideWithValue(FakeVpnPlatform()),
+        systemBridgeProvider.overrideWithValue(system),
+      ],
+    );
+    addTearDown(container.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const AghelanApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.settings_outlined));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Block internet without VPN'), findsOneWidget);
+    expect(
+      find.text('Off: if the VPN stops, apps go online without it'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Block internet without VPN'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Always-on VPN'), findsOneWidget);
+    await tester.tap(find.text('Open settings'));
+    await tester.pumpAndSettle();
+    expect(system.opened, 1);
   });
 }

@@ -1231,6 +1231,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The phoenix rises from its ashes: no filter can keep the internet from you for long.'**
   String get brandStory;
+
+  /// No description provided for @proxyPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Require a password'**
+  String get proxyPassword;
+
+  /// No description provided for @proxyPasswordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Without it, any app on this device can use the proxy and find out your server'**
+  String get proxyPasswordHint;
+
+  /// No description provided for @proxyCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'User: {user} · Password: {password}'**
+  String proxyCredentials(String user, String password);
+
+  /// No description provided for @killSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Block internet without VPN'**
+  String get killSwitch;
+
+  /// No description provided for @killSwitchOn.
+  ///
+  /// In en, this message translates to:
+  /// **'On: apps cannot go online while the VPN is off'**
+  String get killSwitchOn;
+
+  /// No description provided for @killSwitchOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off: if the VPN stops, apps go online without it'**
+  String get killSwitchOff;
+
+  /// No description provided for @killSwitchUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Uses Android\'s Always-on VPN; tap to set up'**
+  String get killSwitchUnknown;
+
+  /// No description provided for @killSwitchSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'On the next screen, tap the gear next to \"{app}\", then turn on \"Always-on VPN\" and \"Block connections without VPN\". Android only lets you change this there.'**
+  String killSwitchSteps(String app);
+
+  /// No description provided for @openSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get openSettings;
+
+  /// No description provided for @insecure.
+  ///
+  /// In en, this message translates to:
+  /// **'Insecure'**
+  String get insecure;
+
+  /// No description provided for @insecureHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This config does not check the server\'s certificate: someone on the way could read or change its traffic'**
+  String get insecureHint;
+
+  /// No description provided for @autoReconnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'The connection dropped; reconnecting…'**
+  String get autoReconnecting;
 }
 
 class _AppLocalizationsDelegate

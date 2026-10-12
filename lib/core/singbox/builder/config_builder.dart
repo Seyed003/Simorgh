@@ -181,6 +181,10 @@ class SingBoxConfigBuilder {
         'tag': ConfigTags.mixedIn,
         'listen': '127.0.0.1',
         'listen_port': port,
+        if (options.mixedCredentials case final auth?)
+          'users': [
+            {'username': auth.username, 'password': auth.password},
+          ],
       });
     }
     return inbounds;
