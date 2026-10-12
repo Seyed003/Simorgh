@@ -543,4 +543,16 @@ class AppLocalizationsFa extends AppLocalizations {
   String appsSelected(String count) {
     return '$count برنامه انتخاب شده';
   }
+
+  @override
+  String get autoUpdateSubscriptions => 'به‌روزرسانی خودکار';
+
+  @override
+  String get autoUpdateSubscriptionsHint =>
+      'سابسکریپشن‌ها هنگام باز شدن برنامه به‌روز می‌شوند';
+
+  @override
+  String everyHours(String hours) {
+    return 'هر $hours ساعت';
+  }
 }

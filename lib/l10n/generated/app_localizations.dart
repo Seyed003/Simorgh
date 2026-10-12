@@ -1027,6 +1027,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} apps selected'**
   String appsSelected(String count);
+
+  /// No description provided for @autoUpdateSubscriptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-update'**
+  String get autoUpdateSubscriptions;
+
+  /// No description provided for @autoUpdateSubscriptionsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Refreshes subscriptions when the app opens'**
+  String get autoUpdateSubscriptionsHint;
+
+  /// No description provided for @everyHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Every {hours} h'**
+  String everyHours(String hours);
 }
 
 class _AppLocalizationsDelegate

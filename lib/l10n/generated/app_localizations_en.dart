@@ -552,4 +552,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String appsSelected(String count) {
     return '$count apps selected';
   }
+
+  @override
+  String get autoUpdateSubscriptions => 'Auto-update';
+
+  @override
+  String get autoUpdateSubscriptionsHint =>
+      'Refreshes subscriptions when the app opens';
+
+  @override
+  String everyHours(String hours) {
+    return 'Every $hours h';
+  }
 }

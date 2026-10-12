@@ -310,5 +310,15 @@
         "type": "String"
       }
     }
+  },
+  "autoUpdateSubscriptions": "Auto-update",
+  "autoUpdateSubscriptionsHint": "Refreshes subscriptions when the app opens",
+  "everyHours": "Every {hours} h",
+  "@everyHours": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
   }
 }

@@ -154,5 +154,8 @@
   "showSystemApps": "نمایش برنامه‌های سیستمی",
   "clearSelection": "پاک کردن انتخاب‌ها",
   "searchApps": "جستجوی برنامه",
-  "appsSelected": "{count} برنامه انتخاب شده"
+  "appsSelected": "{count} برنامه انتخاب شده",
+  "autoUpdateSubscriptions": "به‌روزرسانی خودکار",
+  "autoUpdateSubscriptionsHint": "سابسکریپشن‌ها هنگام باز شدن برنامه به‌روز می‌شوند",
+  "everyHours": "هر {hours} ساعت"
 }
