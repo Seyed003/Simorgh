@@ -289,10 +289,16 @@ class VpnController extends Notifier<VpnState> {
   void _onEvent(VpnPlatformEvent event) {
     switch (event) {
       case VpnStarted():
+        // Started outside the app (quick settings tile, widget): pick up
+        // the session the app saved when it wrote that config.
+        final session = state.clashApi == null ? _loadSession() : null;
         state = state.copyWith(
           status: VpnStatus.connected,
           connectedSince: () => DateTime.now(),
           error: () => null,
+          clashApi: session == null ? null : () => session.clashApi,
+          profileId: session == null ? null : () => session.profileId,
+          autoProfileIds: session?.autoProfileIds,
         );
       case VpnStopped(:final error):
         // A stale stop from the platform must not end a server search.
