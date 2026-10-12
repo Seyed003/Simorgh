@@ -52,11 +52,7 @@ class TestConfigBuilder {
     for (final MapEntry(key: id, value: proxy) in proxies.entries) {
       final tag = 't${i++}';
       tagToId[tag] = id;
-      final outbound = prepareOutbound(
-        proxy,
-        tag: tag,
-        defaultFingerprint: options.defaultFingerprint,
-      );
+      final outbound = prepareOutbound(proxy, tag: tag, options: options);
       if (proxy.protocol.isEndpoint) {
         endpoints.add(outbound);
         endpointTags.add(tag);

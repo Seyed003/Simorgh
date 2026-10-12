@@ -45,6 +45,15 @@ void main() {
       platform: CorePlatform.windows,
       clashApi: ClashApiOptions(port: 19091, secret: 'y'),
     ),
+    'hardened': SingBoxConfigBuilder(
+      options: CoreOptions(
+        tlsFragment: TlsFragmentMode.tcp,
+        mux: true,
+        muxProtocol: 'smux',
+      ),
+      platform: CorePlatform.android,
+      clashApi: ClashApiOptions(port: 19092, secret: 'z'),
+    ),
   };
 
   for (final (index, link) in allValidLinks.indexed) {

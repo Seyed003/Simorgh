@@ -171,6 +171,54 @@ void main() {
       );
     });
 
+    test('TLS fragment and mux go only where they apply', () {
+      Map<String, Object?> outbound(String link, CoreOptions options) =>
+          prepareOutbound(
+            LinkParser.parse(link),
+            tag: 'proxy',
+            options: options,
+          );
+      Map<String, Object?> tls(Map<String, Object?> o) => _map(o['tls']);
+
+      const record = CoreOptions(tlsFragment: TlsFragmentMode.record);
+      expect(tls(outbound(trojanTls, record))['record_fragment'], isTrue);
+      expect(tls(outbound(vlessReality, record))['record_fragment'], isTrue);
+      const tcp = CoreOptions(tlsFragment: TlsFragmentMode.tcp);
+      expect(tls(outbound(vlessWs, tcp))['fragment'], isTrue);
+      expect(
+        tls(outbound(vlessWs, tcp)).containsKey('record_fragment'),
+        isFalse,
+      );
+      // TLS inside QUIC and non-TLS protocols are left alone.
+      expect(tls(outbound(hy2, tcp)).containsKey('fragment'), isFalse);
+      expect(outbound(ssSip002, tcp).containsKey('tls'), isFalse);
+      // Off by default.
+      expect(
+        tls(outbound(trojanTls, const CoreOptions())).keys,
+        isNot(contains(anyOf('fragment', 'record_fragment'))),
+      );
+
+      const mux = CoreOptions(mux: true, muxProtocol: 'smux');
+      for (final link in [vmessWsTls, vlessWs, trojanTls, ss2022]) {
+        expect(outbound(link, mux)['multiplex'], {
+          'enabled': true,
+          'protocol': 'smux',
+        }, reason: link);
+      }
+      // XTLS Vision cannot be multiplexed; QUIC/UDP protocols have no mux.
+      for (final link in [vlessReality, hy2, tuic, anytls]) {
+        expect(
+          outbound(link, mux).containsKey('multiplex'),
+          isFalse,
+          reason: link,
+        );
+      }
+      expect(
+        outbound(trojanTls, const CoreOptions()).containsKey('multiplex'),
+        isFalse,
+      );
+    });
+
     test('auto tags round trip', () {
       expect(
         SingBoxConfigBuilder.autoIndexOf(SingBoxConfigBuilder.autoTag(7)),
@@ -258,6 +306,16 @@ void main() {
     final restored = CoreOptions.fromJson(options.toJson());
     expect(restored, options);
     expect(restored.bypassIran, isFalse);
+    const hardened = CoreOptions(
+      tlsFragment: TlsFragmentMode.tcp,
+      mux: true,
+      muxProtocol: 'yamux',
+    );
+    expect(CoreOptions.fromJson(hardened.toJson()), hardened);
+    expect(
+      CoreOptions.fromJson(const {'muxProtocol': 'bogus', 'tlsFragment': 'x'}),
+      const CoreOptions(),
+    );
     // Settings saved before the option existed keep the default.
     expect(CoreOptions.fromJson(const {}).bypassIran, isTrue);
     expect(restored.copyWith(mixedPort: () => null).mixedPort, isNull);

@@ -136,6 +136,56 @@ class ConnectionSettingsSection extends ConsumerWidget {
           ),
         ),
         ListTile(
+          leading: const Icon(Icons.call_split_rounded),
+          title: Text(l10n.tlsFragment),
+          subtitle: Text(l10n.tlsFragmentHint),
+          trailing: DropdownButton<TlsFragmentMode>(
+            value: options.tlsFragment,
+            underline: const SizedBox.shrink(),
+            items: [
+              DropdownMenuItem(
+                value: TlsFragmentMode.off,
+                child: Text(l10n.disabled),
+              ),
+              DropdownMenuItem(
+                value: TlsFragmentMode.record,
+                child: Text(l10n.fragmentLight),
+              ),
+              DropdownMenuItem(
+                value: TlsFragmentMode.tcp,
+                child: Text(l10n.fragmentStrong),
+              ),
+            ],
+            onChanged: (v) =>
+                controller.update((o) => o.copyWith(tlsFragment: v)),
+          ),
+        ),
+        SwitchListTile(
+          secondary: const Icon(Icons.merge_type_rounded),
+          title: Text(l10n.mux),
+          subtitle: Text(l10n.muxHint),
+          value: options.mux,
+          onChanged: (v) => controller.update((o) => o.copyWith(mux: v)),
+        ),
+        if (options.mux)
+          ListTile(
+            contentPadding: const EdgeInsetsDirectional.only(
+              start: 72,
+              end: 24,
+            ),
+            title: Text(l10n.muxProtocol),
+            trailing: DropdownButton<String>(
+              value: options.muxProtocol,
+              underline: const SizedBox.shrink(),
+              items: [
+                for (final p in muxProtocols)
+                  DropdownMenuItem(value: p, child: Text(p)),
+              ],
+              onChanged: (v) =>
+                  controller.update((o) => o.copyWith(muxProtocol: v)),
+            ),
+          ),
+        ListTile(
           leading: const Icon(Icons.layers_outlined),
           title: Text(l10n.tunStack),
           trailing: DropdownButton<String>(

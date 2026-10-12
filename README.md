@@ -48,6 +48,11 @@ Open-source VPN client for **Android** and **Windows**, powered by the
   and government sites that block foreign IPs keep working. The ranges are
   built into the app (no download at connect time); refresh them with
   `python3 scripts/update_iran_ip_ranges.py`.
+- **Anti-filtering options:** TLS fragment (*Light* splits the ClientHello
+  into several TLS records, *Strong* into separate TCP segments) so simple SNI
+  filters cannot read the server name, and Mux (h2mux/smux/yamux) for
+  VMess/VLESS/Trojan/Shadowsocks servers that support it. Both are applied to
+  every server that does not set them itself, latency tests included.
 - **Persian + English** with full right-to-left layout, light/dark themes,
   bundled Vazirmatn font.
 - **Connection settings:** remote/direct DNS (DoH, DoT, DoQ, UDP, system),
@@ -159,9 +164,8 @@ SCREENSHOTS=1 flutter test test/screenshots               # render UI screenshot
 ### Roadmap (phase 2)
 
 ~~Real ping test of all servers~~ (done) · ~~auto-select best server +
-failover~~ (done) · ~~Iran routing rules (domestic direct)~~ (done) · speed
-test · per-app split tunnel · TLS fragment ·
-Mux · DoH presets · Cloudflare clean-IP scanner · usage charts · Android Quick
+failover~~ (done) · ~~Iran routing rules (domestic direct)~~ (done) · ~~TLS fragment~~ (done) ·
+~~Mux~~ (done) · speed test · per-app split tunnel · DoH presets · Cloudflare clean-IP scanner · usage charts · Android Quick
 Settings tile and widget · scheduled subscription updates.
 
 ### License
@@ -204,6 +208,9 @@ are adapted from [sing-box-for-android](https://github.com/SagerNet/sing-box-for
   سرویس‌های معروف ایرانی و همه‌ی IPهای ایران مستقیم باز می‌شوند؛ سریع‌تر است،
   حجم VPN مصرف نمی‌شود و سایت‌های بانکی و دولتی هم کار می‌کنند. از تنظیمات
   «اتصال» قابل خاموش کردن است.
+- **ضدفیلتر:** فرگمنت TLS («سبک» و «قوی») تا فیلترینگ نتواند نام سرور را
+  بخواند، و Mux برای سرورهایی که پشتیبانی می‌کنند. هر دو در تنظیمات «اتصال»
+  هستند و به‌طور پیش‌فرض خاموش‌اند.
 - **فارسی و انگلیسی** با چیدمان کامل راست‌به‌چپ، تم روشن و تیره و فونت وزیرمتن.
 - **بدون SDK اختصاصی گوگل**؛ مناسب برای انتشار در F-Droid.
 

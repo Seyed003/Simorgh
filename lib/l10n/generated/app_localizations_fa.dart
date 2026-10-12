@@ -465,5 +465,28 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get bypassIranHint =>
-      'سایت‌ها و برنامه‌های ایرانی (دامنه‌های .ir و سرورهای داخل ایران) مستقیم باز می‌شوند: سریع‌تر است، حجم VPN مصرف نمی‌شود و سایت‌های بانکی و دولتی که IP خارجی را مسدود می‌کنند کار می‌کنند';
+      'سایت‌ها و برنامه‌های ایرانی (دامنه‌های ‎.ir و سرورهای داخل ایران) مستقیم باز می‌شوند: سریع‌تر است، حجم VPN مصرف نمی‌شود و سایت‌های بانکی و دولتی که IP خارجی را مسدود می‌کنند کار می‌کنند';
+
+  @override
+  String get tlsFragment => 'فرگمنت TLS';
+
+  @override
+  String get tlsFragmentHint =>
+      'شروع هر اتصال TLS را تکه‌تکه می‌کند تا فیلترینگ نتواند نام سرور (SNI) را بخواند. اول «سبک» را امتحان کنید؛ «قوی» کندتر است';
+
+  @override
+  String get fragmentLight => 'سبک';
+
+  @override
+  String get fragmentStrong => 'قوی';
+
+  @override
+  String get mux => 'Mux (چندگانه‌سازی)';
+
+  @override
+  String get muxHint =>
+      'چند اتصال را از چند مسیر محدود می‌فرستد و صفحه‌ها سریع‌تر باز می‌شوند. سرور باید از آن پشتیبانی کند؛ اگر سرورها کار نکردند، خاموشش کنید';
+
+  @override
+  String get muxProtocol => 'پروتکل Mux';
 }
