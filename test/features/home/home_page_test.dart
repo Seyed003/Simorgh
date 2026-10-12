@@ -5,6 +5,7 @@ import 'package:aghelan_ghiamat/features/connection/domain/traffic.dart';
 import 'package:aghelan_ghiamat/features/profiles/data/profile_store.dart';
 import 'package:aghelan_ghiamat/features/latency/application/latency_controller.dart';
 import 'package:aghelan_ghiamat/features/latency/application/profile_sort.dart';
+import 'package:aghelan_ghiamat/features/latency/application/speed_controller.dart';
 import 'package:aghelan_ghiamat/features/profiles/application/profiles_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -141,6 +142,32 @@ void main() {
     final realityTop = tester.getTopLeft(find.text('Reality 🇳🇱').last).dy;
     expect(hy2Top, lessThan(realityTop));
     expect(find.byIcon(Icons.speed_rounded), findsOneWidget);
+  });
+
+  testWidgets('shows speed results and offers a speed test', (tester) async {
+    final (_, container) = await pump(tester, links: '$vlessReality\n$hy2');
+    final ids = container
+        .read(profilesProvider)
+        .value!
+        .profiles
+        .map((p) => p.id)
+        .toList();
+    await tester.runAsync(
+      () => container
+          .read(sharedPreferencesProvider)
+          .setString(
+            'speed.results',
+            '{"${ids[0]}":{"b":3062500,"t":1},"${ids[1]}":{"f":"unreachable","t":1}}',
+          ),
+    );
+    container.invalidate(speedProvider);
+    await tester.pumpAndSettle();
+    expect(find.text('24.5 Mbps'), findsOneWidget);
+    expect(find.text('Speed test failed'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.more_vert_rounded).first);
+    await tester.pumpAndSettle();
+    expect(find.text('Speed test'), findsOneWidget);
   });
 
   testWidgets('add sheet offers import options', (tester) async {

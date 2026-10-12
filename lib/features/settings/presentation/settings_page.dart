@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_info.dart';
 import '../../../core/utils/context_ext.dart';
+import '../../../core/utils/formatters.dart';
 import '../application/settings_controller.dart';
 import '../domain/app_settings.dart';
 import 'connection_settings.dart';
@@ -65,6 +66,33 @@ class SettingsPage extends ConsumerWidget {
               ],
               selected: {settings.themeMode},
               onSelectionChanged: (s) => controller.setThemeMode(s.first),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _SectionHeader(l10n.subscriptions),
+          ListTile(
+            leading: const Icon(Icons.update_rounded),
+            title: Text(l10n.autoUpdateSubscriptions),
+            subtitle: Text(l10n.autoUpdateSubscriptionsHint),
+            trailing: DropdownButton<int>(
+              value: settings.subscriptionUpdateHours,
+              underline: const SizedBox.shrink(),
+              items: [
+                for (final hours in AppSettings.subscriptionUpdateChoices)
+                  DropdownMenuItem(
+                    value: hours,
+                    child: Text(
+                      hours == 0
+                          ? l10n.disabled
+                          : l10n.everyHours(
+                              formatNumber(hours, locale: context.localeCode),
+                            ),
+                    ),
+                  ),
+              ],
+              onChanged: (v) {
+                if (v != null) controller.setSubscriptionUpdateHours(v);
+              },
             ),
           ),
           const SizedBox(height: 16),

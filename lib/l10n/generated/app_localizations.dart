@@ -931,6 +931,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Mux protocol'**
   String get muxProtocol;
+
+  /// No description provided for @speedTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Speed test'**
+  String get speedTest;
+
+  /// No description provided for @speedTestGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Speed test these servers'**
+  String get speedTestGroup;
+
+  /// No description provided for @speedTestProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Speed test {current} of {total}'**
+  String speedTestProgress(String current, String total);
+
+  /// No description provided for @speedTesting.
+  ///
+  /// In en, this message translates to:
+  /// **'Measuring speed…'**
+  String get speedTesting;
+
+  /// No description provided for @speedFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Speed test failed'**
+  String get speedFailed;
+
+  /// No description provided for @splitTunnel.
+  ///
+  /// In en, this message translates to:
+  /// **'Per-app proxy'**
+  String get splitTunnel;
+
+  /// No description provided for @splitTunnelOff.
+  ///
+  /// In en, this message translates to:
+  /// **'All apps'**
+  String get splitTunnelOff;
+
+  /// No description provided for @splitTunnelInclude.
+  ///
+  /// In en, this message translates to:
+  /// **'Only selected'**
+  String get splitTunnelInclude;
+
+  /// No description provided for @splitTunnelExclude.
+  ///
+  /// In en, this message translates to:
+  /// **'All but selected'**
+  String get splitTunnelExclude;
+
+  /// No description provided for @splitTunnelOffHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Every app uses the VPN'**
+  String get splitTunnelOffHint;
+
+  /// No description provided for @splitTunnelIncludeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the apps you check use the VPN; the rest connect directly'**
+  String get splitTunnelIncludeHint;
+
+  /// No description provided for @splitTunnelExcludeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The apps you check connect directly, without the VPN'**
+  String get splitTunnelExcludeHint;
+
+  /// No description provided for @showSystemApps.
+  ///
+  /// In en, this message translates to:
+  /// **'Show system apps'**
+  String get showSystemApps;
+
+  /// No description provided for @clearSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear selection'**
+  String get clearSelection;
+
+  /// No description provided for @searchApps.
+  ///
+  /// In en, this message translates to:
+  /// **'Search apps'**
+  String get searchApps;
+
+  /// No description provided for @appsSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} apps selected'**
+  String appsSelected(String count);
+
+  /// No description provided for @autoUpdateSubscriptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-update'**
+  String get autoUpdateSubscriptions;
+
+  /// No description provided for @autoUpdateSubscriptionsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Refreshes subscriptions when the app opens'**
+  String get autoUpdateSubscriptionsHint;
+
+  /// No description provided for @everyHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Every {hours} h'**
+  String everyHours(String hours);
+
+  /// No description provided for @dnsSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System DNS'**
+  String get dnsSystem;
+
+  /// No description provided for @dnsBlocksAds.
+  ///
+  /// In en, this message translates to:
+  /// **'blocks ads'**
+  String get dnsBlocksAds;
+
+  /// No description provided for @dnsCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom…'**
+  String get dnsCustom;
 }
 
 class _AppLocalizationsDelegate

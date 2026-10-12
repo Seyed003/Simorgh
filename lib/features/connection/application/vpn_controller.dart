@@ -11,6 +11,7 @@ import '../../../core/utils/net_utils.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../latency/application/auto_candidates.dart';
 import '../../latency/application/latency_controller.dart';
+import '../../latency/application/speed_controller.dart';
 import '../../profiles/application/profiles_controller.dart';
 import '../../profiles/domain/profile.dart';
 import '../../profiles/domain/profiles_state.dart';
@@ -169,6 +170,8 @@ class VpnController extends Notifier<VpnState> {
     );
     var (candidates, total) = await _autoCandidates();
     if (candidates.length < min(autoMinCandidates, total)) {
+      // A speed test would hold the test core for minutes.
+      await ref.read(speedProvider.notifier).cancel();
       await ref.read(latencyProvider.notifier).testAll();
       if (attempt != _attempt) return;
       (candidates, total) = await _autoCandidates();

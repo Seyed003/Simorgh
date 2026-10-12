@@ -9,7 +9,9 @@ import '../domain/profiles_state.dart';
 import '../domain/subscription.dart';
 import '../../latency/application/latency_controller.dart';
 import '../../latency/application/profile_sort.dart';
+import '../../latency/application/speed_controller.dart';
 import '../../latency/presentation/latency_badge.dart';
+import '../../latency/presentation/speed_badge.dart';
 import 'import_actions.dart';
 import 'profile_actions.dart';
 import 'widgets/auto_select_tile.dart';
@@ -65,6 +67,7 @@ class ProfileList extends ConsumerWidget {
           slivers.add(const SliverToBoxAdapter(child: _EmptyState()));
         } else {
           slivers
+            ..add(const SliverToBoxAdapter(child: SpeedTestBanner()))
             ..add(const SliverToBoxAdapter(child: AutoSelectTile()))
             ..addAll(_groups(context, ref, value));
         }
@@ -164,6 +167,18 @@ class ProfileList extends ConsumerWidget {
         await ref
             .read(latencyProvider.notifier)
             .test(state.profilesOf(subscription.id).map((p) => p.id));
+      case SubscriptionAction.speedTest:
+        // Skip servers the latency test already found dead.
+        final state = await ref.read(profilesProvider.future);
+        final latency = ref.read(latencyProvider).results;
+        await ref
+            .read(speedProvider.notifier)
+            .test(
+              state
+                  .profilesOf(subscription.id)
+                  .map((p) => p.id)
+                  .where((id) => latency[id]?.ok ?? true),
+            );
       case SubscriptionAction.rename:
         final name = await textInputDialog(
           context,

@@ -167,6 +167,30 @@ class ProfilesController extends AsyncNotifier<ProfilesState> {
     return failures;
   }
 
+  /// Refreshes every subscription last updated more than [maxAge] ago
+  /// (or never) and returns the ids it tried, failures included.
+  Future<Set<String>> updateDueSubscriptions(
+    Duration maxAge, {
+    Set<String> skip = const {},
+    DateTime? now,
+  }) async {
+    final oldest = (now ?? DateTime.now()).subtract(maxAge);
+    final due = [
+      for (final s in (await _current()).subscriptions)
+        if (!skip.contains(s.id) &&
+            (s.lastUpdated == null || s.lastUpdated!.isBefore(oldest)))
+          s.id,
+    ];
+    for (final id in due) {
+      try {
+        await updateSubscription(id);
+      } on Exception {
+        // Offline or the panel is down; the caller retries later.
+      }
+    }
+    return due.toSet();
+  }
+
   Future<void> select(String id) async {
     final current = await _current();
     await _commit(current.copyWith(selectedId: () => id));

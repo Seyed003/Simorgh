@@ -161,6 +161,48 @@ void main() {
     expect(c.read(profilesProvider).value!.selected!.name, 'bare');
   });
 
+  test('only stale subscriptions are refreshed', () async {
+    const fresh = 'https://sub.example.com/fresh';
+    const stale = 'https://sub.example.com/stale';
+    served[fresh] = hy2;
+    served[stale] = tuic;
+    final c = await create();
+    final controller = c.read(profilesProvider.notifier);
+    final a = (await controller.addSubscription(fresh)).subscription!;
+    final b = (await controller.addSubscription(stale)).subscription!;
+    requests.clear();
+
+    final later = DateTime.now().add(const Duration(hours: 13));
+    // Pretend [fresh] was refreshed just now, [stale] long ago.
+    expect(
+      await controller.updateDueSubscriptions(
+        const Duration(hours: 12),
+        now: later,
+        skip: {a.id},
+      ),
+      {b.id},
+    );
+    expect(requests.map((r) => r.url.toString()), [stale]);
+
+    // Nothing is due right after an update.
+    requests.clear();
+    expect(
+      await controller.updateDueSubscriptions(const Duration(hours: 12)),
+      isEmpty,
+    );
+    expect(requests, isEmpty);
+
+    // A failing panel is reported as tried, without throwing.
+    served.remove(stale);
+    expect(
+      await controller.updateDueSubscriptions(
+        const Duration(hours: 1),
+        now: later,
+      ),
+      {a.id, b.id},
+    );
+  });
+
   test('failed download surfaces SubscriptionException', () async {
     final c = await create();
     expect(

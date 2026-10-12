@@ -277,5 +277,51 @@
   "fragmentStrong": "Strong",
   "mux": "Mux (multiplex)",
   "muxHint": "Sends many connections through a few; pages open faster. Your server must support it: if servers stop working, turn it off",
-  "muxProtocol": "Mux protocol"
+  "muxProtocol": "Mux protocol",
+  "speedTest": "Speed test",
+  "speedTestGroup": "Speed test these servers",
+  "speedTestProgress": "Speed test {current} of {total}",
+  "speedTesting": "Measuring speed…",
+  "speedFailed": "Speed test failed",
+  "@speedTestProgress": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "splitTunnel": "Per-app proxy",
+  "splitTunnelOff": "All apps",
+  "splitTunnelInclude": "Only selected",
+  "splitTunnelExclude": "All but selected",
+  "splitTunnelOffHint": "Every app uses the VPN",
+  "splitTunnelIncludeHint": "Only the apps you check use the VPN; the rest connect directly",
+  "splitTunnelExcludeHint": "The apps you check connect directly, without the VPN",
+  "showSystemApps": "Show system apps",
+  "clearSelection": "Clear selection",
+  "searchApps": "Search apps",
+  "appsSelected": "{count} apps selected",
+  "@appsSelected": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "autoUpdateSubscriptions": "Auto-update",
+  "autoUpdateSubscriptionsHint": "Refreshes subscriptions when the app opens",
+  "everyHours": "Every {hours} h",
+  "@everyHours": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "dnsSystem": "System DNS",
+  "dnsBlocksAds": "blocks ads",
+  "dnsCustom": "Custom…"
 }

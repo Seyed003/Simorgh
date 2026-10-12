@@ -19,6 +19,14 @@ String formatBytes(int bytes, {String? locale}) {
 String formatSpeed(int bytesPerSecond, {String? locale}) =>
     '${formatBytes(bytesPerSecond, locale: locale)}/s';
 
+/// Network speed in megabits per second, e.g. `23.4 Mbps` (whole numbers
+/// from 100 Mbps up).
+String formatMbps(int bytesPerSecond, {String? locale}) {
+  final mbps = bytesPerSecond * 8 / 1e6;
+  final pattern = mbps >= 100 ? '#,##0' : '#,##0.#';
+  return '${NumberFormat(pattern, locale).format(mbps)} Mbps';
+}
+
 /// `HH:MM:SS` with locale digits.
 String formatDuration(Duration duration, {String? locale}) {
   final two = NumberFormat('00', locale);

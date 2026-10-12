@@ -1,6 +1,7 @@
 package com.aghelan.ghiamat
 
 import android.content.Intent
+import com.aghelan.ghiamat.apps.AppsBridge
 import com.aghelan.ghiamat.vpn.VpnBridge
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -11,6 +12,7 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         vpnBridge = VpnBridge(this).also { it.attach(flutterEngine) }
+        AppsBridge(applicationContext).attach(flutterEngine)
     }
 
     override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {

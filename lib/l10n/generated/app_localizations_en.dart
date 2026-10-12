@@ -498,4 +498,79 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get muxProtocol => 'Mux protocol';
+
+  @override
+  String get speedTest => 'Speed test';
+
+  @override
+  String get speedTestGroup => 'Speed test these servers';
+
+  @override
+  String speedTestProgress(String current, String total) {
+    return 'Speed test $current of $total';
+  }
+
+  @override
+  String get speedTesting => 'Measuring speed…';
+
+  @override
+  String get speedFailed => 'Speed test failed';
+
+  @override
+  String get splitTunnel => 'Per-app proxy';
+
+  @override
+  String get splitTunnelOff => 'All apps';
+
+  @override
+  String get splitTunnelInclude => 'Only selected';
+
+  @override
+  String get splitTunnelExclude => 'All but selected';
+
+  @override
+  String get splitTunnelOffHint => 'Every app uses the VPN';
+
+  @override
+  String get splitTunnelIncludeHint =>
+      'Only the apps you check use the VPN; the rest connect directly';
+
+  @override
+  String get splitTunnelExcludeHint =>
+      'The apps you check connect directly, without the VPN';
+
+  @override
+  String get showSystemApps => 'Show system apps';
+
+  @override
+  String get clearSelection => 'Clear selection';
+
+  @override
+  String get searchApps => 'Search apps';
+
+  @override
+  String appsSelected(String count) {
+    return '$count apps selected';
+  }
+
+  @override
+  String get autoUpdateSubscriptions => 'Auto-update';
+
+  @override
+  String get autoUpdateSubscriptionsHint =>
+      'Refreshes subscriptions when the app opens';
+
+  @override
+  String everyHours(String hours) {
+    return 'Every $hours h';
+  }
+
+  @override
+  String get dnsSystem => 'System DNS';
+
+  @override
+  String get dnsBlocksAds => 'blocks ads';
+
+  @override
+  String get dnsCustom => 'Custom…';
 }

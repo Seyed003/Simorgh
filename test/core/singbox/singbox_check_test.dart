@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:aghelan_ghiamat/core/singbox/builder/config_builder.dart';
 import 'package:aghelan_ghiamat/core/singbox/builder/core_options.dart';
 import 'package:aghelan_ghiamat/core/singbox/link_parser.dart';
+import 'package:aghelan_ghiamat/features/settings/domain/dns_presets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fixtures.dart';
@@ -50,6 +51,8 @@ void main() {
         tlsFragment: TlsFragmentMode.tcp,
         mux: true,
         muxProtocol: 'smux',
+        perAppMode: PerAppMode.include,
+        perAppPackages: ['org.telegram.messenger', 'com.android.chrome'],
       ),
       platform: CorePlatform.android,
       clashApi: ClashApiOptions(port: 19092, secret: 'z'),
@@ -79,6 +82,25 @@ void main() {
       final proxies = allValidLinks.map(LinkParser.parse).toList();
       final file = File('${dir.path}/config-auto-$name.json');
       await file.writeAsString(builder.buildAutoJson(proxies));
+      final result = await Process.run(binary!, ['check', '-c', file.path]);
+      expect(result.exitCode, 0, reason: '${result.stderr}${result.stdout}');
+    });
+  }
+
+  // Every DNS preset the settings offer must give a config the core accepts.
+  for (final (i, (remote, direct)) in [
+    for (final r in remoteDnsPresets)
+      (r.address, directDnsPresets.first.address),
+    for (final d in directDnsPresets)
+      (remoteDnsPresets.first.address, d.address),
+  ].indexed) {
+    test('sing-box check DNS preset $remote + $direct', skip: skip, () async {
+      final builder = SingBoxConfigBuilder(
+        options: CoreOptions(remoteDns: remote, directDns: direct),
+        platform: CorePlatform.android,
+      );
+      final file = File('${dir.path}/dns-$i.json');
+      await file.writeAsString(builder.buildJson(LinkParser.parse(trojanTls)));
       final result = await Process.run(binary!, ['check', '-c', file.path]);
       expect(result.exitCode, 0, reason: '${result.stderr}${result.stdout}');
     });

@@ -11,6 +11,7 @@ final settingsProvider = NotifierProvider<SettingsController, AppSettings>(
 class SettingsController extends Notifier<AppSettings> {
   static const _themeKey = 'settings.theme_mode';
   static const _languageKey = 'settings.language';
+  static const _subscriptionUpdateKey = 'settings.subscription_update_hours';
 
   @override
   AppSettings build() {
@@ -21,7 +22,17 @@ class SettingsController extends Notifier<AppSettings> {
         orElse: () => ThemeMode.system,
       ),
       language: AppLanguage.fromCode(prefs.getString(_languageKey)),
+      subscriptionUpdateHours:
+          prefs.getInt(_subscriptionUpdateKey) ??
+          const AppSettings().subscriptionUpdateHours,
     );
+  }
+
+  Future<void> setSubscriptionUpdateHours(int hours) async {
+    state = state.copyWith(subscriptionUpdateHours: hours);
+    await ref
+        .read(sharedPreferencesProvider)
+        .setInt(_subscriptionUpdateKey, hours);
   }
 
   Future<void> setThemeMode(ThemeMode mode) async {

@@ -170,6 +170,7 @@ class SingBoxConfigBuilder {
         'auto_route': true,
         'strict_route': options.strictRoute,
         'stack': options.tunStack,
+        ...?_perAppRules(),
       });
     }
     final port = options.mixedPort;
@@ -182,6 +183,17 @@ class SingBoxConfigBuilder {
       });
     }
     return inbounds;
+  }
+
+  /// Android's VpnService applies these as allowed/disallowed apps.
+  Map<String, Object?>? _perAppRules() {
+    final packages = options.perAppPackages;
+    if (platform != CorePlatform.android || packages.isEmpty) return null;
+    return switch (options.perAppMode) {
+      PerAppMode.off => null,
+      PerAppMode.include => {'include_package': packages},
+      PerAppMode.exclude => {'exclude_package': packages},
+    };
   }
 
   Map<String, Object?> _route() {

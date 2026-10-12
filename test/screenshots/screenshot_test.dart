@@ -11,6 +11,7 @@ import 'package:aghelan_ghiamat/features/connection/application/vpn_controller.d
 import 'package:aghelan_ghiamat/features/connection/domain/traffic.dart';
 import 'package:aghelan_ghiamat/features/connection/domain/vpn_state.dart';
 import 'package:aghelan_ghiamat/features/latency/application/latency_controller.dart';
+import 'package:aghelan_ghiamat/features/latency/application/speed_controller.dart';
 import 'package:aghelan_ghiamat/features/profiles/application/profiles_controller.dart';
 import 'package:aghelan_ghiamat/features/profiles/data/profile_store.dart';
 import 'package:aghelan_ghiamat/features/profiles/domain/profiles_state.dart';
@@ -118,7 +119,13 @@ void main() {
             'latency.results',
             '{"${ids[0]}":{"d":142,"t":$t},"${ids[1]}":{"d":486,"t":$t},"${ids[2]}":{"f":"unreachable","t":$t},"${ids[3]}":{"d":1240,"t":$t}}',
           );
-          container.invalidate(latencyProvider);
+          await prefs.setString(
+            'speed.results',
+            '{"${ids[0]}":{"b":3062500,"t":$t},"${ids[1]}":{"b":812000,"t":$t}}',
+          );
+          container
+            ..invalidate(latencyProvider)
+            ..invalidate(speedProvider);
           if (auto) {
             await container
                 .read(profilesProvider.notifier)

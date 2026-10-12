@@ -6,7 +6,11 @@ import '../../../core/singbox/builder/dns_server.dart';
 import '../../../core/singbox/proxy_config.dart';
 import '../../../core/utils/context_ext.dart';
 import '../../../core/widgets/dialogs.dart';
+import '../../../core/utils/formatters.dart';
+import '../../connection/application/vpn_controller.dart';
 import '../application/core_options_controller.dart';
+import '../domain/dns_presets.dart';
+import 'split_tunnel_page.dart';
 
 const _fingerprints = [
   'chrome',
@@ -41,15 +45,68 @@ class ConnectionSettingsSection extends ConsumerWidget {
     }
 
     Future<void> editDns({required bool remote}) async {
-      final value = await textInputDialog(
-        context,
-        title: remote ? l10n.remoteDns : l10n.directDns,
-        initialValue: remote ? options.remoteDns : options.directDns,
-        hint: l10n.dnsAddressHint,
-        ltr: true,
-        keyboardType: TextInputType.url,
-        validator: validateDns,
+      final current = remote ? options.remoteDns : options.directDns;
+      final presets = remote ? remoteDnsPresets : directDnsPresets;
+      const custom = '';
+      final picked = await showModalBottomSheet<String>(
+        context: context,
+        isScrollControlled: true,
+        builder: (context) => SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+                  child: Text(
+                    remote ? l10n.remoteDns : l10n.directDns,
+                    style: context.theme.textTheme.titleMedium,
+                  ),
+                ),
+                for (final preset in presets)
+                  ListTile(
+                    title: Text(
+                      preset.address == 'local'
+                          ? l10n.dnsSystem
+                          : preset.blocksAds
+                          ? '${preset.name} · ${l10n.dnsBlocksAds}'
+                          : preset.name,
+                    ),
+                    subtitle: Text(
+                      preset.address,
+                      textDirection: TextDirection.ltr,
+                      textAlign: TextAlign.start,
+                    ),
+                    trailing: preset.address == current
+                        ? Icon(
+                            Icons.check_circle_rounded,
+                            color: context.colors.primary,
+                          )
+                        : null,
+                    onTap: () => Navigator.pop(context, preset.address),
+                  ),
+                ListTile(
+                  leading: const Icon(Icons.edit_outlined),
+                  title: Text(l10n.dnsCustom),
+                  onTap: () => Navigator.pop(context, custom),
+                ),
+              ],
+            ),
+          ),
+        ),
       );
+      if (picked == null || !context.mounted) return;
+      final value = picked == custom
+          ? await textInputDialog(
+              context,
+              title: remote ? l10n.remoteDns : l10n.directDns,
+              initialValue: current,
+              hint: l10n.dnsAddressHint,
+              ltr: true,
+              keyboardType: TextInputType.url,
+              validator: validateDns,
+            )
+          : picked;
       if (value == null) return;
       await controller.update(
         (o) => remote
@@ -82,6 +139,22 @@ class ConnectionSettingsSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (ref.watch(vpnPlatformProvider).corePlatform == CorePlatform.android)
+          ListTile(
+            leading: const Icon(Icons.apps_rounded),
+            title: Text(l10n.splitTunnel),
+            subtitle: Text(switch (options.perAppMode) {
+              PerAppMode.off => l10n.splitTunnelOff,
+              PerAppMode.include =>
+                '${l10n.splitTunnelInclude} · ${l10n.appsSelected(formatNumber(options.perAppPackages.length, locale: context.localeCode))}',
+              PerAppMode.exclude =>
+                '${l10n.splitTunnelExclude} · ${l10n.appsSelected(formatNumber(options.perAppPackages.length, locale: context.localeCode))}',
+            }),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const SplitTunnelPage()),
+            ),
+          ),
         SwitchListTile(
           secondary: const Icon(Icons.alt_route_rounded),
           title: Text(l10n.bypassIran),
