@@ -5,6 +5,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:aghelan_ghiamat/app.dart';
+import 'package:aghelan_ghiamat/core/singbox/builder/core_options.dart';
 import 'package:aghelan_ghiamat/core/storage/preferences.dart';
 import 'package:aghelan_ghiamat/features/connection/application/vpn_controller.dart';
 import 'package:aghelan_ghiamat/features/connection/domain/traffic.dart';
@@ -13,6 +14,7 @@ import 'package:aghelan_ghiamat/features/latency/application/latency_controller.
 import 'package:aghelan_ghiamat/features/profiles/application/profiles_controller.dart';
 import 'package:aghelan_ghiamat/features/profiles/data/profile_store.dart';
 import 'package:aghelan_ghiamat/features/profiles/domain/profiles_state.dart';
+import 'package:aghelan_ghiamat/features/settings/application/core_options_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -161,4 +163,55 @@ void main() {
       },
     );
   }
+
+  testWidgets('settings fa light', skip: skip != null, (tester) async {
+    const size = Size(412, 2000);
+    tester.view.physicalSize = size;
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final prefs = await mockPreferences({
+      'settings.language': 'fa',
+      'settings.theme_mode': 'light',
+    });
+    final container = ProviderContainer(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        profileStoreProvider.overrideWithValue(MemoryProfileStore()),
+        vpnPlatformProvider.overrideWithValue(FakeVpnPlatform()),
+      ],
+    );
+    addTearDown(container.dispose);
+    await tester.runAsync(
+      () => container
+          .read(coreOptionsProvider.notifier)
+          .update(
+            (o) => o.copyWith(tlsFragment: TlsFragmentMode.record, mux: true),
+          ),
+    );
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: const ValueKey('shot'),
+        child: UncontrolledProviderScope(
+          container: container,
+          child: const AghelanApp(),
+        ),
+      ),
+    );
+    await tester.pump(const Duration(seconds: 1));
+    await tester.tap(find.byIcon(Icons.settings_outlined));
+    await tester.pumpAndSettle();
+
+    final boundary = tester.renderObject<RenderRepaintBoundary>(
+      find.byKey(const ValueKey('shot')),
+    );
+    await tester.runAsync(() async {
+      final image = await boundary.toImage();
+      final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+      final file = File('build/screenshots/settings_fa_light.png');
+      await file.parent.create(recursive: true);
+      await file.writeAsBytes(bytes!.buffer.asUint8List());
+    });
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
 }

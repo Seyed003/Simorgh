@@ -270,5 +270,12 @@
     }
   },
   "bypassIran": "Iranian sites without VPN",
-  "bypassIranHint": "Iranian sites and apps (.ir and servers in Iran) connect directly: faster, saves your VPN traffic, and banking or government sites that block foreign IPs keep working"
+  "bypassIranHint": "Iranian sites and apps (.ir and servers in Iran) connect directly: faster, saves your VPN traffic, and banking or government sites that block foreign IPs keep working",
+  "tlsFragment": "TLS fragment",
+  "tlsFragmentHint": "Splits the start of each TLS connection so filtering cannot read the server name (SNI). Try Light first; Strong is slower",
+  "fragmentLight": "Light",
+  "fragmentStrong": "Strong",
+  "mux": "Mux (multiplex)",
+  "muxHint": "Sends many connections through a few; pages open faster. Your server must support it: if servers stop working, turn it off",
+  "muxProtocol": "Mux protocol"
 }

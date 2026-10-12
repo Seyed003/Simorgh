@@ -17,6 +17,7 @@ abstract final class ConfigTags {
 }
 
 const _tcpTlsTypes = {'vmess', 'vless', 'trojan', 'anytls'};
+const _muxTypes = {'vmess', 'vless', 'trojan', 'shadowsocks'};
 
 /// Wraps a [ProxyConfig] into a complete sing-box 1.14 configuration:
 /// TUN inbound (VpnService on Android, wintun on Windows), DNS hijacking,
@@ -69,11 +70,7 @@ class SingBoxConfigBuilder {
     for (final (i, proxy) in candidates.indexed) {
       final tag = autoTag(i);
       tags.add(tag);
-      final outbound = prepareOutbound(
-        proxy,
-        tag: tag,
-        defaultFingerprint: options.defaultFingerprint,
-      );
+      final outbound = prepareOutbound(proxy, tag: tag, options: options);
       (proxy.protocol.isEndpoint ? endpoints : outbounds).add(outbound);
     }
     return _assemble(
@@ -124,11 +121,8 @@ class SingBoxConfigBuilder {
     };
   }
 
-  Map<String, Object?> _prepareOutbound(ProxyConfig proxy) => prepareOutbound(
-    proxy,
-    tag: ConfigTags.proxy,
-    defaultFingerprint: options.defaultFingerprint,
-  );
+  Map<String, Object?> _prepareOutbound(ProxyConfig proxy) =>
+      prepareOutbound(proxy, tag: ConfigTags.proxy, options: options);
 
   Map<String, Object?> _dns() {
     final servers = <Map<String, Object?>>[];
@@ -226,24 +220,45 @@ class SingBoxConfigBuilder {
   }
 }
 
-/// Copies [proxy]'s outbound with [tag], applying the default uTLS
-/// fingerprint to TCP TLS protocols that do not set one. The stored profile
-/// is never mutated.
+/// Copies [proxy]'s outbound with [tag] and applies the global options the
+/// link itself does not set: uTLS fingerprint and TLS fragment on TCP TLS
+/// protocols, multiplex on protocols that support it. The stored profile is
+/// never mutated.
 Map<String, Object?> prepareOutbound(
   ProxyConfig proxy, {
   required String tag,
-  String? defaultFingerprint,
+  required CoreOptions options,
 }) {
   final outbound = (jsonDecode(jsonEncode(proxy.outbound)) as Map)
       .cast<String, Object?>();
   outbound['tag'] = tag;
+  final type = outbound['type'];
   final tls = outbound['tls'];
-  if (defaultFingerprint != null &&
-      _tcpTlsTypes.contains(outbound['type']) &&
-      tls is Map &&
-      tls['enabled'] == true &&
-      tls['utls'] == null) {
-    tls['utls'] = {'enabled': true, 'fingerprint': defaultFingerprint};
+  if (_tcpTlsTypes.contains(type) && tls is Map && tls['enabled'] == true) {
+    final fingerprint = options.defaultFingerprint;
+    if (fingerprint != null && tls['utls'] == null) {
+      tls['utls'] = {'enabled': true, 'fingerprint': fingerprint};
+    }
+    final hasFragment =
+        tls['fragment'] != null || tls['record_fragment'] != null;
+    switch (options.tlsFragment) {
+      case TlsFragmentMode.off:
+        break;
+      case TlsFragmentMode.record when !hasFragment:
+        tls['record_fragment'] = true;
+      case TlsFragmentMode.tcp when !hasFragment:
+        tls['fragment'] = true;
+      case TlsFragmentMode.record || TlsFragmentMode.tcp:
+        break;
+    }
+  }
+  // XTLS Vision (any `flow`) cannot be multiplexed.
+  final flow = outbound['flow'];
+  if (options.mux &&
+      _muxTypes.contains(type) &&
+      outbound['multiplex'] == null &&
+      (flow == null || flow == '')) {
+    outbound['multiplex'] = {'enabled': true, 'protocol': options.muxProtocol};
   }
   return outbound;
 }

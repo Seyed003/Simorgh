@@ -475,4 +475,27 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get bypassIranHint =>
       'Iranian sites and apps (.ir and servers in Iran) connect directly: faster, saves your VPN traffic, and banking or government sites that block foreign IPs keep working';
+
+  @override
+  String get tlsFragment => 'TLS fragment';
+
+  @override
+  String get tlsFragmentHint =>
+      'Splits the start of each TLS connection so filtering cannot read the server name (SNI). Try Light first; Strong is slower';
+
+  @override
+  String get fragmentLight => 'Light';
+
+  @override
+  String get fragmentStrong => 'Strong';
+
+  @override
+  String get mux => 'Mux (multiplex)';
+
+  @override
+  String get muxHint =>
+      'Sends many connections through a few; pages open faster. Your server must support it: if servers stop working, turn it off';
+
+  @override
+  String get muxProtocol => 'Mux protocol';
 }

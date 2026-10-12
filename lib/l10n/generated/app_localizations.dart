@@ -889,6 +889,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Iranian sites and apps (.ir and servers in Iran) connect directly: faster, saves your VPN traffic, and banking or government sites that block foreign IPs keep working'**
   String get bypassIranHint;
+
+  /// No description provided for @tlsFragment.
+  ///
+  /// In en, this message translates to:
+  /// **'TLS fragment'**
+  String get tlsFragment;
+
+  /// No description provided for @tlsFragmentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Splits the start of each TLS connection so filtering cannot read the server name (SNI). Try Light first; Strong is slower'**
+  String get tlsFragmentHint;
+
+  /// No description provided for @fragmentLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get fragmentLight;
+
+  /// No description provided for @fragmentStrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Strong'**
+  String get fragmentStrong;
+
+  /// No description provided for @mux.
+  ///
+  /// In en, this message translates to:
+  /// **'Mux (multiplex)'**
+  String get mux;
+
+  /// No description provided for @muxHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Sends many connections through a few; pages open faster. Your server must support it: if servers stop working, turn it off'**
+  String get muxHint;
+
+  /// No description provided for @muxProtocol.
+  ///
+  /// In en, this message translates to:
+  /// **'Mux protocol'**
+  String get muxProtocol;
 }
 
 class _AppLocalizationsDelegate

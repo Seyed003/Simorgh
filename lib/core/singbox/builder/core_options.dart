@@ -2,6 +2,21 @@ import 'dart:convert';
 
 enum CorePlatform { android, windows, other }
 
+/// How the TLS ClientHello of proxy connections is split so that simple
+/// SNI filters cannot read the server name.
+enum TlsFragmentMode {
+  off,
+
+  /// Several TLS records in one packet (`record_fragment`); almost free.
+  record,
+
+  /// Separate TCP segments with short pauses (`fragment`); stronger, slower.
+  tcp,
+}
+
+/// Multiplex protocols sing-box can speak to a server.
+const muxProtocols = ['h2mux', 'smux', 'yamux'];
+
 /// Tunables that shape the generated sing-box config. Persisted by the
 /// settings feature and passed to [SingBoxConfigBuilder].
 class CoreOptions {
@@ -17,6 +32,9 @@ class CoreOptions {
     this.sniff = true,
     this.defaultFingerprint = 'chrome',
     this.bypassIran = true,
+    this.tlsFragment = TlsFragmentMode.off,
+    this.mux = false,
+    this.muxProtocol = 'h2mux',
   });
 
   static const logLevels = [
@@ -56,6 +74,14 @@ class CoreOptions {
   /// ranges) directly instead of through the proxy.
   final bool bypassIran;
 
+  /// Applied to TCP TLS outbounds (Reality included) that do not set it.
+  final TlsFragmentMode tlsFragment;
+
+  /// Multiplex VMess/VLESS/Trojan/Shadowsocks connections over a few TCP
+  /// connections. The server must support sing-box style multiplex.
+  final bool mux;
+  final String muxProtocol;
+
   CoreOptions copyWith({
     String? logLevel,
     String? remoteDns,
@@ -68,6 +94,9 @@ class CoreOptions {
     bool? sniff,
     String? Function()? defaultFingerprint,
     bool? bypassIran,
+    TlsFragmentMode? tlsFragment,
+    bool? mux,
+    String? muxProtocol,
   }) {
     return CoreOptions(
       logLevel: logLevel ?? this.logLevel,
@@ -83,6 +112,9 @@ class CoreOptions {
           ? defaultFingerprint()
           : this.defaultFingerprint,
       bypassIran: bypassIran ?? this.bypassIran,
+      tlsFragment: tlsFragment ?? this.tlsFragment,
+      mux: mux ?? this.mux,
+      muxProtocol: muxProtocol ?? this.muxProtocol,
     );
   }
 
@@ -98,6 +130,9 @@ class CoreOptions {
     'sniff': sniff,
     'defaultFingerprint': defaultFingerprint,
     'bypassIran': bypassIran,
+    'tlsFragment': tlsFragment.name,
+    'mux': mux,
+    'muxProtocol': muxProtocol,
   };
 
   factory CoreOptions.fromJson(
@@ -121,6 +156,13 @@ class CoreOptions {
           ? json['defaultFingerprint'] as String?
           : d.defaultFingerprint,
       bypassIran: json['bypassIran'] as bool? ?? d.bypassIran,
+      tlsFragment:
+          TlsFragmentMode.values.asNameMap()[json['tlsFragment']] ??
+          d.tlsFragment,
+      mux: json['mux'] as bool? ?? d.mux,
+      muxProtocol: muxProtocols.contains(json['muxProtocol'])
+          ? json['muxProtocol']! as String
+          : d.muxProtocol,
     );
   }
 
