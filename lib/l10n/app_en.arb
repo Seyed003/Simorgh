@@ -323,5 +323,15 @@
   },
   "dnsSystem": "System DNS",
   "dnsBlocksAds": "blocks ads",
-  "dnsCustom": "Custom…"
+  "dnsCustom": "Custom…",
+  "usage": "Usage",
+  "usageToday": "Today",
+  "usageWeek": "Last 7 days",
+  "usageMonth": "Last 30 days",
+  "usageChartTitle": "Last 14 days",
+  "usageTapHint": "Tap a day for details",
+  "usageDaily": "By day",
+  "usageEmpty": "Nothing recorded yet. Usage is counted while you are connected.",
+  "usageReset": "Reset statistics",
+  "usageResetConfirm": "Delete all usage statistics?"
 }

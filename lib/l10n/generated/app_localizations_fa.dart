@@ -564,4 +564,35 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get dnsCustom => 'دلخواه…';
+
+  @override
+  String get usage => 'مصرف اینترنت';
+
+  @override
+  String get usageToday => 'امروز';
+
+  @override
+  String get usageWeek => '۷ روز اخیر';
+
+  @override
+  String get usageMonth => '۳۰ روز اخیر';
+
+  @override
+  String get usageChartTitle => '۱۴ روز اخیر';
+
+  @override
+  String get usageTapHint => 'برای جزئیات روی هر روز بزنید';
+
+  @override
+  String get usageDaily => 'مصرف روزانه';
+
+  @override
+  String get usageEmpty =>
+      'هنوز مصرفی ثبت نشده. مصرف در زمان اتصال شمرده می‌شود.';
+
+  @override
+  String get usageReset => 'پاک کردن آمار';
+
+  @override
+  String get usageResetConfirm => 'همه‌ی آمار مصرف پاک شود؟';
 }

@@ -160,5 +160,15 @@
   "everyHours": "هر {hours} ساعت",
   "dnsSystem": "DNS سیستم",
   "dnsBlocksAds": "حذف تبلیغات",
-  "dnsCustom": "دلخواه…"
+  "dnsCustom": "دلخواه…",
+  "usage": "مصرف اینترنت",
+  "usageToday": "امروز",
+  "usageWeek": "۷ روز اخیر",
+  "usageMonth": "۳۰ روز اخیر",
+  "usageChartTitle": "۱۴ روز اخیر",
+  "usageTapHint": "برای جزئیات روی هر روز بزنید",
+  "usageDaily": "مصرف روزانه",
+  "usageEmpty": "هنوز مصرفی ثبت نشده. مصرف در زمان اتصال شمرده می‌شود.",
+  "usageReset": "پاک کردن آمار",
+  "usageResetConfirm": "همه‌ی آمار مصرف پاک شود؟"
 }

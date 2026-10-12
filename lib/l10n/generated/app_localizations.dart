@@ -1063,6 +1063,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Custom…'**
   String get dnsCustom;
+
+  /// No description provided for @usage.
+  ///
+  /// In en, this message translates to:
+  /// **'Usage'**
+  String get usage;
+
+  /// No description provided for @usageToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get usageToday;
+
+  /// No description provided for @usageWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 7 days'**
+  String get usageWeek;
+
+  /// No description provided for @usageMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 30 days'**
+  String get usageMonth;
+
+  /// No description provided for @usageChartTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 14 days'**
+  String get usageChartTitle;
+
+  /// No description provided for @usageTapHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a day for details'**
+  String get usageTapHint;
+
+  /// No description provided for @usageDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'By day'**
+  String get usageDaily;
+
+  /// No description provided for @usageEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing recorded yet. Usage is counted while you are connected.'**
+  String get usageEmpty;
+
+  /// No description provided for @usageReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset statistics'**
+  String get usageReset;
+
+  /// No description provided for @usageResetConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all usage statistics?'**
+  String get usageResetConfirm;
 }
 
 class _AppLocalizationsDelegate

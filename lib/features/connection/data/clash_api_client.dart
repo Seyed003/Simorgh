@@ -82,6 +82,27 @@ class ClashApiClient {
     }
   }
 
+  /// Bytes the core has moved since it started (`GET /connections`).
+  Future<({int up, int down})?> totals() async {
+    final client = _clientFactory();
+    try {
+      final response = await client
+          .get(_uri('/connections'), headers: _headers)
+          .timeout(const Duration(seconds: 2));
+      if (response.statusCode != 200) return null;
+      final json = jsonDecode(response.body);
+      if (json is! Map) return null;
+      final up = json['uploadTotal'];
+      final down = json['downloadTotal'];
+      if (up is! num || down is! num) return null;
+      return (up: up.toInt(), down: down.toInt());
+    } on Exception {
+      return null;
+    } finally {
+      client.close();
+    }
+  }
+
   /// Per-second `(up, down)` byte counts streamed by `GET /traffic`.
   Stream<({int up, int down})> traffic() {
     late final StreamController<({int up, int down})> controller;

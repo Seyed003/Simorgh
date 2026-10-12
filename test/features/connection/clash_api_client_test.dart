@@ -43,6 +43,25 @@ void main() {
     );
   });
 
+  test('totals reads the core counters', () async {
+    final client = ClashApiClient(
+      const ClashApiOptions(port: 9090, secret: 's'),
+      clientFactory: () => MockClient(
+        (request) async => http.Response(
+          '{"connections":[],"downloadTotal":12,"uploadTotal":34}',
+          200,
+        ),
+      ),
+    );
+    expect(await client.totals(), (up: 34, down: 12));
+    final broken = ClashApiClient(
+      const ClashApiOptions(port: 9090, secret: 's'),
+      clientFactory: () =>
+          MockClient((request) async => http.Response('nope', 200)),
+    );
+    expect(await broken.totals(), isNull);
+  });
+
   group('against a real sing-box core', () {
     final binary = Platform.environment['SING_BOX_BIN'];
     final skip = binary == null || !File(binary).existsSync()

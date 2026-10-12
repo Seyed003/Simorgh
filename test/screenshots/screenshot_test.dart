@@ -1,10 +1,15 @@
 @Tags(['screenshots'])
 library;
 
+import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:aghelan_ghiamat/app.dart';
+import 'package:aghelan_ghiamat/core/theme/app_theme.dart';
+import 'package:aghelan_ghiamat/features/settings/application/settings_controller.dart';
+import 'package:aghelan_ghiamat/features/usage/presentation/usage_page.dart';
+import 'package:aghelan_ghiamat/l10n/generated/app_localizations.dart';
 import 'package:aghelan_ghiamat/core/singbox/builder/core_options.dart';
 import 'package:aghelan_ghiamat/core/storage/preferences.dart';
 import 'package:aghelan_ghiamat/features/connection/application/vpn_controller.dart';
@@ -221,4 +226,97 @@ void main() {
     });
     await tester.pumpWidget(const SizedBox.shrink());
   });
+
+  for (final (lang, theme) in [('fa', 'light'), ('en', 'dark')]) {
+    testWidgets('usage $lang $theme', skip: skip != null, (tester) async {
+      tester.view.physicalSize = const Size(412, 1100);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      final today = DateTime(2026, 10, 12);
+      const mb = 1024 * 1024;
+      const daily = [
+        120,
+        340,
+        0,
+        80,
+        610,
+        1250,
+        430,
+        95,
+        0,
+        720,
+        260,
+        180,
+        905,
+        310,
+      ];
+      final days = {
+        for (final (i, value) in daily.indexed)
+          today
+              .subtract(Duration(days: daily.length - 1 - i))
+              .toIso8601String()
+              .substring(0, 10): [
+            value * mb ~/ 12,
+            value * mb,
+          ],
+      };
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(
+            await mockPreferences({
+              'settings.language': lang,
+              'settings.theme_mode': theme,
+              'usage.daily': jsonEncode(days),
+            }),
+          ),
+          profileStoreProvider.overrideWithValue(MemoryProfileStore()),
+          vpnPlatformProvider.overrideWithValue(FakeVpnPlatform()),
+        ],
+      );
+      addTearDown(container.dispose);
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: const ValueKey('shot'),
+          child: UncontrolledProviderScope(
+            container: container,
+            child: Consumer(
+              builder: (context, ref, _) {
+                final settings = ref.watch(settingsProvider);
+                return MaterialApp(
+                  debugShowCheckedModeBanner: false,
+                  theme: AppTheme.light(),
+                  darkTheme: AppTheme.dark(),
+                  themeMode: settings.themeMode,
+                  locale: settings.language.locale,
+                  supportedLocales: AppLocalizations.supportedLocales,
+                  localizationsDelegates:
+                      AppLocalizations.localizationsDelegates,
+                  home: UsagePage(today: today),
+                );
+              },
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      // Select the busiest day to show the detail line.
+      await tester.tapAt(
+        tester.getBottomLeft(find.byType(GestureDetector).at(5)) +
+            const Offset(4, -4),
+      );
+      await tester.pumpAndSettle();
+
+      final boundary = tester.renderObject<RenderRepaintBoundary>(
+        find.byKey(const ValueKey('shot')),
+      );
+      await tester.runAsync(() async {
+        final image = await boundary.toImage();
+        final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+        final file = File('build/screenshots/usage_${lang}_$theme.png');
+        await file.parent.create(recursive: true);
+        await file.writeAsBytes(bytes!.buffer.asUint8List());
+      });
+    });
+  }
 }

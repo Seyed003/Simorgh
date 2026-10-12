@@ -10,6 +10,7 @@ import '../../../connection/domain/traffic.dart';
 import '../../../connection/domain/vpn_state.dart';
 import '../../../profiles/application/profiles_controller.dart';
 import '../../../profiles/domain/profile.dart';
+import '../../../usage/application/usage_controller.dart';
 import 'connect_button.dart';
 
 /// Connect button, status line, active config and live speeds.
@@ -177,6 +178,8 @@ class SpeedPanel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final stats = ref.watch(trafficProvider).value ?? TrafficStats.zero;
+    // Records daily usage while the home screen is up.
+    ref.watch(usageRecorderProvider);
     final l10n = context.l10n;
     final locale = context.localeCode;
     return Row(

@@ -573,4 +573,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dnsCustom => 'Custom…';
+
+  @override
+  String get usage => 'Usage';
+
+  @override
+  String get usageToday => 'Today';
+
+  @override
+  String get usageWeek => 'Last 7 days';
+
+  @override
+  String get usageMonth => 'Last 30 days';
+
+  @override
+  String get usageChartTitle => 'Last 14 days';
+
+  @override
+  String get usageTapHint => 'Tap a day for details';
+
+  @override
+  String get usageDaily => 'By day';
+
+  @override
+  String get usageEmpty =>
+      'Nothing recorded yet. Usage is counted while you are connected.';
+
+  @override
+  String get usageReset => 'Reset statistics';
+
+  @override
+  String get usageResetConfirm => 'Delete all usage statistics?';
 }

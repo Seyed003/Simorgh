@@ -17,6 +17,7 @@ import '../../profiles/domain/profile.dart';
 import '../../profiles/domain/profiles_state.dart';
 import '../../settings/application/core_options_controller.dart';
 import '../../settings/application/settings_controller.dart';
+import '../../usage/application/usage_controller.dart';
 import '../data/clash_api_client.dart';
 import '../data/platform_factory.dart';
 import '../data/vpn_platform.dart';
@@ -268,6 +269,14 @@ class VpnController extends Notifier<VpnState> {
       await ref.read(latencyProvider.notifier).cancel();
       _connectIfRestartPending(null);
       return;
+    }
+    // Count the last seconds of traffic before the core goes away.
+    final api = state.clashApi;
+    if (api != null && state.isConnected) {
+      await ref
+          .read(usageProvider.notifier)
+          .sample(api)
+          .timeout(const Duration(seconds: 2), onTimeout: () {});
     }
     state = state.copyWith(status: VpnStatus.disconnecting);
     try {
