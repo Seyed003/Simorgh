@@ -6,7 +6,10 @@ import '../../../core/singbox/builder/dns_server.dart';
 import '../../../core/singbox/proxy_config.dart';
 import '../../../core/utils/context_ext.dart';
 import '../../../core/widgets/dialogs.dart';
+import '../../../core/utils/formatters.dart';
+import '../../connection/application/vpn_controller.dart';
 import '../application/core_options_controller.dart';
+import 'split_tunnel_page.dart';
 
 const _fingerprints = [
   'chrome',
@@ -82,6 +85,22 @@ class ConnectionSettingsSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (ref.watch(vpnPlatformProvider).corePlatform == CorePlatform.android)
+          ListTile(
+            leading: const Icon(Icons.apps_rounded),
+            title: Text(l10n.splitTunnel),
+            subtitle: Text(switch (options.perAppMode) {
+              PerAppMode.off => l10n.splitTunnelOff,
+              PerAppMode.include =>
+                '${l10n.splitTunnelInclude} · ${l10n.appsSelected(formatNumber(options.perAppPackages.length, locale: context.localeCode))}',
+              PerAppMode.exclude =>
+                '${l10n.splitTunnelExclude} · ${l10n.appsSelected(formatNumber(options.perAppPackages.length, locale: context.localeCode))}',
+            }),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const SplitTunnelPage()),
+            ),
+          ),
         SwitchListTile(
           secondary: const Icon(Icons.alt_route_rounded),
           title: Text(l10n.bypassIran),

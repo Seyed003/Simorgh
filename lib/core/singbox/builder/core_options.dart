@@ -14,6 +14,18 @@ enum TlsFragmentMode {
   tcp,
 }
 
+/// Android per-app split tunneling.
+enum PerAppMode {
+  /// Every app uses the tunnel.
+  off,
+
+  /// Only the selected apps use the tunnel.
+  include,
+
+  /// The selected apps bypass the tunnel.
+  exclude,
+}
+
 /// Multiplex protocols sing-box can speak to a server.
 const muxProtocols = ['h2mux', 'smux', 'yamux'];
 
@@ -35,6 +47,8 @@ class CoreOptions {
     this.tlsFragment = TlsFragmentMode.off,
     this.mux = false,
     this.muxProtocol = 'h2mux',
+    this.perAppMode = PerAppMode.off,
+    this.perAppPackages = const [],
   });
 
   static const logLevels = [
@@ -82,6 +96,10 @@ class CoreOptions {
   final bool mux;
   final String muxProtocol;
 
+  /// Android only: which apps go through the tunnel.
+  final PerAppMode perAppMode;
+  final List<String> perAppPackages;
+
   CoreOptions copyWith({
     String? logLevel,
     String? remoteDns,
@@ -97,6 +115,8 @@ class CoreOptions {
     TlsFragmentMode? tlsFragment,
     bool? mux,
     String? muxProtocol,
+    PerAppMode? perAppMode,
+    List<String>? perAppPackages,
   }) {
     return CoreOptions(
       logLevel: logLevel ?? this.logLevel,
@@ -115,6 +135,8 @@ class CoreOptions {
       tlsFragment: tlsFragment ?? this.tlsFragment,
       mux: mux ?? this.mux,
       muxProtocol: muxProtocol ?? this.muxProtocol,
+      perAppMode: perAppMode ?? this.perAppMode,
+      perAppPackages: perAppPackages ?? this.perAppPackages,
     );
   }
 
@@ -133,6 +155,8 @@ class CoreOptions {
     'tlsFragment': tlsFragment.name,
     'mux': mux,
     'muxProtocol': muxProtocol,
+    'perAppMode': perAppMode.name,
+    'perAppPackages': perAppPackages,
   };
 
   factory CoreOptions.fromJson(
@@ -163,6 +187,11 @@ class CoreOptions {
       muxProtocol: muxProtocols.contains(json['muxProtocol'])
           ? json['muxProtocol']! as String
           : d.muxProtocol,
+      perAppMode:
+          PerAppMode.values.asNameMap()[json['perAppMode']] ?? d.perAppMode,
+      perAppPackages: json['perAppPackages'] is List
+          ? (json['perAppPackages']! as List).whereType<String>().toList()
+          : d.perAppPackages,
     );
   }
 

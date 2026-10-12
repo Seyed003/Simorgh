@@ -143,5 +143,16 @@
   "speedTestGroup": "تست سرعت این سرورها",
   "speedTestProgress": "تست سرعت {current} از {total}",
   "speedTesting": "در حال اندازه‌گیری سرعت…",
-  "speedFailed": "تست سرعت ناموفق"
+  "speedFailed": "تست سرعت ناموفق",
+  "splitTunnel": "انتخاب برنامه‌ها (Split Tunnel)",
+  "splitTunnelOff": "همه‌ی برنامه‌ها",
+  "splitTunnelInclude": "فقط انتخاب‌شده‌ها",
+  "splitTunnelExclude": "همه به‌جز انتخاب‌شده‌ها",
+  "splitTunnelOffHint": "همه‌ی برنامه‌ها از VPN استفاده می‌کنند",
+  "splitTunnelIncludeHint": "فقط برنامه‌هایی که تیک بزنید از VPN استفاده می‌کنند؛ بقیه مستقیم وصل می‌شوند",
+  "splitTunnelExcludeHint": "برنامه‌هایی که تیک بزنید بدون VPN و مستقیم وصل می‌شوند",
+  "showSystemApps": "نمایش برنامه‌های سیستمی",
+  "clearSelection": "پاک کردن انتخاب‌ها",
+  "searchApps": "جستجوی برنامه",
+  "appsSelected": "{count} برنامه انتخاب شده"
 }

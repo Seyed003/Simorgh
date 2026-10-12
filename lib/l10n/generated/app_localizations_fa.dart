@@ -506,4 +506,41 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get speedFailed => 'تست سرعت ناموفق';
+
+  @override
+  String get splitTunnel => 'انتخاب برنامه‌ها (Split Tunnel)';
+
+  @override
+  String get splitTunnelOff => 'همه‌ی برنامه‌ها';
+
+  @override
+  String get splitTunnelInclude => 'فقط انتخاب‌شده‌ها';
+
+  @override
+  String get splitTunnelExclude => 'همه به‌جز انتخاب‌شده‌ها';
+
+  @override
+  String get splitTunnelOffHint => 'همه‌ی برنامه‌ها از VPN استفاده می‌کنند';
+
+  @override
+  String get splitTunnelIncludeHint =>
+      'فقط برنامه‌هایی که تیک بزنید از VPN استفاده می‌کنند؛ بقیه مستقیم وصل می‌شوند';
+
+  @override
+  String get splitTunnelExcludeHint =>
+      'برنامه‌هایی که تیک بزنید بدون VPN و مستقیم وصل می‌شوند';
+
+  @override
+  String get showSystemApps => 'نمایش برنامه‌های سیستمی';
+
+  @override
+  String get clearSelection => 'پاک کردن انتخاب‌ها';
+
+  @override
+  String get searchApps => 'جستجوی برنامه';
+
+  @override
+  String appsSelected(String count) {
+    return '$count برنامه انتخاب شده';
+  }
 }

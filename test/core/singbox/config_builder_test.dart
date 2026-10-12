@@ -219,6 +219,50 @@ void main() {
       );
     });
 
+    test('per-app split tunnel only on Android', () {
+      Map<String, Object?> tun(CorePlatform platform, CoreOptions options) =>
+          _list(
+            SingBoxConfigBuilder(
+              options: options,
+              platform: platform,
+            ).build(LinkParser.parse(trojanBare))['inbounds'],
+          ).first;
+
+      const include = CoreOptions(
+        perAppMode: PerAppMode.include,
+        perAppPackages: ['org.telegram.messenger'],
+      );
+      expect(tun(CorePlatform.android, include)['include_package'], [
+        'org.telegram.messenger',
+      ]);
+      expect(
+        tun(
+          CorePlatform.android,
+          include.copyWith(perAppMode: PerAppMode.exclude),
+        )['exclude_package'],
+        ['org.telegram.messenger'],
+      );
+      expect(
+        tun(CorePlatform.windows, include).keys,
+        isNot(contains('include_package')),
+      );
+      expect(
+        tun(
+          CorePlatform.android,
+          include.copyWith(perAppMode: PerAppMode.off),
+        ).keys,
+        isNot(anyOf(contains('include_package'), contains('exclude_package'))),
+      );
+      // An empty list must not lock every app out of the tunnel.
+      expect(
+        tun(
+          CorePlatform.android,
+          const CoreOptions(perAppMode: PerAppMode.include),
+        ).keys,
+        isNot(contains('include_package')),
+      );
+    });
+
     test('auto tags round trip', () {
       expect(
         SingBoxConfigBuilder.autoIndexOf(SingBoxConfigBuilder.autoTag(7)),
@@ -310,6 +354,8 @@ void main() {
       tlsFragment: TlsFragmentMode.tcp,
       mux: true,
       muxProtocol: 'yamux',
+      perAppMode: PerAppMode.exclude,
+      perAppPackages: ['com.example.bank'],
     );
     expect(CoreOptions.fromJson(hardened.toJson()), hardened);
     expect(

@@ -292,5 +292,23 @@
         "type": "String"
       }
     }
+  },
+  "splitTunnel": "Per-app proxy",
+  "splitTunnelOff": "All apps",
+  "splitTunnelInclude": "Only selected",
+  "splitTunnelExclude": "All but selected",
+  "splitTunnelOffHint": "Every app uses the VPN",
+  "splitTunnelIncludeHint": "Only the apps you check use the VPN; the rest connect directly",
+  "splitTunnelExcludeHint": "The apps you check connect directly, without the VPN",
+  "showSystemApps": "Show system apps",
+  "clearSelection": "Clear selection",
+  "searchApps": "Search apps",
+  "appsSelected": "{count} apps selected",
+  "@appsSelected": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
   }
 }

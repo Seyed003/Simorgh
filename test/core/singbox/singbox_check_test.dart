@@ -50,6 +50,8 @@ void main() {
         tlsFragment: TlsFragmentMode.tcp,
         mux: true,
         muxProtocol: 'smux',
+        perAppMode: PerAppMode.include,
+        perAppPackages: ['org.telegram.messenger', 'com.android.chrome'],
       ),
       platform: CorePlatform.android,
       clashApi: ClashApiOptions(port: 19092, secret: 'z'),

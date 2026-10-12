@@ -961,6 +961,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Speed test failed'**
   String get speedFailed;
+
+  /// No description provided for @splitTunnel.
+  ///
+  /// In en, this message translates to:
+  /// **'Per-app proxy'**
+  String get splitTunnel;
+
+  /// No description provided for @splitTunnelOff.
+  ///
+  /// In en, this message translates to:
+  /// **'All apps'**
+  String get splitTunnelOff;
+
+  /// No description provided for @splitTunnelInclude.
+  ///
+  /// In en, this message translates to:
+  /// **'Only selected'**
+  String get splitTunnelInclude;
+
+  /// No description provided for @splitTunnelExclude.
+  ///
+  /// In en, this message translates to:
+  /// **'All but selected'**
+  String get splitTunnelExclude;
+
+  /// No description provided for @splitTunnelOffHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Every app uses the VPN'**
+  String get splitTunnelOffHint;
+
+  /// No description provided for @splitTunnelIncludeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the apps you check use the VPN; the rest connect directly'**
+  String get splitTunnelIncludeHint;
+
+  /// No description provided for @splitTunnelExcludeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The apps you check connect directly, without the VPN'**
+  String get splitTunnelExcludeHint;
+
+  /// No description provided for @showSystemApps.
+  ///
+  /// In en, this message translates to:
+  /// **'Show system apps'**
+  String get showSystemApps;
+
+  /// No description provided for @clearSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear selection'**
+  String get clearSelection;
+
+  /// No description provided for @searchApps.
+  ///
+  /// In en, this message translates to:
+  /// **'Search apps'**
+  String get searchApps;
+
+  /// No description provided for @appsSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} apps selected'**
+  String appsSelected(String count);
 }
 
 class _AppLocalizationsDelegate
