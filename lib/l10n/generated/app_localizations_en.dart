@@ -643,4 +643,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get copyIp => 'Copy IP';
+
+  @override
+  String get blockQuic => 'Faster video and apps (block QUIC)';
+
+  @override
+  String get blockQuicHint =>
+      'YouTube, Instagram and browsers use TCP instead of QUIC through the VPN, which is much faster on most servers';
 }

@@ -1183,6 +1183,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Copy IP'**
   String get copyIp;
+
+  /// No description provided for @blockQuic.
+  ///
+  /// In en, this message translates to:
+  /// **'Faster video and apps (block QUIC)'**
+  String get blockQuic;
+
+  /// No description provided for @blockQuicHint.
+  ///
+  /// In en, this message translates to:
+  /// **'YouTube, Instagram and browsers use TCP instead of QUIC through the VPN, which is much faster on most servers'**
+  String get blockQuicHint;
 }
 
 class _AppLocalizationsDelegate

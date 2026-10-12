@@ -208,6 +208,13 @@ class ConnectionSettingsSection extends ConsumerWidget {
             ),
           ),
         ),
+        SwitchListTile(
+          secondary: const Icon(Icons.speed_rounded),
+          title: Text(l10n.blockQuic),
+          subtitle: Text(l10n.blockQuicHint),
+          value: options.blockQuic,
+          onChanged: (v) => controller.update((o) => o.copyWith(blockQuic: v)),
+        ),
         ListTile(
           leading: const Icon(Icons.call_split_rounded),
           title: Text(l10n.tlsFragment),

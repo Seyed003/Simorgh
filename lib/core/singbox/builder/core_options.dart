@@ -49,6 +49,7 @@ class CoreOptions {
     this.muxProtocol = 'h2mux',
     this.perAppMode = PerAppMode.off,
     this.perAppPackages = const [],
+    this.blockQuic = true,
   });
 
   static const logLevels = [
@@ -100,6 +101,10 @@ class CoreOptions {
   final PerAppMode perAppMode;
   final List<String> perAppPackages;
 
+  /// Reject QUIC (UDP 443) to proxied destinations so apps use TCP, which
+  /// is much faster through TCP-based proxies.
+  final bool blockQuic;
+
   CoreOptions copyWith({
     String? logLevel,
     String? remoteDns,
@@ -117,6 +122,7 @@ class CoreOptions {
     String? muxProtocol,
     PerAppMode? perAppMode,
     List<String>? perAppPackages,
+    bool? blockQuic,
   }) {
     return CoreOptions(
       logLevel: logLevel ?? this.logLevel,
@@ -137,6 +143,7 @@ class CoreOptions {
       muxProtocol: muxProtocol ?? this.muxProtocol,
       perAppMode: perAppMode ?? this.perAppMode,
       perAppPackages: perAppPackages ?? this.perAppPackages,
+      blockQuic: blockQuic ?? this.blockQuic,
     );
   }
 
@@ -157,6 +164,7 @@ class CoreOptions {
     'muxProtocol': muxProtocol,
     'perAppMode': perAppMode.name,
     'perAppPackages': perAppPackages,
+    'blockQuic': blockQuic,
   };
 
   factory CoreOptions.fromJson(
@@ -192,6 +200,7 @@ class CoreOptions {
       perAppPackages: json['perAppPackages'] is List
           ? (json['perAppPackages']! as List).whereType<String>().toList()
           : d.perAppPackages,
+      blockQuic: json['blockQuic'] as bool? ?? d.blockQuic,
     );
   }
 
