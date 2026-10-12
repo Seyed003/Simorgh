@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+
+import '../../../../core/utils/jalali.dart';
 
 import '../../../../core/utils/context_ext.dart';
 import '../../../../core/utils/formatters.dart';
@@ -44,7 +45,7 @@ class SubscriptionHeader extends StatelessWidget {
       details.add(
         days < 0
             ? l10n.expired
-            : '${l10n.expiresOn(DateFormat.yMd(locale).format(expire.toLocal()))} · ${l10n.daysLeft(days)}',
+            : '${l10n.expiresOn(formatDate(expire.toLocal(), locale: locale))} · ${l10n.daysLeft(days)}',
       );
     }
 

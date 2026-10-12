@@ -8,6 +8,7 @@ import '../../connection/presentation/vpn_error_text.dart';
 import '../../profiles/presentation/add_config_sheet.dart';
 import '../../profiles/presentation/profile_list.dart';
 import '../../settings/presentation/settings_page.dart';
+import '../../usage/presentation/usage_page.dart';
 import 'widgets/connection_panel.dart';
 
 class HomePage extends ConsumerWidget {
@@ -35,6 +36,13 @@ class HomePage extends ConsumerWidget {
           style: const TextStyle(fontWeight: FontWeight.w700),
         ),
         actions: [
+          IconButton(
+            tooltip: l10n.usage,
+            icon: const Icon(Icons.bar_chart_rounded),
+            onPressed: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute<void>(builder: (_) => const UsagePage())),
+          ),
           IconButton(
             tooltip: l10n.settings,
             icon: const Icon(Icons.settings_outlined),

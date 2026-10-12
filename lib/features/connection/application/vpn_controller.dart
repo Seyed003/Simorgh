@@ -17,6 +17,7 @@ import '../../profiles/domain/profile.dart';
 import '../../profiles/domain/profiles_state.dart';
 import '../../settings/application/core_options_controller.dart';
 import '../../settings/application/settings_controller.dart';
+import '../../usage/application/usage_controller.dart';
 import '../data/clash_api_client.dart';
 import '../data/platform_factory.dart';
 import '../data/vpn_platform.dart';
@@ -269,6 +270,14 @@ class VpnController extends Notifier<VpnState> {
       _connectIfRestartPending(null);
       return;
     }
+    // Count the last seconds of traffic before the core goes away.
+    final api = state.clashApi;
+    if (api != null && state.isConnected) {
+      await ref
+          .read(usageProvider.notifier)
+          .sample(api)
+          .timeout(const Duration(seconds: 2), onTimeout: () {});
+    }
     state = state.copyWith(status: VpnStatus.disconnecting);
     try {
       await _platform.stop();
@@ -289,10 +298,16 @@ class VpnController extends Notifier<VpnState> {
   void _onEvent(VpnPlatformEvent event) {
     switch (event) {
       case VpnStarted():
+        // Started outside the app (quick settings tile, widget): pick up
+        // the session the app saved when it wrote that config.
+        final session = state.clashApi == null ? _loadSession() : null;
         state = state.copyWith(
           status: VpnStatus.connected,
           connectedSince: () => DateTime.now(),
           error: () => null,
+          clashApi: session == null ? null : () => session.clashApi,
+          profileId: session == null ? null : () => session.profileId,
+          autoProfileIds: session?.autoProfileIds,
         );
       case VpnStopped(:final error):
         // A stale stop from the platform must not end a server search.

@@ -146,4 +146,23 @@ void main() {
     await _settle();
     expect(c.read(vpnControllerProvider).status, VpnStatus.connected);
   });
+
+  test('a start from outside the app picks up the saved session', () async {
+    final c = await create(links: trojanBare);
+    // The app connected once, which saved the session with the config.
+    await c.read(vpnControllerProvider.notifier).connect();
+    await _settle();
+    final saved = c.read(vpnControllerProvider).clashApi!;
+    await c.read(vpnControllerProvider.notifier).disconnect();
+    await _settle();
+    expect(c.read(vpnControllerProvider).clashApi, isNull);
+
+    // Quick settings tile reconnects; the app only sees the event.
+    platform.emit(const VpnStarted());
+    await _settle();
+    final state = c.read(vpnControllerProvider);
+    expect(state.status, VpnStatus.connected);
+    expect(state.clashApi!.port, saved.port);
+    expect(state.profileId, c.read(profilesProvider).value!.selectedId);
+  });
 }

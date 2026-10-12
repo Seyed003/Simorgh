@@ -573,4 +573,74 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dnsCustom => 'Custom…';
+
+  @override
+  String get usage => 'Usage';
+
+  @override
+  String get usageToday => 'Today';
+
+  @override
+  String get usageWeek => 'Last 7 days';
+
+  @override
+  String get usageMonth => 'Last 30 days';
+
+  @override
+  String get usageChartTitle => 'Last 14 days';
+
+  @override
+  String get usageTapHint => 'Tap a day for details';
+
+  @override
+  String get usageDaily => 'By day';
+
+  @override
+  String get usageEmpty =>
+      'Nothing recorded yet. Usage is counted while you are connected.';
+
+  @override
+  String get usageReset => 'Reset statistics';
+
+  @override
+  String get usageResetConfirm => 'Delete all usage statistics?';
+
+  @override
+  String get cleanIpScan => 'Find clean Cloudflare IP';
+
+  @override
+  String get cleanIpHint =>
+      'Finds Cloudflare addresses your internet can reach. Configs that go through Cloudflare (CDN) can use one instead of their blocked address.';
+
+  @override
+  String cleanIpTestingHost(String host) {
+    return 'Tested with $host';
+  }
+
+  @override
+  String get cleanIpDisconnectFirst =>
+      'Disconnect first: the scan has to use your own internet, not the VPN.';
+
+  @override
+  String get cleanIpStart => 'Start scan';
+
+  @override
+  String cleanIpProgress(String tested, String total, String found) {
+    return 'Tested $tested of $total · $found working';
+  }
+
+  @override
+  String get cleanIpNone =>
+      'No working address found. Try again later or on another network.';
+
+  @override
+  String get cleanIpUse => 'Make a copy of the config with this IP';
+
+  @override
+  String cleanIpCreated(String name) {
+    return 'Added “$name”';
+  }
+
+  @override
+  String get copyIp => 'Copy IP';
 }

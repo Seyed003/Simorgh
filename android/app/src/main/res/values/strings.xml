@@ -5,4 +5,8 @@
     <string name="vpn_status_connecting">Connecting…</string>
     <string name="vpn_status_connected">Connected</string>
     <string name="vpn_action_disconnect">Disconnect</string>
+    <string name="vpn_status_disconnected">Disconnected</string>
+    <string name="vpn_status_disconnecting">Disconnecting…</string>
+    <string name="widget_description">Connect or disconnect with one tap</string>
+    <string name="widget_toggle">Connect or disconnect</string>
 </resources>

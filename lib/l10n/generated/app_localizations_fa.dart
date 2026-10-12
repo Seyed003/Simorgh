@@ -564,4 +564,74 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get dnsCustom => 'دلخواه…';
+
+  @override
+  String get usage => 'مصرف اینترنت';
+
+  @override
+  String get usageToday => 'امروز';
+
+  @override
+  String get usageWeek => '۷ روز اخیر';
+
+  @override
+  String get usageMonth => '۳۰ روز اخیر';
+
+  @override
+  String get usageChartTitle => '۱۴ روز اخیر';
+
+  @override
+  String get usageTapHint => 'برای جزئیات روی هر روز بزنید';
+
+  @override
+  String get usageDaily => 'مصرف روزانه';
+
+  @override
+  String get usageEmpty =>
+      'هنوز مصرفی ثبت نشده. مصرف در زمان اتصال شمرده می‌شود.';
+
+  @override
+  String get usageReset => 'پاک کردن آمار';
+
+  @override
+  String get usageResetConfirm => 'همه‌ی آمار مصرف پاک شود؟';
+
+  @override
+  String get cleanIpScan => 'پیدا کردن IP تمیز کلودفلر';
+
+  @override
+  String get cleanIpHint =>
+      'IPهای کلودفلری را پیدا می‌کند که اینترنت شما به آن‌ها دسترسی دارد. کانفیگ‌هایی که از کلودفلر (CDN) رد می‌شوند می‌توانند به‌جای آدرس مسدودشده از آن استفاده کنند.';
+
+  @override
+  String cleanIpTestingHost(String host) {
+    return 'تست با دامنه‌ی $host';
+  }
+
+  @override
+  String get cleanIpDisconnectFirst =>
+      'اول VPN را قطع کنید؛ اسکن باید با اینترنت خودتان انجام شود، نه از داخل VPN.';
+
+  @override
+  String get cleanIpStart => 'شروع اسکن';
+
+  @override
+  String cleanIpProgress(String tested, String total, String found) {
+    return '$tested از $total تست شد · $found سالم';
+  }
+
+  @override
+  String get cleanIpNone =>
+      'IP سالمی پیدا نشد. بعداً یا روی اینترنت دیگری دوباره امتحان کنید.';
+
+  @override
+  String get cleanIpUse => 'ساخت کپی کانفیگ با این IP';
+
+  @override
+  String cleanIpCreated(String name) {
+    return '«$name» اضافه شد';
+  }
+
+  @override
+  String get copyIp => 'کپی IP';
 }

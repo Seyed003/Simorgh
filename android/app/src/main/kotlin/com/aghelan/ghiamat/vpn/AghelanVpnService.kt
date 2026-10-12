@@ -16,6 +16,7 @@ import android.os.Build
 import android.util.Log
 import com.aghelan.ghiamat.MainActivity
 import com.aghelan.ghiamat.R
+import com.aghelan.ghiamat.surfaces.StatusSurfaces
 import io.nekohasekai.libbox.CommandServer
 import io.nekohasekai.libbox.CommandServerHandler
 import io.nekohasekai.libbox.Libbox
@@ -39,6 +40,9 @@ class AghelanVpnService : VpnService(), CommonPlatform, CommandServerHandler {
 
         const val ACTION_START = "com.aghelan.ghiamat.START"
         const val ACTION_STOP = "com.aghelan.ghiamat.STOP"
+
+        /** Start or stop, whichever applies (quick settings tile, widget). */
+        const val ACTION_TOGGLE = "com.aghelan.ghiamat.TOGGLE"
         const val EXTRA_PROFILE_NAME = "profile_name"
 
         /** The running service, used by the latency tester to protect sockets. */
@@ -62,6 +66,16 @@ class AghelanVpnService : VpnService(), CommonPlatform, CommandServerHandler {
         fun stop(context: Context) {
             context.startService(Intent(context, AghelanVpnService::class.java).setAction(ACTION_STOP))
         }
+
+        fun lastProfileName(context: Context): String =
+            context.getSharedPreferences("vpn", MODE_PRIVATE).getString("profile_name", "") ?: ""
+
+        /**
+         * Whether the tile/widget can (re)connect without the app: the app
+         * has connected before (a config exists) and VPN permission holds.
+         */
+        fun canStartWithoutUi(context: Context): Boolean =
+            configFile(context).exists() && prepare(context) == null
     }
 
     // Libbox calls are blocking; keep them off the main thread and serialized.
@@ -74,19 +88,22 @@ class AghelanVpnService : VpnService(), CommonPlatform, CommandServerHandler {
     override val platformContext: Context get() = this
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        when (intent?.action) {
-            ACTION_STOP -> {
-                worker.execute { stopVpn(null) }
-                return START_NOT_STICKY
-            }
-            // ACTION_START, or the system starting us for always-on VPN.
-            else -> {
-                profileName = intent?.getStringExtra(EXTRA_PROFILE_NAME)
-                    ?: getSharedPreferences("vpn", MODE_PRIVATE).getString("profile_name", "") ?: ""
-                getSharedPreferences("vpn", MODE_PRIVATE).edit().putString("profile_name", profileName).apply()
-                showNotification(getString(R.string.vpn_status_connecting))
-                worker.execute { startVpn() }
-            }
+        val action = intent?.action
+        val running = VpnStatusBus.status == VpnStatus.STARTED || VpnStatusBus.status == VpnStatus.STARTING
+        if (action == ACTION_STOP) {
+            worker.execute { stopVpn(null) }
+        } else if (action == ACTION_TOGGLE && running) {
+            // Started through startForegroundService: go foreground before
+            // stopping, as Android requires.
+            showNotification(getString(R.string.vpn_status_disconnecting))
+            worker.execute { stopVpn(null) }
+        } else {
+            // ACTION_START, ACTION_TOGGLE while stopped, or the system
+            // starting us for always-on VPN.
+            profileName = intent?.getStringExtra(EXTRA_PROFILE_NAME) ?: lastProfileName(this)
+            getSharedPreferences("vpn", MODE_PRIVATE).edit().putString("profile_name", profileName).apply()
+            showNotification(getString(R.string.vpn_status_connecting))
+            worker.execute { startVpn() }
         }
         return START_NOT_STICKY
     }
@@ -97,7 +114,7 @@ class AghelanVpnService : VpnService(), CommonPlatform, CommandServerHandler {
             reloadOrFail()
             return
         }
-        VpnStatusBus.post(VpnStatus.STARTING)
+        postStatus(VpnStatus.STARTING)
         try {
             val config = configFile(this).readText()
             LibboxSetup.ensure(this)
@@ -108,7 +125,7 @@ class AghelanVpnService : VpnService(), CommonPlatform, CommandServerHandler {
             commandServer = server
             server.startOrReloadService(config, OverrideOptions())
             active = this
-            VpnStatusBus.post(VpnStatus.STARTED)
+            postStatus(VpnStatus.STARTED)
             showNotification(getString(R.string.vpn_status_connected))
         } catch (e: Exception) {
             Log.e(TAG, "start failed", e)
@@ -119,7 +136,7 @@ class AghelanVpnService : VpnService(), CommonPlatform, CommandServerHandler {
     private fun reloadOrFail() {
         try {
             commandServer?.startOrReloadService(configFile(this).readText(), OverrideOptions())
-            VpnStatusBus.post(VpnStatus.STARTED)
+            postStatus(VpnStatus.STARTED)
             showNotification(getString(R.string.vpn_status_connected))
         } catch (e: Exception) {
             Log.e(TAG, "reload failed", e)
@@ -129,11 +146,11 @@ class AghelanVpnService : VpnService(), CommonPlatform, CommandServerHandler {
 
     private fun stopVpn(error: String?) {
         if (VpnStatusBus.status == VpnStatus.STOPPED && commandServer == null) {
-            VpnStatusBus.post(VpnStatus.STOPPED, error)
+            postStatus(VpnStatus.STOPPED, error)
             stopSelfSafely()
             return
         }
-        VpnStatusBus.post(VpnStatus.STOPPING)
+        postStatus(VpnStatus.STOPPING)
         active = null
         runCatching { tunFd?.close() }
         tunFd = null
@@ -146,8 +163,13 @@ class AghelanVpnService : VpnService(), CommonPlatform, CommandServerHandler {
             DefaultNetworkMonitor.release()
             monitorAcquired = false
         }
-        VpnStatusBus.post(VpnStatus.STOPPED, error)
+        postStatus(VpnStatus.STOPPED, error)
         stopSelfSafely()
+    }
+
+    private fun postStatus(status: VpnStatus, error: String? = null) {
+        VpnStatusBus.post(status, error)
+        StatusSurfaces.refresh(this)
     }
 
     private fun stopSelfSafely() {

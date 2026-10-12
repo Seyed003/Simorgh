@@ -1063,6 +1063,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Custom…'**
   String get dnsCustom;
+
+  /// No description provided for @usage.
+  ///
+  /// In en, this message translates to:
+  /// **'Usage'**
+  String get usage;
+
+  /// No description provided for @usageToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get usageToday;
+
+  /// No description provided for @usageWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 7 days'**
+  String get usageWeek;
+
+  /// No description provided for @usageMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 30 days'**
+  String get usageMonth;
+
+  /// No description provided for @usageChartTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 14 days'**
+  String get usageChartTitle;
+
+  /// No description provided for @usageTapHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a day for details'**
+  String get usageTapHint;
+
+  /// No description provided for @usageDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'By day'**
+  String get usageDaily;
+
+  /// No description provided for @usageEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing recorded yet. Usage is counted while you are connected.'**
+  String get usageEmpty;
+
+  /// No description provided for @usageReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset statistics'**
+  String get usageReset;
+
+  /// No description provided for @usageResetConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all usage statistics?'**
+  String get usageResetConfirm;
+
+  /// No description provided for @cleanIpScan.
+  ///
+  /// In en, this message translates to:
+  /// **'Find clean Cloudflare IP'**
+  String get cleanIpScan;
+
+  /// No description provided for @cleanIpHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Finds Cloudflare addresses your internet can reach. Configs that go through Cloudflare (CDN) can use one instead of their blocked address.'**
+  String get cleanIpHint;
+
+  /// No description provided for @cleanIpTestingHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Tested with {host}'**
+  String cleanIpTestingHost(String host);
+
+  /// No description provided for @cleanIpDisconnectFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect first: the scan has to use your own internet, not the VPN.'**
+  String get cleanIpDisconnectFirst;
+
+  /// No description provided for @cleanIpStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start scan'**
+  String get cleanIpStart;
+
+  /// No description provided for @cleanIpProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Tested {tested} of {total} · {found} working'**
+  String cleanIpProgress(String tested, String total, String found);
+
+  /// No description provided for @cleanIpNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No working address found. Try again later or on another network.'**
+  String get cleanIpNone;
+
+  /// No description provided for @cleanIpUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Make a copy of the config with this IP'**
+  String get cleanIpUse;
+
+  /// No description provided for @cleanIpCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Added “{name}”'**
+  String cleanIpCreated(String name);
+
+  /// No description provided for @copyIp.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy IP'**
+  String get copyIp;
 }
 
 class _AppLocalizationsDelegate

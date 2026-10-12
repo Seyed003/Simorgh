@@ -5,11 +5,20 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../core/utils/context_ext.dart';
 import '../../../core/widgets/dialogs.dart';
+import '../../clean_ip/presentation/clean_ip_page.dart';
 import '../../latency/application/speed_controller.dart';
 import '../application/profiles_controller.dart';
 import '../domain/profile.dart';
 
-enum _ProfileAction { speedTest, showQr, copyLink, copyJson, rename, delete }
+enum _ProfileAction {
+  speedTest,
+  cleanIp,
+  showQr,
+  copyLink,
+  copyJson,
+  rename,
+  delete,
+}
 
 Future<void> showProfileActions(
   BuildContext context,
@@ -38,6 +47,12 @@ Future<void> showProfileActions(
             title: Text(l10n.speedTest),
             onTap: () => Navigator.pop(context, _ProfileAction.speedTest),
           ),
+          if (profile.config.isCdnCandidate)
+            ListTile(
+              leading: const Icon(Icons.radar_rounded),
+              title: Text(l10n.cleanIpScan),
+              onTap: () => Navigator.pop(context, _ProfileAction.cleanIp),
+            ),
           ListTile(
             leading: const Icon(Icons.qr_code_2_rounded),
             title: Text(l10n.showQrCode),
@@ -81,6 +96,10 @@ Future<void> showProfileActions(
   switch (action) {
     case _ProfileAction.speedTest:
       await ref.read(speedProvider.notifier).test([profile.id]);
+    case _ProfileAction.cleanIp:
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => CleanIpPage(profile: profile)),
+      );
     case _ProfileAction.showQr:
       await _showQr(
         context,
