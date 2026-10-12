@@ -32,6 +32,7 @@ class WindowsVpnPlatform implements VpnPlatform {
 
   Process? _process;
   bool _stopRequested = false;
+  Process? _tester;
 
   @override
   CorePlatform get corePlatform => CorePlatform.windows;
@@ -107,7 +108,7 @@ class WindowsVpnPlatform implements VpnPlatform {
 
   /// The core is "connected" once its Clash API answers.
   Future<void> _waitUntilReady(Process process, String configJson) async {
-    final api = _clashApiOf(configJson);
+    final api = ClashApiClient.optionsFromConfig(configJson);
     final deadline = DateTime.now().add(_startupTimeout);
     while (identical(_process, process) && DateTime.now().isBefore(deadline)) {
       if (api == null || await ClashApiClient(api).ping()) {
@@ -155,6 +156,94 @@ class WindowsVpnPlatform implements VpnPlatform {
     }
   }
 
+  @override
+  Future<String?> checkConfig(String configJson) async {
+    final exe = File(coreExecutable);
+    if (!exe.existsSync()) return 'core not found: ${exe.path}';
+    final dir = await _testerDirectory();
+    final file = File('${dir.path}${Platform.pathSeparator}check.json');
+    await file.writeAsString(configJson, flush: true);
+    final result = await Process.run(exe.path, [
+      'check',
+      '-c',
+      file.path,
+      '--disable-color',
+    ]);
+    if (result.exitCode == 0) return null;
+    final output = '${result.stderr}\n${result.stdout}'.trim();
+    return output.isEmpty ? 'exit code ${result.exitCode}' : output;
+  }
+
+  /// The tester is a second, unprivileged sing-box process without TUN.
+  /// `route.auto_detect_interface` in its config binds its sockets to the
+  /// physical interface, so a running tunnel does not wrap measurements.
+  @override
+  Future<void> startTester(String configJson) async {
+    await stopTester();
+    final exe = File(coreExecutable);
+    if (!exe.existsSync()) {
+      throw VpnError(VpnErrorCode.coreMissing, exe.path);
+    }
+    final dir = await _testerDirectory();
+    final file = File('${dir.path}${Platform.pathSeparator}tester.json');
+    await file.writeAsString(configJson, flush: true);
+    final process = await Process.start(exe.path, [
+      'run',
+      '-c',
+      file.path,
+      '-D',
+      dir.path,
+      '--disable-color',
+    ], workingDirectory: dir.path);
+    _tester = process;
+    final output = <String>[];
+    for (final stream in [process.stdout, process.stderr]) {
+      stream
+          .transform(const SystemEncoding().decoder)
+          .transform(const LineSplitter())
+          .listen((line) {
+            output.add(line);
+            if (output.length > _logTail) output.removeAt(0);
+          });
+    }
+    var exited = false;
+    unawaited(process.exitCode.then((_) => exited = true));
+
+    final api = ClashApiClient.optionsFromConfig(configJson);
+    final deadline = DateTime.now().add(_startupTimeout);
+    while (!exited && DateTime.now().isBefore(deadline)) {
+      if (api == null || await ClashApiClient(api).ping()) return;
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    }
+    await stopTester();
+    // Give the output listeners a moment to drain the last lines.
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    throw VpnError(
+      VpnErrorCode.coreExited,
+      output.isEmpty ? 'tester did not start' : output.join('\n'),
+    );
+  }
+
+  @override
+  Future<void> stopTester() async {
+    final tester = _tester;
+    _tester = null;
+    if (tester == null) return;
+    tester.kill();
+    await tester.exitCode.timeout(
+      const Duration(seconds: 5),
+      onTimeout: () => -1,
+    );
+  }
+
+  Future<Directory> _testerDirectory() async {
+    final dir = Directory(
+      '${(await _dataDirectory()).path}${Platform.pathSeparator}tester',
+    );
+    await dir.create(recursive: true);
+    return dir;
+  }
+
   /// `net session` only succeeds in an elevated process.
   static Future<bool> isElevated() async {
     try {
@@ -194,19 +283,5 @@ class WindowsVpnPlatform implements VpnPlatform {
             ? errors.last
             : (_recentLines.isEmpty ? '' : _recentLines.last))
         .trim();
-  }
-
-  static ClashApiOptions? _clashApiOf(String configJson) {
-    final config = jsonDecode(configJson);
-    if (config is! Map) return null;
-    final experimental = config['experimental'];
-    if (experimental is! Map) return null;
-    final api = experimental['clash_api'];
-    if (api is! Map) return null;
-    final controller = api['external_controller'];
-    if (controller is! String) return null;
-    final port = int.tryParse(controller.split(':').last);
-    if (port == null) return null;
-    return ClashApiOptions(port: port, secret: api['secret'] as String? ?? '');
   }
 }

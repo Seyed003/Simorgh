@@ -53,6 +53,17 @@ abstract class VpnPlatform {
   Future<bool> isRunning();
 
   Future<String?> coreVersion();
+
+  /// Validates [configJson] with the core. Returns the core's error message,
+  /// or `null` when the config is valid.
+  Future<String?> checkConfig(String configJson);
+
+  /// Starts a secondary core used only for latency tests: no TUN, its
+  /// sockets bypass a running tunnel. Completes once its Clash API answers;
+  /// throws a [VpnError] when it cannot start.
+  Future<void> startTester(String configJson);
+
+  Future<void> stopTester();
 }
 
 /// Used on platforms without a VPN implementation and in tests.
@@ -80,4 +91,14 @@ class UnsupportedVpnPlatform implements VpnPlatform {
 
   @override
   Future<String?> coreVersion() async => null;
+
+  @override
+  Future<String?> checkConfig(String configJson) async => null;
+
+  @override
+  Future<void> startTester(String configJson) async =>
+      throw const VpnError(VpnErrorCode.unsupportedPlatform);
+
+  @override
+  Future<void> stopTester() async {}
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/singbox/proxy_config.dart';
 import '../../../../core/utils/context_ext.dart';
+import '../../../latency/presentation/latency_badge.dart';
 import '../../domain/profile.dart';
 
 const _badges = {
@@ -101,6 +102,7 @@ class ProfileTile extends StatelessWidget {
                     ],
                   ),
                 ),
+                LatencyBadge(profileId: profile.id),
                 if (selected)
                   Icon(Icons.check_circle_rounded, color: colors.primary),
                 IconButton(

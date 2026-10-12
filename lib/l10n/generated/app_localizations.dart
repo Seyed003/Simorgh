@@ -775,6 +775,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Applied to TLS configs that do not set one'**
   String get fingerprintHint;
+
+  /// No description provided for @testAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Test all servers'**
+  String get testAll;
+
+  /// No description provided for @testServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Test latency'**
+  String get testServer;
+
+  /// No description provided for @testGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Test these servers'**
+  String get testGroup;
+
+  /// No description provided for @stopTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop test'**
+  String get stopTest;
+
+  /// No description provided for @testProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Testing {done}/{total}'**
+  String testProgress(String done, String total);
+
+  /// No description provided for @latencyMs.
+  ///
+  /// In en, this message translates to:
+  /// **'{ms} ms'**
+  String latencyMs(String ms);
+
+  /// No description provided for @latencyTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'Timeout'**
+  String get latencyTimeout;
+
+  /// No description provided for @latencyInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid'**
+  String get latencyInvalid;
+
+  /// No description provided for @latencyError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get latencyError;
+
+  /// No description provided for @sortBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort'**
+  String get sortBy;
+
+  /// No description provided for @sortDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Default order'**
+  String get sortDefault;
+
+  /// No description provided for @sortLatency.
+  ///
+  /// In en, this message translates to:
+  /// **'Fastest first'**
+  String get sortLatency;
 }
 
 class _AppLocalizationsDelegate

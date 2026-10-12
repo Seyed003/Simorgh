@@ -33,6 +33,10 @@ Open-source VPN client for **Android** and **Windows**, powered by the
   (wintun) via `sing-box.exe` with admin rights, tray icon and close-to-tray.
 - **Live stats:** connection timer and upload/download speed and totals from
   the core's Clash API.
+- **Real latency test:** tests every server through the proxy itself (an
+  HTTPS request timed by a separate sing-box test core, so it works with or
+  without the VPN on), shows per-server ms badges, sorts fastest first, and
+  skips configs the core rejects instead of failing the whole run.
 - **Persian + English** with full right-to-left layout, light/dark themes,
   bundled Vazirmatn font.
 - **Connection settings:** remote/direct DNS (DoH, DoT, DoQ, UDP, system),
@@ -143,7 +147,8 @@ SCREENSHOTS=1 flutter test test/screenshots               # render UI screenshot
 
 ### Roadmap (phase 2)
 
-Real ping/speed test of all servers · auto-select best server + failover ·
+~~Real ping test of all servers~~ (done) · speed test · auto-select best
+server + failover ·
 per-app split tunnel · Iran routing rules (domestic direct) · TLS fragment ·
 Mux · DoH presets · Cloudflare clean-IP scanner · usage charts · Android Quick
 Settings tile and widget · scheduled subscription updates.
@@ -178,6 +183,9 @@ are adapted from [sing-box-for-android](https://github.com/SagerNet/sing-box-for
 - **تونل کامل دستگاه:** در اندروید با VpnService و در ویندوز با حالت TUN
   (همراه آیکون سینی سیستم).
 - **آمار زنده:** زمان اتصال و سرعت آپلود/دانلود.
+- **تست پینگ واقعی:** همه‌ی سرورها از داخل خود پراکسی تست می‌شوند (چه VPN
+  روشن باشد چه خاموش)، کنار هر سرور عدد پینگ نمایش داده می‌شود و می‌توان
+  سرورها را از سریع‌ترین مرتب کرد.
 - **فارسی و انگلیسی** با چیدمان کامل راست‌به‌چپ، تم روشن و تیره و فونت وزیرمتن.
 - **بدون SDK اختصاصی گوگل**؛ مناسب برای انتشار در F-Droid.
 

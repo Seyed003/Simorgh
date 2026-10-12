@@ -3,6 +3,8 @@ import 'package:aghelan_ghiamat/core/storage/preferences.dart';
 import 'package:aghelan_ghiamat/features/connection/application/vpn_controller.dart';
 import 'package:aghelan_ghiamat/features/connection/domain/traffic.dart';
 import 'package:aghelan_ghiamat/features/profiles/data/profile_store.dart';
+import 'package:aghelan_ghiamat/features/latency/application/latency_controller.dart';
+import 'package:aghelan_ghiamat/features/latency/application/profile_sort.dart';
 import 'package:aghelan_ghiamat/features/profiles/application/profiles_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -90,6 +92,34 @@ void main() {
     await pump(tester, links: trojanBare, size: const Size(1280, 800));
     expect(find.byType(VerticalDivider), findsOneWidget);
     expect(find.text('bare'), findsWidgets);
+  });
+
+  testWidgets('shows latency badges and sorts fastest first', (tester) async {
+    final (_, container) = await pump(tester, links: '$vlessReality\n$hy2');
+    final ids = container
+        .read(profilesProvider)
+        .value!
+        .profiles
+        .map((p) => p.id)
+        .toList();
+    await tester.runAsync(() async {
+      final prefs = container.read(sharedPreferencesProvider);
+      await prefs.setString(
+        'latency.results',
+        '{"${ids[0]}":{"f":"unreachable","t":1},"${ids[1]}":{"d":87,"t":1}}',
+      );
+      await prefs.setString('profiles.sort', 'latency');
+    });
+    container.invalidate(latencyProvider);
+    container.invalidate(profileSortProvider);
+    await tester.pumpAndSettle();
+
+    expect(find.text('87 ms'), findsOneWidget);
+    expect(find.text('Timeout'), findsOneWidget);
+    final hy2Top = tester.getTopLeft(find.text('HY2')).dy;
+    final realityTop = tester.getTopLeft(find.text('Reality 🇳🇱').last).dy;
+    expect(hy2Top, lessThan(realityTop));
+    expect(find.byIcon(Icons.speed_rounded), findsOneWidget);
   });
 
   testWidgets('add sheet offers import options', (tester) async {

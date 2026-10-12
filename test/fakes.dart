@@ -53,4 +53,23 @@ class FakeVpnPlatform implements VpnPlatform {
 
   @override
   Future<String?> coreVersion() async => '1.14.3';
+
+  /// Errors returned by [checkConfig], consumed one per call.
+  final checkErrors = <String>[];
+  final checkedConfigs = <String>[];
+  final testerConfigs = <String>[];
+  int stopTesterCalls = 0;
+
+  @override
+  Future<String?> checkConfig(String configJson) async {
+    checkedConfigs.add(configJson);
+    return checkErrors.isEmpty ? null : checkErrors.removeAt(0);
+  }
+
+  @override
+  Future<void> startTester(String configJson) async =>
+      testerConfigs.add(configJson);
+
+  @override
+  Future<void> stopTester() async => stopTesterCalls++;
 }

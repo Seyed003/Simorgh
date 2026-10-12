@@ -400,4 +400,44 @@ class AppLocalizationsFa extends AppLocalizations {
   @override
   String get fingerprintHint =>
       'روی کانفیگ‌های TLS که اثرانگشت ندارند اعمال می‌شود';
+
+  @override
+  String get testAll => 'تست همه‌ی سرورها';
+
+  @override
+  String get testServer => 'تست پینگ';
+
+  @override
+  String get testGroup => 'تست این سرورها';
+
+  @override
+  String get stopTest => 'توقف تست';
+
+  @override
+  String testProgress(String done, String total) {
+    return 'در حال تست $done از $total';
+  }
+
+  @override
+  String latencyMs(String ms) {
+    return '$ms ms';
+  }
+
+  @override
+  String get latencyTimeout => 'پاسخ نداد';
+
+  @override
+  String get latencyInvalid => 'نامعتبر';
+
+  @override
+  String get latencyError => 'خطا';
+
+  @override
+  String get sortBy => 'مرتب‌سازی';
+
+  @override
+  String get sortDefault => 'ترتیب پیش‌فرض';
+
+  @override
+  String get sortLatency => 'سریع‌ترین اول';
 }

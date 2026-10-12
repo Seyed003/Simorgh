@@ -409,4 +409,44 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fingerprintHint => 'Applied to TLS configs that do not set one';
+
+  @override
+  String get testAll => 'Test all servers';
+
+  @override
+  String get testServer => 'Test latency';
+
+  @override
+  String get testGroup => 'Test these servers';
+
+  @override
+  String get stopTest => 'Stop test';
+
+  @override
+  String testProgress(String done, String total) {
+    return 'Testing $done/$total';
+  }
+
+  @override
+  String latencyMs(String ms) {
+    return '$ms ms';
+  }
+
+  @override
+  String get latencyTimeout => 'Timeout';
+
+  @override
+  String get latencyInvalid => 'Invalid';
+
+  @override
+  String get latencyError => 'Error';
+
+  @override
+  String get sortBy => 'Sort';
+
+  @override
+  String get sortDefault => 'Default order';
+
+  @override
+  String get sortLatency => 'Fastest first';
 }
