@@ -1,0 +1,231 @@
+{
+  "@@locale": "en",
+  "appTitle": "Aghelan Ghiamat",
+  "statusDisconnected": "Disconnected",
+  "statusConnecting": "Connecting…",
+  "statusConnected": "Connected",
+  "statusDisconnecting": "Disconnecting…",
+  "statusError": "Connection failed",
+  "tapToConnect": "Tap to connect",
+  "tapToDisconnect": "Tap to disconnect",
+  "connect": "Connect",
+  "disconnect": "Disconnect",
+  "upload": "Upload",
+  "download": "Download",
+  "totalTraffic": "Total",
+  "connectedFor": "Connected for {duration}",
+  "@connectedFor": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "configs": "Configs",
+  "noConfigs": "No configs yet",
+  "noConfigsHint": "Import a share link, a QR code or a subscription URL to get started.",
+  "selectConfigFirst": "Select a config first",
+  "activeConfig": "Active config",
+  "manualGroup": "Manual",
+  "addConfig": "Add config",
+  "importFromClipboard": "Import from clipboard",
+  "scanQrCode": "Scan QR code",
+  "importFromImage": "Import QR from image",
+  "addSubscription": "Add subscription",
+  "pasteManually": "Paste links manually",
+  "pasteHint": "vless://…, vmess://…, trojan://…, ss://…, hy2://…",
+  "subscriptionUrl": "Subscription URL",
+  "subscriptionName": "Name (optional)",
+  "importedCount": "{count, plural, =0{No configs imported} =1{1 config imported} other{{count} configs imported}}",
+  "@importedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "skippedCount": "{count, plural, =1{1 line skipped} other{{count} lines skipped}}",
+  "@skippedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "clipboardEmpty": "Clipboard is empty",
+  "nothingToImport": "No supported config found",
+  "invalidUrl": "Invalid URL",
+  "importFailed": "Import failed: {error}",
+  "@importFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "qrNotFound": "No QR code found in the image",
+  "cameraUnavailable": "Camera scanning is not available on this platform",
+  "subscriptions": "Subscriptions",
+  "updateSubscription": "Update",
+  "updateAllSubscriptions": "Update all subscriptions",
+  "subscriptionUpdated": "{name} updated",
+  "@subscriptionUpdated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lastUpdated": "Last updated: {time}",
+  "@lastUpdated": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "neverUpdated": "Never updated",
+  "trafficUsage": "{used} of {total}",
+  "@trafficUsage": {
+    "placeholders": {
+      "used": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "expiresOn": "Expires {date}",
+  "@expiresOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "add": "Add",
+  "cancel": "Cancel",
+  "save": "Save",
+  "delete": "Delete",
+  "edit": "Edit",
+  "rename": "Rename",
+  "share": "Share",
+  "copyLink": "Copy link",
+  "copyJson": "Copy sing-box JSON",
+  "copied": "Copied to clipboard",
+  "showQrCode": "Show QR code",
+  "close": "Close",
+  "retry": "Retry",
+  "deleteConfirmTitle": "Delete?",
+  "deleteConfigConfirm": "Delete \"{name}\"?",
+  "@deleteConfigConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteSubscriptionConfirm": "Delete subscription \"{name}\" and all of its configs?",
+  "@deleteSubscriptionConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteAll": "Delete all",
+  "settings": "Settings",
+  "appearance": "Appearance",
+  "language": "Language",
+  "languagePersian": "فارسی",
+  "languageEnglish": "English",
+  "theme": "Theme",
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "connectionSettings": "Connection",
+  "remoteDns": "Remote DNS",
+  "directDns": "Direct DNS",
+  "enableIpv6": "IPv6",
+  "enableIpv6Hint": "Route IPv6 traffic through the tunnel",
+  "logLevel": "Core log level",
+  "mixedPort": "Local proxy port",
+  "mixedPortHint": "HTTP + SOCKS5 proxy on 127.0.0.1",
+  "tunStack": "TUN stack",
+  "about": "About",
+  "version": "Version",
+  "coreVersion": "sing-box core",
+  "license": "License",
+  "sourceCode": "Source code",
+  "errorVpnPermissionDenied": "VPN permission was denied",
+  "errorAdminRequired": "Run the app as administrator to use TUN mode",
+  "errorCoreMissing": "sing-box core was not found next to the app",
+  "errorCoreExited": "sing-box stopped unexpectedly: {message}",
+  "@errorCoreExited": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "errorUnsupportedPlatform": "This platform is not supported yet",
+  "trayShow": "Show",
+  "trayQuit": "Quit",
+  "qrScanHint": "Point the camera at a QR code",
+  "cameraPermissionDenied": "Camera permission was denied",
+  "updatingSubscriptions": "Updating subscriptions…",
+  "subscriptionUpdateFailed": "Could not update: {names}",
+  "@subscriptionUpdateFailed": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "configCount": "{count, plural, =1{1 config} other{{count} configs}}",
+  "@configCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "unlimited": "Unlimited",
+  "expired": "Expired",
+  "daysLeft": "{count, plural, =1{1 day left} other{{count} days left}}",
+  "@daysLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "resetDefaults": "Reset to defaults",
+  "disabled": "Disabled",
+  "dnsAddressHint": "e.g. https://1.1.1.1/dns-query, tls://8.8.8.8, 1.1.1.1, local",
+  "portHint": "1024–65535, empty to disable",
+  "invalidValue": "Invalid value",
+  "errorInvalidConfig": "This config cannot be started: {message}",
+  "@errorInvalidConfig": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "errorUnknown": "Unexpected error: {message}",
+  "@errorUnknown": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "working": "Please wait…",
+  "name": "Name",
+  "copyLinkUnavailable": "This config was imported from JSON and has no share link",
+  "noActiveConfig": "No config selected",
+  "fingerprint": "TLS fingerprint (uTLS)",
+  "fingerprintHint": "Applied to TLS configs that do not set one"
+}
