@@ -41,17 +41,39 @@ class TestConfigBuilder {
   final ClashApiOptions clashApi;
 
   /// [proxies] maps caller ids to the configs to test, in order.
-  TestConfig build(Map<String, ProxyConfig> proxies) {
+  ///
+  /// [localPorts] (by caller id) additionally exposes a server as an
+  /// HTTP/SOCKS proxy on 127.0.0.1, e.g. for download speed tests.
+  TestConfig build(
+    Map<String, ProxyConfig> proxies, {
+    Map<String, int> localPorts = const {},
+  }) {
     final outbounds = <Map<String, Object?>>[];
     final endpoints = <Map<String, Object?>>[];
     final tagToId = <String, String>{};
     final outboundTags = <String>[];
     final endpointTags = <String>[];
 
+    final inbounds = <Map<String, Object?>>[];
+    final rules = <Map<String, Object?>>[];
+
     var i = 0;
     for (final MapEntry(key: id, value: proxy) in proxies.entries) {
       final tag = 't${i++}';
       tagToId[tag] = id;
+      final port = localPorts[id];
+      if (port != null) {
+        inbounds.add({
+          'type': 'mixed',
+          'tag': 'in-$tag',
+          'listen': '127.0.0.1',
+          'listen_port': port,
+        });
+        rules.add({
+          'inbound': ['in-$tag'],
+          'outbound': tag,
+        });
+      }
       final outbound = prepareOutbound(proxy, tag: tag, options: options);
       if (proxy.protocol.isEndpoint) {
         endpoints.add(outbound);
@@ -72,9 +94,11 @@ class TestConfigBuilder {
         'servers': directDnsServers(options),
         'strategy': options.enableIpv6 ? 'prefer_ipv4' : 'ipv4_only',
       },
+      if (inbounds.isNotEmpty) 'inbounds': inbounds,
       if (endpoints.isNotEmpty) 'endpoints': endpoints,
       'outbounds': outbounds,
       'route': {
+        if (rules.isNotEmpty) 'rules': rules,
         'final': ConfigTags.direct,
         // Bind test sockets to the physical interface so a running VPN
         // tunnel does not wrap the measurement.

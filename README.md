@@ -37,6 +37,11 @@ Open-source VPN client for **Android** and **Windows**, powered by the
   HTTPS request timed by a separate sing-box test core, so it works with or
   without the VPN on), shows per-server ms badges, sorts fastest first, and
   skips configs the core rejects instead of failing the whole run.
+- **Download speed test:** per server (its menu) or per subscription
+  (skipping servers the latency test found dead). Each server is exposed by
+  the test core as its own local proxy and measured one at a time for up to
+  10 s; results in Mbps stay on the server tiles. Latency and speed runs take
+  turns on the test core instead of stopping each other.
 - **Auto mode (fastest server + failover):** picks the fastest servers from
   recent latency results (testing first if they are missing or older than an
   hour) and hands up to 10 of them to the core as a `urltest` group. The core
@@ -165,7 +170,7 @@ SCREENSHOTS=1 flutter test test/screenshots               # render UI screenshot
 
 ~~Real ping test of all servers~~ (done) · ~~auto-select best server +
 failover~~ (done) · ~~Iran routing rules (domestic direct)~~ (done) · ~~TLS fragment~~ (done) ·
-~~Mux~~ (done) · speed test · per-app split tunnel · DoH presets · Cloudflare clean-IP scanner · usage charts · Android Quick
+~~Mux~~ (done) · ~~speed test~~ (done) · per-app split tunnel · DoH presets · Cloudflare clean-IP scanner · usage charts · Android Quick
 Settings tile and widget · scheduled subscription updates.
 
 ### License
@@ -201,6 +206,8 @@ are adapted from [sing-box-for-android](https://github.com/SagerNet/sing-box-for
 - **تست پینگ واقعی:** همه‌ی سرورها از داخل خود پراکسی تست می‌شوند (چه VPN
   روشن باشد چه خاموش)، کنار هر سرور عدد پینگ نمایش داده می‌شود و می‌توان
   سرورها را از سریع‌ترین مرتب کرد.
+- **تست سرعت دانلود:** برای هر سرور (از منوی سرور) یا همه‌ی سرورهای یک
+  سابسکریپشن. سرعت به مگابیت بر ثانیه زیر هر سرور نمایش داده می‌شود.
 - **حالت خودکار (سریع‌ترین سرور):** برنامه سریع‌ترین سرورها را انتخاب می‌کند
   و اگر سرور فعلی قطع شد، خودش به سرور سالم بعدی می‌رود. در صفحه اصلی نمایش
   داده می‌شود که الان از کدام سرور استفاده می‌شود.

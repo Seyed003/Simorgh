@@ -9,6 +9,7 @@ import '../../profiles/application/profiles_controller.dart';
 import '../../settings/application/core_options_controller.dart';
 import '../data/latency_tester.dart';
 import '../domain/latency_result.dart';
+import 'tester_lock.dart';
 
 final latencyProvider = NotifierProvider<LatencyController, LatencyState>(
   LatencyController.new,
@@ -66,22 +67,26 @@ class LatencyController extends Notifier<LatencyState> {
       total: targets.length,
       done: 0,
     );
-    _run = ref
-        .read(latencyTesterFactoryProvider)()
-        .run(targets)
-        .listen(
-          (update) {
-            state = state.copyWith(
-              results: {...state.results, update.id: update.result},
-              testing: {...state.testing}..remove(update.id),
-              done: state.done + 1,
-            );
-          },
-          onDone: _finish,
-          onError: (Object _) => _finish(),
-          cancelOnError: true,
-        );
-    return done.future;
+    await ref.read(testerLockProvider).run(() {
+      // Cancelled while waiting for a speed test to finish.
+      if (!identical(_done, done)) return Future<void>.value();
+      _run = ref
+          .read(latencyTesterFactoryProvider)()
+          .run(targets)
+          .listen(
+            (update) {
+              state = state.copyWith(
+                results: {...state.results, update.id: update.result},
+                testing: {...state.testing}..remove(update.id),
+                done: state.done + 1,
+              );
+            },
+            onDone: _finish,
+            onError: (Object _) => _finish(),
+            cancelOnError: true,
+          );
+      return done.future;
+    });
   }
 
   /// Stops the current run, keeping results gathered so far.

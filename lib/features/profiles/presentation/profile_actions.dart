@@ -5,10 +5,11 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../core/utils/context_ext.dart';
 import '../../../core/widgets/dialogs.dart';
+import '../../latency/application/speed_controller.dart';
 import '../application/profiles_controller.dart';
 import '../domain/profile.dart';
 
-enum _ProfileAction { showQr, copyLink, copyJson, rename, delete }
+enum _ProfileAction { speedTest, showQr, copyLink, copyJson, rename, delete }
 
 Future<void> showProfileActions(
   BuildContext context,
@@ -31,6 +32,11 @@ Future<void> showProfileActions(
               overflow: TextOverflow.ellipsis,
               style: context.theme.textTheme.titleMedium,
             ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.download_rounded),
+            title: Text(l10n.speedTest),
+            onTap: () => Navigator.pop(context, _ProfileAction.speedTest),
           ),
           ListTile(
             leading: const Icon(Icons.qr_code_2_rounded),
@@ -73,6 +79,8 @@ Future<void> showProfileActions(
 
   final controller = ref.read(profilesProvider.notifier);
   switch (action) {
+    case _ProfileAction.speedTest:
+      await ref.read(speedProvider.notifier).test([profile.id]);
     case _ProfileAction.showQr:
       await _showQr(
         context,

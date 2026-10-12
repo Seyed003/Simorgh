@@ -498,4 +498,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get muxProtocol => 'Mux protocol';
+
+  @override
+  String get speedTest => 'Speed test';
+
+  @override
+  String get speedTestGroup => 'Speed test these servers';
+
+  @override
+  String speedTestProgress(String current, String total) {
+    return 'Speed test $current of $total';
+  }
+
+  @override
+  String get speedTesting => 'Measuring speed…';
+
+  @override
+  String get speedFailed => 'Speed test failed';
 }

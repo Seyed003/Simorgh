@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/singbox/proxy_config.dart';
 import '../../../../core/utils/context_ext.dart';
 import '../../../latency/presentation/latency_badge.dart';
+import '../../../latency/presentation/speed_badge.dart';
 import '../../domain/profile.dart';
 
 const _badges = {
@@ -99,6 +100,7 @@ class ProfileTile extends StatelessWidget {
                               : colors.onSurfaceVariant,
                         ),
                       ),
+                      SpeedBadge(profileId: profile.id),
                     ],
                   ),
                 ),

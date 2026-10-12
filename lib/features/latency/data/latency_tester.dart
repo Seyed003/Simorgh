@@ -7,8 +7,8 @@ import '../../../core/singbox/proxy_config.dart';
 import '../../../core/utils/net_utils.dart';
 import '../../connection/data/clash_api_client.dart';
 import '../../connection/data/vpn_platform.dart';
-import '../../connection/domain/vpn_state.dart';
 import '../domain/latency_result.dart';
+import 'tester_core.dart';
 
 typedef LatencyUpdate = ({String id, LatencyResult result});
 
@@ -45,38 +45,18 @@ class LatencyTester {
       secret: randomHexSecret(),
     );
     final builder = TestConfigBuilder(options: options, clashApi: api);
-    final pending = Map.of(proxies);
-
-    // One invalid server must not sink the whole run: sing-box names the
-    // outbound it rejects, so drop that one and validate again.
-    TestConfig? config;
-    while (pending.isNotEmpty) {
-      final candidate = builder.build(pending);
-      final error = await platform.checkConfig(candidate.encode());
-      if (error == null) {
-        config = candidate;
-        break;
-      }
-      final blamed = candidate.idBlamedBy(error);
-      if (blamed == null) {
-        for (final id in pending.keys) {
-          yield _failure(id, LatencyFailure.coreError);
-        }
-        return;
-      }
-      pending.remove(blamed);
-      yield _failure(blamed, LatencyFailure.invalidConfig);
+    final (:config, :rejected) = await startTestCore(
+      platform: platform,
+      proxies: proxies,
+      build: builder.build,
+    );
+    for (final MapEntry(key: id, value: reason) in rejected.entries) {
+      yield _failure(id, switch (reason) {
+        CoreRejection.invalidConfig => LatencyFailure.invalidConfig,
+        CoreRejection.coreError => LatencyFailure.coreError,
+      });
     }
     if (config == null) return;
-
-    try {
-      await platform.startTester(config.encode());
-    } on VpnError {
-      for (final id in pending.keys) {
-        yield _failure(id, LatencyFailure.coreError);
-      }
-      return;
-    }
 
     final client = _clientFactory(api);
     final results = StreamController<LatencyUpdate>();

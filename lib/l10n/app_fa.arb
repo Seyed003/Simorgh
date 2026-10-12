@@ -138,5 +138,10 @@
   "fragmentStrong": "قوی",
   "mux": "Mux (چندگانه‌سازی)",
   "muxHint": "چند اتصال را از چند مسیر محدود می‌فرستد و صفحه‌ها سریع‌تر باز می‌شوند. سرور باید از آن پشتیبانی کند؛ اگر سرورها کار نکردند، خاموشش کنید",
-  "muxProtocol": "پروتکل Mux"
+  "muxProtocol": "پروتکل Mux",
+  "speedTest": "تست سرعت",
+  "speedTestGroup": "تست سرعت این سرورها",
+  "speedTestProgress": "تست سرعت {current} از {total}",
+  "speedTesting": "در حال اندازه‌گیری سرعت…",
+  "speedFailed": "تست سرعت ناموفق"
 }

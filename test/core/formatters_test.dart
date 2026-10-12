@@ -16,6 +16,13 @@ void main() {
     });
   });
 
+  test('formatMbps converts bytes to megabits', () {
+    expect(formatMbps(1250000, locale: 'en'), '10 Mbps');
+    expect(formatMbps(306250, locale: 'en'), '2.5 Mbps');
+    expect(formatMbps(25000000, locale: 'en'), '200 Mbps');
+    expect(formatMbps(306250, locale: 'fa'), '۲٫۵ Mbps');
+  });
+
   test('formatSpeed appends per second', () {
     expect(formatSpeed(2048, locale: 'en'), '2 KB/s');
   });

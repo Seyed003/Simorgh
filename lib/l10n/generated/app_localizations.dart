@@ -931,6 +931,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Mux protocol'**
   String get muxProtocol;
+
+  /// No description provided for @speedTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Speed test'**
+  String get speedTest;
+
+  /// No description provided for @speedTestGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Speed test these servers'**
+  String get speedTestGroup;
+
+  /// No description provided for @speedTestProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Speed test {current} of {total}'**
+  String speedTestProgress(String current, String total);
+
+  /// No description provided for @speedTesting.
+  ///
+  /// In en, this message translates to:
+  /// **'Measuring speed…'**
+  String get speedTesting;
+
+  /// No description provided for @speedFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Speed test failed'**
+  String get speedFailed;
 }
 
 class _AppLocalizationsDelegate

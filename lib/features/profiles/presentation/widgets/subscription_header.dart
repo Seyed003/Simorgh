@@ -5,7 +5,7 @@ import '../../../../core/utils/context_ext.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../domain/subscription.dart';
 
-enum SubscriptionAction { update, test, rename, delete }
+enum SubscriptionAction { update, test, speedTest, rename, delete }
 
 /// Group header with name, quota usage and expiry for a subscription.
 class SubscriptionHeader extends StatelessWidget {
@@ -82,6 +82,10 @@ class SubscriptionHeader extends StatelessWidget {
                   PopupMenuItem(
                     value: SubscriptionAction.test,
                     child: Text(l10n.testGroup),
+                  ),
+                  PopupMenuItem(
+                    value: SubscriptionAction.speedTest,
+                    child: Text(l10n.speedTestGroup),
                   ),
                   PopupMenuItem(
                     value: SubscriptionAction.rename,

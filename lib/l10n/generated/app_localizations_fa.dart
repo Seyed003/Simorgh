@@ -489,4 +489,21 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get muxProtocol => 'پروتکل Mux';
+
+  @override
+  String get speedTest => 'تست سرعت';
+
+  @override
+  String get speedTestGroup => 'تست سرعت این سرورها';
+
+  @override
+  String speedTestProgress(String current, String total) {
+    return 'تست سرعت $current از $total';
+  }
+
+  @override
+  String get speedTesting => 'در حال اندازه‌گیری سرعت…';
+
+  @override
+  String get speedFailed => 'تست سرعت ناموفق';
 }

@@ -3,12 +3,15 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:aghelan_ghiamat/core/singbox/builder/core_options.dart';
+import 'package:aghelan_ghiamat/core/singbox/proxy_config.dart';
 import 'package:aghelan_ghiamat/core/storage/preferences.dart';
 import 'package:aghelan_ghiamat/features/connection/application/vpn_controller.dart';
 import 'package:aghelan_ghiamat/features/connection/data/clash_api_client.dart';
 import 'package:aghelan_ghiamat/features/connection/domain/vpn_state.dart';
 import 'package:aghelan_ghiamat/features/latency/application/latency_controller.dart';
+import 'package:aghelan_ghiamat/features/latency/application/speed_controller.dart';
 import 'package:aghelan_ghiamat/features/latency/data/latency_tester.dart';
+import 'package:aghelan_ghiamat/features/latency/data/speed_tester.dart';
 import 'package:aghelan_ghiamat/features/profiles/application/profiles_controller.dart';
 import 'package:aghelan_ghiamat/features/profiles/data/profile_store.dart';
 import 'package:aghelan_ghiamat/features/profiles/domain/profiles_state.dart';
@@ -23,8 +26,21 @@ import '../latency/latency_tester_test.dart' show stubApi;
 Future<void> _settle() =>
     Future<void>.delayed(const Duration(milliseconds: 20));
 
+/// A speed run that never finishes on its own.
+class _EndlessSpeedTester extends SpeedTester {
+  _EndlessSpeedTester(FakeVpnPlatform platform)
+    : super(platform: platform, options: const CoreOptions());
+
+  bool cancelled = false;
+
+  @override
+  Stream<SpeedUpdate> run(Map<String, ProxyConfig> proxies) =>
+      StreamController<SpeedUpdate>(onCancel: () => cancelled = true).stream;
+}
+
 void main() {
   late FakeVpnPlatform platform;
+  _EndlessSpeedTester? endlessSpeed;
 
   /// Three servers; [delays] are what the test core measures for them
   /// (`t0`..`t2` in import order).
@@ -50,6 +66,9 @@ void main() {
             options: const CoreOptions(),
             clientFactory: api ?? stubApi(delays),
           ),
+        ),
+        speedTesterFactoryProvider.overrideWithValue(
+          () => endlessSpeed = _EndlessSpeedTester(platform),
         ),
       ],
     );
@@ -107,6 +126,22 @@ void main() {
     await _settle();
     // Only 2 of 3 answered, so the servers are measured again first.
     expect(platform.testerConfigs, hasLength(2));
+    expect(c.read(vpnControllerProvider).status, VpnStatus.connected);
+  });
+
+  test('a running speed test does not hold up the search', () async {
+    final c = await create();
+    unawaited(c.read(speedProvider.notifier).test(ids(c)));
+    await _settle();
+    expect(c.read(speedProvider).running, isTrue);
+
+    await c
+        .read(vpnControllerProvider.notifier)
+        .connect()
+        .timeout(const Duration(seconds: 2));
+    await _settle();
+    expect(endlessSpeed!.cancelled, isTrue);
+    expect(c.read(speedProvider).running, isFalse);
     expect(c.read(vpnControllerProvider).status, VpnStatus.connected);
   });
 

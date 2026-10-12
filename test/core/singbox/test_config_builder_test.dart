@@ -33,6 +33,27 @@ void main() {
     });
   });
 
+  test('local ports expose servers as proxies for speed tests', () {
+    final config = builder.build(
+      {'a': LinkParser.parse(vlessReality), 'b': LinkParser.parse(hy2)},
+      localPorts: {'b': 20001},
+    );
+    expect(config.json['inbounds'], [
+      {
+        'type': 'mixed',
+        'tag': 'in-t1',
+        'listen': '127.0.0.1',
+        'listen_port': 20001,
+      },
+    ]);
+    expect((config.json['route']! as Map)['rules'], [
+      {
+        'inbound': ['in-t1'],
+        'outbound': 't1',
+      },
+    ]);
+  });
+
   test('maps sing-box errors back to the blamed server', () {
     final config = builder.build({
       'a': LinkParser.parse(vlessReality),

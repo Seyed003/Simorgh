@@ -277,5 +277,20 @@
   "fragmentStrong": "Strong",
   "mux": "Mux (multiplex)",
   "muxHint": "Sends many connections through a few; pages open faster. Your server must support it: if servers stop working, turn it off",
-  "muxProtocol": "Mux protocol"
+  "muxProtocol": "Mux protocol",
+  "speedTest": "Speed test",
+  "speedTestGroup": "Speed test these servers",
+  "speedTestProgress": "Speed test {current} of {total}",
+  "speedTesting": "Measuring speed…",
+  "speedFailed": "Speed test failed",
+  "@speedTestProgress": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  }
 }
