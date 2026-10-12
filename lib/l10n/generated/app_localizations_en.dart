@@ -713,4 +713,68 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get autoReconnecting => 'The connection dropped; reconnecting…';
+
+  @override
+  String get tools => 'Tools';
+
+  @override
+  String get backupSave => 'Save a backup';
+
+  @override
+  String get backupSaveHint =>
+      'Configs, subscriptions and settings in one file. Keep it private: it holds your server passwords.';
+
+  @override
+  String get backupRestore => 'Restore from a backup';
+
+  @override
+  String get backupRestoreHint =>
+      'Adds the backup\'s configs to yours and takes over its settings';
+
+  @override
+  String get backupSaved => 'Backup saved';
+
+  @override
+  String backupRestored(String count) {
+    return 'Restored: $count configs added';
+  }
+
+  @override
+  String get backupInvalid => 'This file is not a backup of this app';
+
+  @override
+  String get logs => 'Logs';
+
+  @override
+  String get logsHint =>
+      'What the core is doing; shows why a config does not connect';
+
+  @override
+  String get logsEmpty =>
+      'No logs yet. They appear while connected; Advanced › Log level sets how detailed they are.';
+
+  @override
+  String get logsProblemsOnly => 'Warnings and errors only';
+
+  @override
+  String get copyAll => 'Copy all';
+
+  @override
+  String get importLinkTitle => 'Add from link';
+
+  @override
+  String importConfigsQuestion(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count configs found. Add them?',
+      one: '1 config found. Add it?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String importSubscriptionQuestion(String host) {
+    return 'Add the subscription from $host?';
+  }
 }

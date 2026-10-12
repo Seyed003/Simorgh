@@ -705,4 +705,67 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get autoReconnecting => 'اتصال قطع شد؛ در حال وصل شدن دوباره…';
+
+  @override
+  String get tools => 'ابزارها';
+
+  @override
+  String get backupSave => 'ذخیره نسخه پشتیبان';
+
+  @override
+  String get backupSaveHint =>
+      'کانفیگ‌ها، سابسکریپشن‌ها و تنظیمات در یک فایل. آن را جای امنی نگه دارید؛ رمز سرورهای شما داخل آن است.';
+
+  @override
+  String get backupRestore => 'بازگردانی از نسخه پشتیبان';
+
+  @override
+  String get backupRestoreHint =>
+      'کانفیگ‌های فایل به کانفیگ‌های شما اضافه و تنظیمات آن جایگزین می‌شود';
+
+  @override
+  String get backupSaved => 'نسخه پشتیبان ذخیره شد';
+
+  @override
+  String backupRestored(String count) {
+    return 'بازگردانی شد: $count کانفیگ اضافه شد';
+  }
+
+  @override
+  String get backupInvalid => 'این فایل، نسخه پشتیبان این برنامه نیست';
+
+  @override
+  String get logs => 'گزارش‌ها (لاگ)';
+
+  @override
+  String get logsHint => 'کارهای هسته؛ نشان می‌دهد چرا یک کانفیگ وصل نمی‌شود';
+
+  @override
+  String get logsEmpty =>
+      'هنوز لاگی نیست. لاگ‌ها هنگام اتصال نمایش داده می‌شوند؛ میزان جزئیات در «پیشرفته › سطح لاگ» است.';
+
+  @override
+  String get logsProblemsOnly => 'فقط هشدارها و خطاها';
+
+  @override
+  String get copyAll => 'کپی همه';
+
+  @override
+  String get importLinkTitle => 'افزودن از لینک';
+
+  @override
+  String importConfigsQuestion(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count کانفیگ پیدا شد. اضافه شوند؟',
+      one: '۱ کانفیگ پیدا شد. اضافه شود؟',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String importSubscriptionQuestion(String host) {
+    return 'سابسکریپشن $host اضافه شود؟';
+  }
 }

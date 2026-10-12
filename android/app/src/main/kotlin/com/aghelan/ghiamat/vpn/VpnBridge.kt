@@ -18,7 +18,8 @@ import java.util.concurrent.Executors
  *
  * Methods (`com.aghelan.ghiamat/vpn`): start {config, name}, stop,
  * isRunning, coreVersion, workingDirectory.
- * Events (`com.aghelan.ghiamat/vpn_events`): {status, error?}.
+ * Events (`com.aghelan.ghiamat/vpn_events`): {status, error?}; core logs
+ * on `com.aghelan.ghiamat/logs` (see [LogStream]).
  */
 class VpnBridge(private val activity: Activity) : MethodChannel.MethodCallHandler, EventChannel.StreamHandler {
     companion object {
@@ -37,6 +38,7 @@ class VpnBridge(private val activity: Activity) : MethodChannel.MethodCallHandle
         val messenger = engine.dartExecutor.binaryMessenger
         MethodChannel(messenger, "com.aghelan.ghiamat/vpn").setMethodCallHandler(this)
         EventChannel(messenger, "com.aghelan.ghiamat/vpn_events").setStreamHandler(this)
+        EventChannel(messenger, "com.aghelan.ghiamat/logs").setStreamHandler(LogStream())
     }
 
     fun detach() {

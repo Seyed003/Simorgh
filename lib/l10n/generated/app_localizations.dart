@@ -1303,6 +1303,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The connection dropped; reconnecting…'**
   String get autoReconnecting;
+
+  /// No description provided for @tools.
+  ///
+  /// In en, this message translates to:
+  /// **'Tools'**
+  String get tools;
+
+  /// No description provided for @backupSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save a backup'**
+  String get backupSave;
+
+  /// No description provided for @backupSaveHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Configs, subscriptions and settings in one file. Keep it private: it holds your server passwords.'**
+  String get backupSaveHint;
+
+  /// No description provided for @backupRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore from a backup'**
+  String get backupRestore;
+
+  /// No description provided for @backupRestoreHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Adds the backup\'s configs to yours and takes over its settings'**
+  String get backupRestoreHint;
+
+  /// No description provided for @backupSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup saved'**
+  String get backupSaved;
+
+  /// No description provided for @backupRestored.
+  ///
+  /// In en, this message translates to:
+  /// **'Restored: {count} configs added'**
+  String backupRestored(String count);
+
+  /// No description provided for @backupInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'This file is not a backup of this app'**
+  String get backupInvalid;
+
+  /// No description provided for @logs.
+  ///
+  /// In en, this message translates to:
+  /// **'Logs'**
+  String get logs;
+
+  /// No description provided for @logsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What the core is doing; shows why a config does not connect'**
+  String get logsHint;
+
+  /// No description provided for @logsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No logs yet. They appear while connected; Advanced › Log level sets how detailed they are.'**
+  String get logsEmpty;
+
+  /// No description provided for @logsProblemsOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Warnings and errors only'**
+  String get logsProblemsOnly;
+
+  /// No description provided for @copyAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy all'**
+  String get copyAll;
+
+  /// No description provided for @importLinkTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add from link'**
+  String get importLinkTitle;
+
+  /// No description provided for @importConfigsQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 config found. Add it?} other{{count} configs found. Add them?}}'**
+  String importConfigsQuestion(int count);
+
+  /// No description provided for @importSubscriptionQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Add the subscription from {host}?'**
+  String importSubscriptionQuestion(String host);
 }
 
 class _AppLocalizationsDelegate

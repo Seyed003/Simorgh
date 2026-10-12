@@ -248,6 +248,67 @@ class ProfilesController extends AsyncNotifier<ProfilesState> {
     );
   }
 
+  /// Adds what a backup has and this device lacks: subscriptions by URL
+  /// (with their configs) and manual configs by content. Everything gets
+  /// fresh ids. Returns the number of configs added.
+  Future<int> restore(ProfilesState backup) async {
+    final current = await _current();
+    final knownUrls = current.subscriptions.map((s) => s.url).toSet();
+    final subscriptionIds = <String, String>{};
+    final subscriptions = <Subscription>[];
+    for (final s in backup.subscriptions) {
+      if (!knownUrls.add(s.url)) continue;
+      final id = _uuid.v4();
+      subscriptionIds[s.id] = id;
+      subscriptions.add(
+        Subscription(
+          id: id,
+          name: s.name,
+          url: s.url,
+          info: s.info,
+          lastUpdated: s.lastUpdated,
+        ),
+      );
+    }
+    final existing = current.manualProfiles().map(_fingerprint).toSet();
+    final profileIds = <String, String>{};
+    final added = <Profile>[];
+    for (final p in backup.profiles) {
+      final String? subscriptionId;
+      if (p.subscriptionId == null) {
+        if (!existing.add(_fingerprint(p))) continue;
+        subscriptionId = null;
+      } else {
+        subscriptionId = subscriptionIds[p.subscriptionId];
+        if (subscriptionId == null) continue;
+      }
+      final id = _uuid.v4();
+      profileIds[p.id] = id;
+      added.add(
+        Profile(
+          id: id,
+          config: p.config,
+          createdAt: p.createdAt,
+          subscriptionId: subscriptionId,
+        ),
+      );
+    }
+    if (added.isEmpty && subscriptions.isEmpty) return 0;
+    final restoredSelection = backup.isAuto
+        ? ProfilesState.autoId
+        : profileIds[backup.selectedId];
+    await _commit(
+      current.copyWith(
+        profiles: [...current.profiles, ...added],
+        subscriptions: [...current.subscriptions, ...subscriptions],
+        selectedId: current.hasSelection
+            ? null
+            : () => restoredSelection ?? added.firstOrNull?.id,
+      ),
+    );
+    return added.length;
+  }
+
   Future<void> deleteSubscription(String id) async {
     final current = await _current();
     final remaining = current.profiles

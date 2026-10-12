@@ -1,13 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/branding/phoenix.dart';
+import '../../core/platform/system_bridge.dart';
 import '../../core/theme/glass.dart';
 import '../../core/utils/context_ext.dart';
 import '../connection/application/vpn_controller.dart';
 import '../connection/domain/vpn_state.dart';
 import '../connection/presentation/vpn_error_text.dart';
 import '../home/presentation/home_page.dart';
+import '../profiles/application/incoming_import.dart';
+import '../profiles/presentation/import_actions.dart';
 import '../profiles/presentation/profile_list.dart';
 import '../settings/presentation/settings_page.dart';
 import '../usage/application/usage_controller.dart';
@@ -40,6 +45,24 @@ class AppShell extends ConsumerStatefulWidget {
 class _AppShellState extends ConsumerState<AppShell> {
   /// Tabs are built the first time they are opened, then kept alive.
   final _opened = <AppTab>{AppTab.home};
+  StreamSubscription<String>? _shared;
+
+  @override
+  void initState() {
+    super.initState();
+    // Config links tapped in other apps and text shared to this one.
+    _shared = ref.read(systemBridgeProvider).sharedText().listen((text) {
+      final incoming = IncomingImport.parse(text);
+      if (incoming == null || !mounted) return;
+      unawaited(ImportActions(context, ref).fromIncoming(incoming));
+    });
+  }
+
+  @override
+  void dispose() {
+    unawaited(_shared?.cancel());
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

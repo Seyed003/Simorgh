@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:aghelan_ghiamat/core/platform/system_bridge.dart';
+import 'package:aghelan_ghiamat/features/logs/domain/core_log_line.dart';
 import 'package:aghelan_ghiamat/core/singbox/builder/core_options.dart';
 import 'package:aghelan_ghiamat/features/connection/data/vpn_platform.dart';
 import 'package:aghelan_ghiamat/features/connection/domain/vpn_state.dart';
@@ -23,6 +25,11 @@ class FakeVpnPlatform implements VpnPlatform {
   int stopCalls = 0;
 
   void emit(VpnPlatformEvent event) => _events.add(event);
+
+  final logs = StreamController<CoreLogLine>.broadcast();
+
+  @override
+  Stream<CoreLogLine> coreLogs() => logs.stream;
 
   @override
   CorePlatform get corePlatform => CorePlatform.android;
@@ -72,4 +79,12 @@ class FakeVpnPlatform implements VpnPlatform {
 
   @override
   Future<void> stopTester() async => stopTesterCalls++;
+}
+
+/// System integration with links "shared" by the test.
+class FakeSystemBridge extends SystemBridge {
+  final shared = StreamController<String>();
+
+  @override
+  Stream<String> sharedText() => shared.stream;
 }

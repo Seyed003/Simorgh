@@ -1,4 +1,5 @@
 import 'package:aghelan_ghiamat/app.dart';
+import 'package:aghelan_ghiamat/core/platform/system_bridge.dart';
 import 'package:aghelan_ghiamat/core/storage/preferences.dart';
 import 'package:aghelan_ghiamat/features/connection/application/vpn_controller.dart';
 import 'package:aghelan_ghiamat/features/connection/domain/traffic.dart';
@@ -27,6 +28,7 @@ void main() {
     WidgetTester tester, {
     String links = '',
     Size size = const Size(420, 900),
+    SystemBridge system = const SystemBridge(),
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -39,6 +41,7 @@ void main() {
         sharedPreferencesProvider.overrideWithValue(prefs),
         profileStoreProvider.overrideWithValue(MemoryProfileStore()),
         vpnPlatformProvider.overrideWithValue(platform),
+        systemBridgeProvider.overrideWithValue(system),
         trafficProvider.overrideWith(
           (ref) => Stream.value(
             const TrafficStats(
@@ -202,5 +205,25 @@ void main() {
     await tester.tap(find.byTooltip('Add config'));
     await tester.pumpAndSettle();
     expect(find.text('Import from clipboard'), findsOneWidget);
+  });
+
+  testWidgets('a link opened from another app is added after asking', (
+    tester,
+  ) async {
+    final system = FakeSystemBridge();
+    final (_, container) = await pump(tester, system: system);
+    system.shared.add(trojanBare);
+    await tester.pumpAndSettle();
+    expect(find.text('1 config found. Add it?'), findsOneWidget);
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Add'));
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    });
+    await tester.pumpAndSettle();
+    expect(container.read(profilesProvider).value!.profiles, hasLength(1));
+
+    system.shared.add('not a config');
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsNothing);
   });
 }
