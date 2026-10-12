@@ -314,4 +314,90 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get trayQuit => 'خروج';
+
+  @override
+  String get qrScanHint => 'دوربین را به سمت کد QR بگیرید';
+
+  @override
+  String get cameraPermissionDenied => 'مجوز دوربین داده نشد';
+
+  @override
+  String get updatingSubscriptions => 'در حال به‌روزرسانی سابسکریپشن‌ها…';
+
+  @override
+  String subscriptionUpdateFailed(String names) {
+    return 'به‌روزرسانی ناموفق: $names';
+  }
+
+  @override
+  String configCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count کانفیگ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get unlimited => 'نامحدود';
+
+  @override
+  String get expired => 'منقضی شده';
+
+  @override
+  String daysLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count روز باقی‌مانده',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get resetDefaults => 'بازگشت به پیش‌فرض';
+
+  @override
+  String get disabled => 'غیرفعال';
+
+  @override
+  String get dnsAddressHint =>
+      'مثلاً https://1.1.1.1/dns-query یا tls://8.8.8.8 یا 1.1.1.1 یا local';
+
+  @override
+  String get portHint => '۱۰۲۴ تا ۶۵۵۳۵، خالی برای غیرفعال‌سازی';
+
+  @override
+  String get invalidValue => 'مقدار نامعتبر است';
+
+  @override
+  String errorInvalidConfig(String message) {
+    return 'این کانفیگ قابل اجرا نیست: $message';
+  }
+
+  @override
+  String errorUnknown(String message) {
+    return 'خطای غیرمنتظره: $message';
+  }
+
+  @override
+  String get working => 'لطفاً صبر کنید…';
+
+  @override
+  String get name => 'نام';
+
+  @override
+  String get copyLinkUnavailable =>
+      'این کانفیگ از JSON وارد شده و لینک اشتراک ندارد';
+
+  @override
+  String get noActiveConfig => 'کانفیگی انتخاب نشده';
+
+  @override
+  String get fingerprint => 'اثرانگشت TLS (uTLS)';
+
+  @override
+  String get fingerprintHint =>
+      'روی کانفیگ‌های TLS که اثرانگشت ندارند اعمال می‌شود';
 }

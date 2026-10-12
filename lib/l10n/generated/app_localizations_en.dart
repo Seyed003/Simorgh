@@ -322,4 +322,91 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get trayQuit => 'Quit';
+
+  @override
+  String get qrScanHint => 'Point the camera at a QR code';
+
+  @override
+  String get cameraPermissionDenied => 'Camera permission was denied';
+
+  @override
+  String get updatingSubscriptions => 'Updating subscriptions…';
+
+  @override
+  String subscriptionUpdateFailed(String names) {
+    return 'Could not update: $names';
+  }
+
+  @override
+  String configCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count configs',
+      one: '1 config',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get unlimited => 'Unlimited';
+
+  @override
+  String get expired => 'Expired';
+
+  @override
+  String daysLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days left',
+      one: '1 day left',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get resetDefaults => 'Reset to defaults';
+
+  @override
+  String get disabled => 'Disabled';
+
+  @override
+  String get dnsAddressHint =>
+      'e.g. https://1.1.1.1/dns-query, tls://8.8.8.8, 1.1.1.1, local';
+
+  @override
+  String get portHint => '1024–65535, empty to disable';
+
+  @override
+  String get invalidValue => 'Invalid value';
+
+  @override
+  String errorInvalidConfig(String message) {
+    return 'This config cannot be started: $message';
+  }
+
+  @override
+  String errorUnknown(String message) {
+    return 'Unexpected error: $message';
+  }
+
+  @override
+  String get working => 'Please wait…';
+
+  @override
+  String get name => 'Name';
+
+  @override
+  String get copyLinkUnavailable =>
+      'This config was imported from JSON and has no share link';
+
+  @override
+  String get noActiveConfig => 'No config selected';
+
+  @override
+  String get fingerprint => 'TLS fingerprint (uTLS)';
+
+  @override
+  String get fingerprintHint => 'Applied to TLS configs that do not set one';
 }

@@ -5,6 +5,7 @@ import '../../../core/constants/app_info.dart';
 import '../../../core/utils/context_ext.dart';
 import '../application/settings_controller.dart';
 import '../domain/app_settings.dart';
+import 'connection_settings.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -67,11 +68,19 @@ class SettingsPage extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
+          _SectionHeader(l10n.connectionSettings),
+          const ConnectionSettingsSection(),
+          const SizedBox(height: 16),
           _SectionHeader(l10n.about),
           ListTile(
             leading: const Icon(Icons.info_outline_rounded),
             title: Text(l10n.appTitle),
             subtitle: const Text('${AppInfo.name} · ${AppInfo.nameFa}'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.tag_rounded),
+            title: Text(l10n.version),
+            trailing: const Text(AppInfo.version),
           ),
           ListTile(
             leading: const Icon(Icons.memory_rounded),

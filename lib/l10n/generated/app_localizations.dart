@@ -649,6 +649,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Quit'**
   String get trayQuit;
+
+  /// No description provided for @qrScanHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Point the camera at a QR code'**
+  String get qrScanHint;
+
+  /// No description provided for @cameraPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera permission was denied'**
+  String get cameraPermissionDenied;
+
+  /// No description provided for @updatingSubscriptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating subscriptions…'**
+  String get updatingSubscriptions;
+
+  /// No description provided for @subscriptionUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update: {names}'**
+  String subscriptionUpdateFailed(String names);
+
+  /// No description provided for @configCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 config} other{{count} configs}}'**
+  String configCount(int count);
+
+  /// No description provided for @unlimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited'**
+  String get unlimited;
+
+  /// No description provided for @expired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get expired;
+
+  /// No description provided for @daysLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day left} other{{count} days left}}'**
+  String daysLeft(int count);
+
+  /// No description provided for @resetDefaults.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to defaults'**
+  String get resetDefaults;
+
+  /// No description provided for @disabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Disabled'**
+  String get disabled;
+
+  /// No description provided for @dnsAddressHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. https://1.1.1.1/dns-query, tls://8.8.8.8, 1.1.1.1, local'**
+  String get dnsAddressHint;
+
+  /// No description provided for @portHint.
+  ///
+  /// In en, this message translates to:
+  /// **'1024–65535, empty to disable'**
+  String get portHint;
+
+  /// No description provided for @invalidValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid value'**
+  String get invalidValue;
+
+  /// No description provided for @errorInvalidConfig.
+  ///
+  /// In en, this message translates to:
+  /// **'This config cannot be started: {message}'**
+  String errorInvalidConfig(String message);
+
+  /// No description provided for @errorUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unexpected error: {message}'**
+  String errorUnknown(String message);
+
+  /// No description provided for @working.
+  ///
+  /// In en, this message translates to:
+  /// **'Please wait…'**
+  String get working;
+
+  /// No description provided for @name.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get name;
+
+  /// No description provided for @copyLinkUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This config was imported from JSON and has no share link'**
+  String get copyLinkUnavailable;
+
+  /// No description provided for @noActiveConfig.
+  ///
+  /// In en, this message translates to:
+  /// **'No config selected'**
+  String get noActiveConfig;
+
+  /// No description provided for @fingerprint.
+  ///
+  /// In en, this message translates to:
+  /// **'TLS fingerprint (uTLS)'**
+  String get fingerprint;
+
+  /// No description provided for @fingerprintHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Applied to TLS configs that do not set one'**
+  String get fingerprintHint;
 }
 
 class _AppLocalizationsDelegate

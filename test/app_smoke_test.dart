@@ -1,5 +1,6 @@
 import 'package:aghelan_ghiamat/app.dart';
 import 'package:aghelan_ghiamat/core/storage/preferences.dart';
+import 'package:aghelan_ghiamat/features/profiles/data/profile_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,7 +11,10 @@ Future<void> _pumpApp(WidgetTester tester, Map<String, Object> prefs) async {
   final instance = await mockPreferences(prefs);
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [sharedPreferencesProvider.overrideWithValue(instance)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(instance),
+        profileStoreProvider.overrideWithValue(MemoryProfileStore()),
+      ],
       child: const AghelanApp(),
     ),
   );
