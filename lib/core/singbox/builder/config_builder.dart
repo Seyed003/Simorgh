@@ -54,26 +54,14 @@ class SingBoxConfigBuilder {
   String buildJson(ProxyConfig proxy) =>
       const JsonEncoder.withIndent('  ').convert(build(proxy));
 
-  Map<String, Object?> _prepareOutbound(ProxyConfig proxy) {
-    // Deep copy so the stored profile is never mutated.
-    final outbound = (jsonDecode(jsonEncode(proxy.outbound)) as Map)
-        .cast<String, Object?>();
-    outbound['tag'] = ConfigTags.proxy;
-    final fingerprint = options.defaultFingerprint;
-    final tls = outbound['tls'];
-    if (fingerprint != null &&
-        _tcpTlsTypes.contains(outbound['type']) &&
-        tls is Map &&
-        tls['enabled'] == true &&
-        tls['utls'] == null) {
-      tls['utls'] = {'enabled': true, 'fingerprint': fingerprint};
-    }
-    return outbound;
-  }
+  Map<String, Object?> _prepareOutbound(ProxyConfig proxy) => prepareOutbound(
+    proxy,
+    tag: ConfigTags.proxy,
+    defaultFingerprint: options.defaultFingerprint,
+  );
 
   Map<String, Object?> _dns() {
     final servers = <Map<String, Object?>>[];
-    var needsLocal = false;
 
     final remote = parseDnsServer(options.remoteDns, tag: ConfigTags.dnsRemote);
     if (remote['type'] != 'local') {
@@ -82,16 +70,9 @@ class SingBoxConfigBuilder {
         remote['domain_resolver'] = ConfigTags.dnsDirect;
       }
     }
-    final direct = parseDnsServer(options.directDns, tag: ConfigTags.dnsDirect);
-    if (direct['type'] != 'local' &&
-        !isIpAddress(direct['server']! as String)) {
-      direct['domain_resolver'] = ConfigTags.dnsLocal;
-      needsLocal = true;
-    }
     servers
       ..add(remote)
-      ..add(direct);
-    if (needsLocal) servers.add({'type': 'local', 'tag': ConfigTags.dnsLocal});
+      ..addAll(directDnsServers(options));
 
     return {
       'servers': servers,
@@ -139,10 +120,7 @@ class SingBoxConfigBuilder {
       ],
       'final': ConfigTags.proxy,
       'auto_detect_interface': true,
-      'default_domain_resolver': {
-        'server': ConfigTags.dnsDirect,
-        'strategy': options.enableIpv6 ? 'prefer_ipv4' : 'ipv4_only',
-      },
+      'default_domain_resolver': defaultDomainResolver(options),
     };
   }
 
@@ -161,3 +139,43 @@ class SingBoxConfigBuilder {
     };
   }
 }
+
+/// Copies [proxy]'s outbound with [tag], applying the default uTLS
+/// fingerprint to TCP TLS protocols that do not set one. The stored profile
+/// is never mutated.
+Map<String, Object?> prepareOutbound(
+  ProxyConfig proxy, {
+  required String tag,
+  String? defaultFingerprint,
+}) {
+  final outbound = (jsonDecode(jsonEncode(proxy.outbound)) as Map)
+      .cast<String, Object?>();
+  outbound['tag'] = tag;
+  final tls = outbound['tls'];
+  if (defaultFingerprint != null &&
+      _tcpTlsTypes.contains(outbound['type']) &&
+      tls is Map &&
+      tls['enabled'] == true &&
+      tls['utls'] == null) {
+    tls['utls'] = {'enabled': true, 'fingerprint': defaultFingerprint};
+  }
+  return outbound;
+}
+
+/// The direct DNS server (plus a `local` resolver when it is a hostname).
+List<Map<String, Object?>> directDnsServers(CoreOptions options) {
+  final direct = parseDnsServer(options.directDns, tag: ConfigTags.dnsDirect);
+  if (direct['type'] == 'local' || isIpAddress(direct['server']! as String)) {
+    return [direct];
+  }
+  direct['domain_resolver'] = ConfigTags.dnsLocal;
+  return [
+    direct,
+    {'type': 'local', 'tag': ConfigTags.dnsLocal},
+  ];
+}
+
+Map<String, Object?> defaultDomainResolver(CoreOptions options) => {
+  'server': ConfigTags.dnsDirect,
+  'strategy': options.enableIpv6 ? 'prefer_ipv4' : 'ipv4_only',
+};

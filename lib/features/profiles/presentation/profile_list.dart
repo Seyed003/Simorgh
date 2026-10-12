@@ -7,6 +7,9 @@ import '../application/profiles_controller.dart';
 import '../domain/profile.dart';
 import '../domain/profiles_state.dart';
 import '../domain/subscription.dart';
+import '../../latency/application/latency_controller.dart';
+import '../../latency/application/profile_sort.dart';
+import '../../latency/presentation/latency_badge.dart';
 import 'import_actions.dart';
 import 'profile_actions.dart';
 import 'widgets/profile_tile.dart';
@@ -38,6 +41,10 @@ class ProfileList extends ConsumerWidget {
                 ),
               ),
               const Spacer(),
+              if ((async.value?.profiles ?? const []).isNotEmpty) ...[
+                const TestAllButton(),
+                const _SortButton(),
+              ],
               if ((async.value?.subscriptions ?? const []).isNotEmpty)
                 IconButton(
                   tooltip: l10n.updateAllSubscriptions,
@@ -105,7 +112,12 @@ class ProfileList extends ConsumerWidget {
       },
     );
 
-    final manual = state.manualProfiles();
+    final sort = ref.watch(profileSortProvider);
+    final results = ref.watch(latencyProvider.select((s) => s.results));
+    List<Profile> sorted(List<Profile> list) =>
+        sortProfiles(list, sort, results);
+
+    final manual = sorted(state.manualProfiles());
     if (manual.isNotEmpty) {
       widgets
         ..add(
@@ -116,7 +128,7 @@ class ProfileList extends ConsumerWidget {
         ..add(tiles(manual));
     }
     for (final subscription in state.subscriptions) {
-      final profiles = state.profilesOf(subscription.id);
+      final profiles = sorted(state.profilesOf(subscription.id));
       widgets
         ..add(
           SliverToBoxAdapter(
@@ -144,6 +156,11 @@ class ProfileList extends ConsumerWidget {
     switch (action) {
       case SubscriptionAction.update:
         await ImportActions(context, ref).updateSubscription(subscription.id);
+      case SubscriptionAction.test:
+        final state = await ref.read(profilesProvider.future);
+        await ref
+            .read(latencyProvider.notifier)
+            .test(state.profilesOf(subscription.id).map((p) => p.id));
       case SubscriptionAction.rename:
         final name = await textInputDialog(
           context,
@@ -165,6 +182,34 @@ class ProfileList extends ConsumerWidget {
         );
         if (ok) await controller.deleteSubscription(subscription.id);
     }
+  }
+}
+
+class _SortButton extends ConsumerWidget {
+  const _SortButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final current = ref.watch(profileSortProvider);
+    return PopupMenuButton<ProfileSort>(
+      tooltip: l10n.sortBy,
+      icon: const Icon(Icons.sort_rounded),
+      initialValue: current,
+      onSelected: ref.read(profileSortProvider.notifier).set,
+      itemBuilder: (context) => [
+        CheckedPopupMenuItem(
+          value: ProfileSort.defaultOrder,
+          checked: current == ProfileSort.defaultOrder,
+          child: Text(l10n.sortDefault),
+        ),
+        CheckedPopupMenuItem(
+          value: ProfileSort.latency,
+          checked: current == ProfileSort.latency,
+          child: Text(l10n.sortLatency),
+        ),
+      ],
+    );
   }
 }
 

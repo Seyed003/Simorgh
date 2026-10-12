@@ -112,5 +112,17 @@
   "copyLinkUnavailable": "این کانفیگ از JSON وارد شده و لینک اشتراک ندارد",
   "noActiveConfig": "کانفیگی انتخاب نشده",
   "fingerprint": "اثرانگشت TLS (uTLS)",
-  "fingerprintHint": "روی کانفیگ‌های TLS که اثرانگشت ندارند اعمال می‌شود"
+  "fingerprintHint": "روی کانفیگ‌های TLS که اثرانگشت ندارند اعمال می‌شود",
+  "testAll": "تست همه‌ی سرورها",
+  "testServer": "تست پینگ",
+  "testGroup": "تست این سرورها",
+  "stopTest": "توقف تست",
+  "testProgress": "در حال تست {done} از {total}",
+  "latencyMs": "{ms} ms",
+  "latencyTimeout": "پاسخ نداد",
+  "latencyInvalid": "نامعتبر",
+  "latencyError": "خطا",
+  "sortBy": "مرتب‌سازی",
+  "sortDefault": "ترتیب پیش‌فرض",
+  "sortLatency": "سریع‌ترین اول"
 }

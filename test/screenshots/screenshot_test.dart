@@ -9,6 +9,7 @@ import 'package:aghelan_ghiamat/core/storage/preferences.dart';
 import 'package:aghelan_ghiamat/features/connection/application/vpn_controller.dart';
 import 'package:aghelan_ghiamat/features/connection/domain/traffic.dart';
 import 'package:aghelan_ghiamat/features/connection/domain/vpn_state.dart';
+import 'package:aghelan_ghiamat/features/latency/application/latency_controller.dart';
 import 'package:aghelan_ghiamat/features/profiles/application/profiles_controller.dart';
 import 'package:aghelan_ghiamat/features/profiles/data/profile_store.dart';
 import 'package:flutter/material.dart';
@@ -99,6 +100,17 @@ void main() {
               .importText(
                 '$vlessReality\n$vmessWsTls\n$hy2\n$tuic\n$wireguard',
               );
+          final ids = container
+              .read(profilesProvider)
+              .value!
+              .profiles
+              .map((p) => p.id)
+              .toList();
+          await prefs.setString(
+            'latency.results',
+            '{"${ids[0]}":{"d":142,"t":1},"${ids[1]}":{"d":486,"t":1},"${ids[2]}":{"f":"unreachable","t":1},"${ids[3]}":{"d":1240,"t":1}}',
+          );
+          container.invalidate(latencyProvider);
           if (connected) {
             await container.read(vpnControllerProvider.notifier).connect();
             await Future<void>.delayed(const Duration(milliseconds: 50));

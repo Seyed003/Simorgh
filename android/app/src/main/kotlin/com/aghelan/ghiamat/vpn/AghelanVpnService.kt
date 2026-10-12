@@ -9,52 +9,29 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
-import android.net.ConnectivityManager
 import android.net.IpPrefix
-import android.net.NetworkCapabilities
 import android.net.ProxyInfo
 import android.net.VpnService
 import android.os.Build
-import android.os.Process
-import android.provider.Settings
-import android.system.OsConstants
 import android.util.Log
 import com.aghelan.ghiamat.MainActivity
 import com.aghelan.ghiamat.R
-import io.nekohasekai.libbox.BridgeOptions
-import io.nekohasekai.libbox.BridgeSession
 import io.nekohasekai.libbox.CommandServer
 import io.nekohasekai.libbox.CommandServerHandler
-import io.nekohasekai.libbox.ConnectionOwner
-import io.nekohasekai.libbox.InterfaceUpdateListener
 import io.nekohasekai.libbox.Libbox
-import io.nekohasekai.libbox.LocalDNSTransport
-import io.nekohasekai.libbox.NeighborUpdateListener
-import io.nekohasekai.libbox.NetworkInterfaceIterator
 import io.nekohasekai.libbox.OverrideOptions
-import io.nekohasekai.libbox.PlatformInterface
-import io.nekohasekai.libbox.PlatformUser
 import io.nekohasekai.libbox.RoutePrefix
-import io.nekohasekai.libbox.ShellSession
-import io.nekohasekai.libbox.StringIterator
 import io.nekohasekai.libbox.SystemProxyStatus
 import io.nekohasekai.libbox.TunOptions
-import io.nekohasekai.libbox.WIFIState
 import java.io.File
-import java.net.Inet6Address
 import java.net.InetAddress
-import java.net.InetSocketAddress
-import java.net.InterfaceAddress
-import java.net.NetworkInterface
 import java.util.concurrent.Executors
-import io.nekohasekai.libbox.Notification as LibboxNotification
-import io.nekohasekai.libbox.NetworkInterface as LibboxNetworkInterface
 
 /**
  * Runs sing-box (libbox) inside Android's VpnService. The TUN file
  * descriptor is created here in [openTun] and handed to the core.
  */
-class AghelanVpnService : VpnService(), PlatformInterface, CommandServerHandler {
+class AghelanVpnService : VpnService(), CommonPlatform, CommandServerHandler {
     companion object {
         private const val TAG = "AghelanVpn"
         private const val NOTIFICATION_ID = 1
@@ -63,6 +40,11 @@ class AghelanVpnService : VpnService(), PlatformInterface, CommandServerHandler 
         const val ACTION_START = "com.aghelan.ghiamat.START"
         const val ACTION_STOP = "com.aghelan.ghiamat.STOP"
         const val EXTRA_PROFILE_NAME = "profile_name"
+
+        /** The running service, used by the latency tester to protect sockets. */
+        @Volatile
+        var active: AghelanVpnService? = null
+            private set
 
         fun configFile(context: Context) = File(context.filesDir, "active_config.json")
 
@@ -85,10 +67,11 @@ class AghelanVpnService : VpnService(), PlatformInterface, CommandServerHandler 
     // Libbox calls are blocking; keep them off the main thread and serialized.
     private val worker = Executors.newSingleThreadExecutor()
     private var commandServer: CommandServer? = null
+    private var monitorAcquired = false
     private var tunFd: android.os.ParcelFileDescriptor? = null
     private var profileName = ""
 
-    private val connectivity by lazy { getSystemService(ConnectivityManager::class.java) }
+    override val platformContext: Context get() = this
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
@@ -118,11 +101,13 @@ class AghelanVpnService : VpnService(), PlatformInterface, CommandServerHandler 
         try {
             val config = configFile(this).readText()
             LibboxSetup.ensure(this)
-            DefaultNetworkMonitor.start(this)
+            DefaultNetworkMonitor.acquire(this)
+            monitorAcquired = true
             val server = CommandServer(this, this)
             server.start()
             commandServer = server
             server.startOrReloadService(config, OverrideOptions())
+            active = this
             VpnStatusBus.post(VpnStatus.STARTED)
             showNotification(getString(R.string.vpn_status_connected))
         } catch (e: Exception) {
@@ -149,6 +134,7 @@ class AghelanVpnService : VpnService(), PlatformInterface, CommandServerHandler 
             return
         }
         VpnStatusBus.post(VpnStatus.STOPPING)
+        active = null
         runCatching { tunFd?.close() }
         tunFd = null
         commandServer?.let { server ->
@@ -156,7 +142,10 @@ class AghelanVpnService : VpnService(), PlatformInterface, CommandServerHandler 
             runCatching { server.close() }
         }
         commandServer = null
-        DefaultNetworkMonitor.stop()
+        if (monitorAcquired) {
+            DefaultNetworkMonitor.release()
+            monitorAcquired = false
+        }
         VpnStatusBus.post(VpnStatus.STOPPED, error)
         stopSelfSafely()
     }
@@ -225,8 +214,6 @@ class AghelanVpnService : VpnService(), PlatformInterface, CommandServerHandler 
     // endregion
 
     // region PlatformInterface
-
-    override fun localDNSTransport(): LocalDNSTransport = LocalResolver
 
     override fun usePlatformAutoDetectInterfaceControl(): Boolean = true
 
@@ -319,130 +306,6 @@ class AghelanVpnService : VpnService(), PlatformInterface, CommandServerHandler 
         return pfd.fd
     }
 
-    override fun useProcFS(): Boolean = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
-
-    override fun findConnectionOwner(
-        ipProtocol: Int,
-        sourceAddress: String,
-        sourcePort: Int,
-        destinationAddress: String,
-        destinationPort: Int,
-    ): ConnectionOwner {
-        val uid = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            connectivity.getConnectionOwnerUid(
-                ipProtocol,
-                InetSocketAddress(sourceAddress, sourcePort),
-                InetSocketAddress(destinationAddress, destinationPort),
-            )
-        } else {
-            error("android: connection owner lookup needs API 29")
-        }
-        if (uid == Process.INVALID_UID) error("android: connection owner not found")
-        val packages = packageManager.getPackagesForUid(uid)?.toList().orEmpty()
-        return ConnectionOwner().apply {
-            userId = uid
-            userName = packages.firstOrNull() ?: ""
-            setAndroidPackageNames(StringArray(packages.iterator()))
-        }
-    }
-
-    override fun startDefaultInterfaceMonitor(listener: InterfaceUpdateListener) {
-        DefaultNetworkMonitor.setListener(listener)
-    }
-
-    override fun closeDefaultInterfaceMonitor(listener: InterfaceUpdateListener) {
-        DefaultNetworkMonitor.setListener(null)
-    }
-
-    override fun getInterfaces(): NetworkInterfaceIterator {
-        val systemInterfaces = NetworkInterface.getNetworkInterfaces()?.toList().orEmpty()
-        val result = mutableListOf<LibboxNetworkInterface>()
-        for (network in connectivity.allNetworks) {
-            val link = connectivity.getLinkProperties(network) ?: continue
-            val caps = connectivity.getNetworkCapabilities(network) ?: continue
-            val system = systemInterfaces.find { it.name == link.interfaceName } ?: continue
-            result += LibboxNetworkInterface().apply {
-                name = link.interfaceName
-                index = system.index
-                runCatching { mtu = system.mtu }
-                dnsServer = StringArray(link.dnsServers.mapNotNull { it.hostAddress }.iterator())
-                gateway = StringArray(
-                    link.routes.filter { it.destination.prefixLength == 0 }
-                        .mapNotNull { it.gateway }
-                        .filterNot { it.isAnyLocalAddress }
-                        .mapNotNull { it.hostAddress }
-                        .iterator(),
-                )
-                type = when {
-                    caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> Libbox.InterfaceTypeWIFI
-                    caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> Libbox.InterfaceTypeCellular
-                    caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> Libbox.InterfaceTypeEthernet
-                    else -> Libbox.InterfaceTypeOther
-                }
-                addresses = StringArray(system.interfaceAddresses.map { it.toPrefix() }.iterator())
-                var dumpFlags = 0
-                if (caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
-                    dumpFlags = OsConstants.IFF_UP or OsConstants.IFF_RUNNING
-                }
-                if (system.isLoopback) dumpFlags = dumpFlags or OsConstants.IFF_LOOPBACK
-                if (system.isPointToPoint) dumpFlags = dumpFlags or OsConstants.IFF_POINTOPOINT
-                if (system.supportsMulticast()) dumpFlags = dumpFlags or OsConstants.IFF_MULTICAST
-                flags = dumpFlags
-                metered = !caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
-            }
-        }
-        return InterfaceArray(result.iterator())
-    }
-
-    override fun underNetworkExtension(): Boolean = false
-
-    override fun includeAllNetworks(): Boolean = false
-
-    override fun readWIFIState(): WIFIState? = null
-
-    override fun clearDNSCache() {}
-
-    override fun sendNotification(notification: LibboxNotification) {
-        Log.i(TAG, "core notification: ${notification.title}: ${notification.body}")
-    }
-
-    override fun cancelNotification(identifier: String, typeID: Int) {}
-
-    override fun startNeighborMonitor(listener: NeighborUpdateListener?) {}
-
-    override fun closeNeighborMonitor(listener: NeighborUpdateListener?) {}
-
-    override fun registerMyInterface(name: String?) {}
-
-    override fun usePlatformShell(): Boolean = false
-
-    override fun checkPlatformShell() {
-        error("platform shell is not supported")
-    }
-
-    override fun openShellSession(
-        user: PlatformUser?,
-        command: String?,
-        environ: StringIterator?,
-        term: String?,
-        rows: Int,
-        cols: Int,
-    ): ShellSession = error("platform shell is not supported")
-
-    override fun lookupUser(username: String?): PlatformUser = error("user lookup is not supported")
-
-    override fun lookupSFTPServer(): String = error("sftp is not supported")
-
-    override fun readSystemSSHHostKey(): String = error("not supported")
-
-    override fun tailscaleHostname(): String =
-        Settings.Global.getString(contentResolver, Settings.Global.DEVICE_NAME)?.takeIf { it.isNotBlank() }
-            ?: "${Build.MANUFACTURER} ${Build.MODEL}"
-
-    override fun usePlatformBridge(): Boolean = false
-
-    override fun createBridge(options: BridgeOptions?): BridgeSession = error("bridge is not supported")
-
     // endregion
 
     // region CommandServerHandler
@@ -469,26 +332,7 @@ class AghelanVpnService : VpnService(), PlatformInterface, CommandServerHandler 
 
     // endregion
 
-    class StringArray(private val iterator: Iterator<String>) : StringIterator {
-        override fun len(): Int = 0
-
-        override fun hasNext(): Boolean = iterator.hasNext()
-
-        override fun next(): String = iterator.next()
-    }
-
-    private class InterfaceArray(private val iterator: Iterator<LibboxNetworkInterface>) : NetworkInterfaceIterator {
-        override fun hasNext(): Boolean = iterator.hasNext()
-
-        override fun next(): LibboxNetworkInterface = iterator.next()
-    }
-
     @SuppressLint("NewApi")
     private fun RoutePrefix.toIpPrefix() = IpPrefix(InetAddress.getByName(address()), prefix())
 
-    private fun InterfaceAddress.toPrefix(): String = if (address is Inet6Address) {
-        "${Inet6Address.getByAddress(address.address).hostAddress}/$networkPrefixLength"
-    } else {
-        "${address.hostAddress}/$networkPrefixLength"
-    }
 }

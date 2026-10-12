@@ -227,5 +227,34 @@
   "copyLinkUnavailable": "This config was imported from JSON and has no share link",
   "noActiveConfig": "No config selected",
   "fingerprint": "TLS fingerprint (uTLS)",
-  "fingerprintHint": "Applied to TLS configs that do not set one"
+  "fingerprintHint": "Applied to TLS configs that do not set one",
+  "testAll": "Test all servers",
+  "testServer": "Test latency",
+  "testGroup": "Test these servers",
+  "stopTest": "Stop test",
+  "testProgress": "Testing {done}/{total}",
+  "@testProgress": {
+    "placeholders": {
+      "done": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "latencyMs": "{ms} ms",
+  "@latencyMs": {
+    "placeholders": {
+      "ms": {
+        "type": "String"
+      }
+    }
+  },
+  "latencyTimeout": "Timeout",
+  "latencyInvalid": "Invalid",
+  "latencyError": "Error",
+  "sortBy": "Sort",
+  "sortDefault": "Default order",
+  "sortLatency": "Fastest first"
 }

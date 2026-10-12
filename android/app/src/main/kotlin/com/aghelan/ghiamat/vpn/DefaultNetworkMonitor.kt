@@ -26,8 +26,8 @@ object DefaultNetworkMonitor {
         private set
 
     private var connectivity: ConnectivityManager? = null
-    private var listener: InterfaceUpdateListener? = null
-    private var registered = false
+    private val listeners = linkedSetOf<InterfaceUpdateListener>()
+    private var users = 0
     private val handler by lazy { Handler(HandlerThread("network-monitor").apply { start() }.looper) }
 
     private val request = NetworkRequest.Builder()
@@ -51,12 +51,17 @@ object DefaultNetworkMonitor {
         }
     }
 
+    /**
+     * Registers a user (the VPN core or the latency tester). The network
+     * callback stays registered until every user has called [release].
+     */
     @Synchronized
-    fun start(context: Context) {
+    fun acquire(context: Context) {
+        users++
+        if (users > 1) return
         val cm = context.getSystemService(ConnectivityManager::class.java)
         connectivity = cm
         defaultNetwork = cm.activeNetwork
-        if (registered) return
         // registerDefaultNetworkCallback reports the VPN itself once it is up
         // (Android P+), so request the best non-VPN network explicitly.
         when {
@@ -65,31 +70,33 @@ object DefaultNetworkMonitor {
             Build.VERSION.SDK_INT >= 26 -> cm.registerDefaultNetworkCallback(callback, handler)
             else -> cm.registerDefaultNetworkCallback(callback)
         }
-        registered = true
     }
 
     @Synchronized
-    fun stop() {
-        if (registered) {
-            runCatching { connectivity?.unregisterNetworkCallback(callback) }
-            registered = false
-        }
-        listener = null
+    fun release() {
+        if (users == 0) return
+        users--
+        if (users > 0) return
+        runCatching { connectivity?.unregisterNetworkCallback(callback) }
+        synchronized(listeners) { listeners.clear() }
         defaultNetwork = null
     }
 
-    fun setListener(listener: InterfaceUpdateListener?) {
-        this.listener = listener
-        notifyListener(defaultNetwork)
+    fun addListener(listener: InterfaceUpdateListener) {
+        synchronized(listeners) { listeners.add(listener) }
+        notifyListener(listener, defaultNetwork)
+    }
+
+    fun removeListener(listener: InterfaceUpdateListener) {
+        synchronized(listeners) { listeners.remove(listener) }
     }
 
     private fun update(network: Network?) {
         defaultNetwork = network
-        notifyListener(network)
+        synchronized(listeners) { listeners.toList() }.forEach { notifyListener(it, network) }
     }
 
-    private fun notifyListener(network: Network?) {
-        val listener = listener ?: return
+    private fun notifyListener(listener: InterfaceUpdateListener, network: Network?) {
         if (network == null) {
             listener.updateDefaultInterface("", -1, false, false)
             return

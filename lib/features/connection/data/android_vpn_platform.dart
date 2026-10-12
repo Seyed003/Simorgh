@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 
 import '../../../core/singbox/builder/core_options.dart';
 import '../domain/vpn_state.dart';
+import 'clash_api_client.dart';
 import 'vpn_platform.dart';
 
 /// Talks to `VpnBridge.kt`, which runs sing-box through libbox inside an
@@ -70,4 +71,31 @@ class AndroidVpnPlatform implements VpnPlatform {
 
   @override
   Future<String?> coreVersion() => _methods.invokeMethod<String>('coreVersion');
+
+  @override
+  Future<String?> checkConfig(String configJson) =>
+      _methods.invokeMethod<String>('checkConfig', {'config': configJson});
+
+  /// The tester runs as a second libbox instance inside the app process;
+  /// its sockets are protected from the VPN tunnel by the VpnService.
+  @override
+  Future<void> startTester(String configJson) async {
+    try {
+      await _methods.invokeMethod<void>('startTester', {'config': configJson});
+    } on PlatformException catch (e) {
+      throw VpnError(VpnErrorCode.coreExited, e.message);
+    }
+    final api = ClashApiClient.optionsFromConfig(configJson);
+    if (api == null) return;
+    final client = ClashApiClient(api);
+    for (var i = 0; i < 25; i++) {
+      if (await client.ping()) return;
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    }
+    await stopTester();
+    throw const VpnError(VpnErrorCode.coreExited, 'tester did not start');
+  }
+
+  @override
+  Future<void> stopTester() => _methods.invokeMethod<void>('stopTester');
 }

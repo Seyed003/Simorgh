@@ -27,6 +27,9 @@ class VpnBridge(private val activity: Activity) : MethodChannel.MethodCallHandle
     }
 
     private val background = Executors.newSingleThreadExecutor()
+
+    // Separate queue so a slow tester start never delays VPN start/stop.
+    private val testerExecutor = Executors.newSingleThreadExecutor()
     private var pendingStart: Pair<String, MethodChannel.Result>? = null
     private var listener: VpnStatusBus.Listener? = null
 
@@ -54,6 +57,33 @@ class VpnBridge(private val activity: Activity) : MethodChannel.MethodCallHandle
                 activity.runOnUiThread { result.success(version) }
             }
             "workingDirectory" -> result.success(LibboxSetup.workingDir(activity).path)
+            "checkConfig" -> {
+                val config = call.argument<String>("config") ?: ""
+                background.execute {
+                    val error = runCatching {
+                        LibboxSetup.ensure(activity)
+                        Libbox.checkConfig(config)
+                    }.exceptionOrNull()
+                    activity.runOnUiThread { result.success(error?.let { it.message ?: it.toString() }) }
+                }
+            }
+            "startTester" -> {
+                val config = call.argument<String>("config") ?: ""
+                testerExecutor.execute {
+                    val error = runCatching { TesterCore.start(activity.applicationContext, config) }.exceptionOrNull()
+                    activity.runOnUiThread {
+                        if (error == null) {
+                            result.success(null)
+                        } else {
+                            result.error("TESTER_FAILED", error.message ?: error.toString(), null)
+                        }
+                    }
+                }
+            }
+            "stopTester" -> testerExecutor.execute {
+                TesterCore.stop()
+                activity.runOnUiThread { result.success(null) }
+            }
             else -> result.notImplemented()
         }
     }

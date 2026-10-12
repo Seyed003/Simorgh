@@ -1,13 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/singbox/builder/config_builder.dart';
 import '../../../core/singbox/builder/core_options.dart';
 import '../../../core/storage/preferences.dart';
+import '../../../core/utils/net_utils.dart';
 import '../../profiles/application/profiles_controller.dart';
 import '../../profiles/domain/profile.dart';
 import '../../settings/application/core_options_controller.dart';
@@ -97,8 +96,8 @@ class VpnController extends Notifier<VpnState> {
     }
     final platform = _platform;
     final clashApi = ClashApiOptions(
-      port: await _freePort(),
-      secret: _randomSecret(),
+      port: await findFreeLocalPort(),
+      secret: randomHexSecret(),
     );
     final builder = SingBoxConfigBuilder(
       options: ref.read(coreOptionsProvider),
@@ -196,20 +195,5 @@ class VpnController extends Notifier<VpnState> {
       profileId: ref.read(selectedProfileProvider)?.id,
       clashApi: clashApi,
     );
-  }
-
-  static Future<int> _freePort() async {
-    final socket = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
-    final port = socket.port;
-    await socket.close();
-    return port;
-  }
-
-  static String _randomSecret() {
-    final random = Random.secure();
-    return List.generate(
-      16,
-      (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0'),
-    ).join();
   }
 }
