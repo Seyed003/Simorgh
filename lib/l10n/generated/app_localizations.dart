@@ -1195,6 +1195,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'YouTube, Instagram and browsers use TCP instead of QUIC through the VPN, which is much faster on most servers'**
   String get blockQuicHint;
+
+  /// No description provided for @home.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get home;
+
+  /// No description provided for @tabUsage.
+  ///
+  /// In en, this message translates to:
+  /// **'Usage'**
+  String get tabUsage;
+
+  /// No description provided for @advanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get advanced;
+
+  /// No description provided for @server.
+  ///
+  /// In en, this message translates to:
+  /// **'Server'**
+  String get server;
+
+  /// No description provided for @tagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Freedom to reach the whole internet'**
+  String get tagline;
+
+  /// No description provided for @brandStory.
+  ///
+  /// In en, this message translates to:
+  /// **'The phoenix rises from its ashes: no filter can keep the internet from you for long.'**
+  String get brandStory;
 }
 
 class _AppLocalizationsDelegate

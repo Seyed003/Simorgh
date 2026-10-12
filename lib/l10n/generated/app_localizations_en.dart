@@ -650,4 +650,23 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get blockQuicHint =>
       'YouTube, Instagram and browsers use TCP instead of QUIC through the VPN, which is much faster on most servers';
+
+  @override
+  String get home => 'Home';
+
+  @override
+  String get tabUsage => 'Usage';
+
+  @override
+  String get advanced => 'Advanced';
+
+  @override
+  String get server => 'Server';
+
+  @override
+  String get tagline => 'Freedom to reach the whole internet';
+
+  @override
+  String get brandStory =>
+      'The phoenix rises from its ashes: no filter can keep the internet from you for long.';
 }

@@ -7,6 +7,7 @@ import 'dart:ui' as ui;
 
 import 'package:aghelan_ghiamat/app.dart';
 import 'package:aghelan_ghiamat/core/theme/app_theme.dart';
+import 'package:aghelan_ghiamat/core/theme/glass.dart';
 import 'package:aghelan_ghiamat/features/settings/application/settings_controller.dart';
 import 'package:aghelan_ghiamat/features/usage/presentation/usage_page.dart';
 import 'package:aghelan_ghiamat/l10n/generated/app_localizations.dart';
@@ -54,6 +55,19 @@ Future<void> _loadFonts() async {
   await load('MaterialIcons', [
     '$flutterRoot/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
   ]);
+}
+
+Future<void> _capture(WidgetTester tester, String name) async {
+  final boundary = tester.renderObject<RenderRepaintBoundary>(
+    find.byKey(const ValueKey('shot')),
+  );
+  await tester.runAsync(() async {
+    final image = await boundary.toImage();
+    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+    final file = File('build/screenshots/$name.png');
+    await file.parent.create(recursive: true);
+    await file.writeAsBytes(bytes!.buffer.asUint8List());
+  });
 }
 
 void main() {
@@ -159,73 +173,69 @@ void main() {
         await tester.pump(const Duration(seconds: 1));
         await tester.pump(const Duration(seconds: 1));
 
-        final boundary = tester.renderObject<RenderRepaintBoundary>(
-          find.byKey(const ValueKey('shot')),
+        await _capture(
+          tester,
+          'home_${lang}_${theme}_${connected ? 'on' : 'off'}${auto ? '_auto' : ''}_${width.toInt()}',
         );
-        await tester.runAsync(() async {
-          final image = await boundary.toImage();
-          final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-          final file = File(
-            'build/screenshots/home_${lang}_${theme}_${connected ? 'on' : 'off'}${auto ? '_auto' : ''}_${width.toInt()}.png',
-          );
-          await file.parent.create(recursive: true);
-          await file.writeAsBytes(bytes!.buffer.asUint8List());
-        });
+        if (width < 1000) {
+          await tester.tap(find.byIcon(Icons.dns_outlined));
+          await tester.pump(const Duration(seconds: 1));
+          await _capture(tester, 'servers_${lang}_$theme');
+          if (!connected) {
+            await tester.tap(find.byIcon(Icons.more_vert_rounded).first);
+            await tester.pump();
+            await tester.pump(const Duration(seconds: 1));
+            await _capture(tester, 'actions_${lang}_$theme');
+          }
+        }
         await tester.pumpWidget(const SizedBox.shrink());
       },
     );
   }
 
-  testWidgets('settings fa light', skip: skip != null, (tester) async {
-    const size = Size(412, 2000);
-    tester.view.physicalSize = size;
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
+  for (final (lang, theme) in [('fa', 'light'), ('en', 'dark')]) {
+    testWidgets('settings $lang $theme', skip: skip != null, (tester) async {
+      const size = Size(412, 2300);
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
 
-    final prefs = await mockPreferences({
-      'settings.language': 'fa',
-      'settings.theme_mode': 'light',
-    });
-    final container = ProviderContainer(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(prefs),
-        profileStoreProvider.overrideWithValue(MemoryProfileStore()),
-        vpnPlatformProvider.overrideWithValue(FakeVpnPlatform()),
-      ],
-    );
-    addTearDown(container.dispose);
-    await tester.runAsync(
-      () => container
-          .read(coreOptionsProvider.notifier)
-          .update(
-            (o) => o.copyWith(tlsFragment: TlsFragmentMode.record, mux: true),
+      final prefs = await mockPreferences({
+        'settings.language': lang,
+        'settings.theme_mode': theme,
+      });
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          profileStoreProvider.overrideWithValue(MemoryProfileStore()),
+          vpnPlatformProvider.overrideWithValue(FakeVpnPlatform()),
+        ],
+      );
+      addTearDown(container.dispose);
+      await tester.runAsync(
+        () => container
+            .read(coreOptionsProvider.notifier)
+            .update(
+              (o) => o.copyWith(tlsFragment: TlsFragmentMode.record, mux: true),
+            ),
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: const ValueKey('shot'),
+          child: UncontrolledProviderScope(
+            container: container,
+            child: const AghelanApp(),
           ),
-    );
-    await tester.pumpWidget(
-      RepaintBoundary(
-        key: const ValueKey('shot'),
-        child: UncontrolledProviderScope(
-          container: container,
-          child: const AghelanApp(),
         ),
-      ),
-    );
-    await tester.pump(const Duration(seconds: 1));
-    await tester.tap(find.byIcon(Icons.settings_outlined));
-    await tester.pumpAndSettle();
+      );
+      await tester.pump(const Duration(seconds: 1));
+      await tester.tap(find.byIcon(Icons.settings_outlined));
+      await tester.pumpAndSettle();
 
-    final boundary = tester.renderObject<RenderRepaintBoundary>(
-      find.byKey(const ValueKey('shot')),
-    );
-    await tester.runAsync(() async {
-      final image = await boundary.toImage();
-      final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-      final file = File('build/screenshots/settings_fa_light.png');
-      await file.parent.create(recursive: true);
-      await file.writeAsBytes(bytes!.buffer.asUint8List());
+      await _capture(tester, 'settings_${lang}_$theme');
+      await tester.pumpWidget(const SizedBox.shrink());
     });
-    await tester.pumpWidget(const SizedBox.shrink());
-  });
+  }
 
   for (final (lang, theme) in [('fa', 'light'), ('en', 'dark')]) {
     testWidgets('usage $lang $theme', skip: skip != null, (tester) async {
@@ -292,7 +302,9 @@ void main() {
                   supportedLocales: AppLocalizations.supportedLocales,
                   localizationsDelegates:
                       AppLocalizations.localizationsDelegates,
-                  home: UsagePage(today: today),
+                  home: GlassScaffold(
+                    body: SafeArea(child: UsagePage(today: today)),
+                  ),
                 );
               },
             ),
@@ -301,22 +313,14 @@ void main() {
       );
       await tester.pumpAndSettle();
       // Select the busiest day to show the detail line.
+      final bars = find.byWidgetPredicate(
+        (w) => w is GestureDetector && w.child is LayoutBuilder,
+      );
       await tester.tapAt(
-        tester.getBottomLeft(find.byType(GestureDetector).at(5)) +
-            const Offset(4, -4),
+        tester.getBottomLeft(bars.at(5)) + const Offset(4, -4),
       );
       await tester.pumpAndSettle();
-
-      final boundary = tester.renderObject<RenderRepaintBoundary>(
-        find.byKey(const ValueKey('shot')),
-      );
-      await tester.runAsync(() async {
-        final image = await boundary.toImage();
-        final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-        final file = File('build/screenshots/usage_${lang}_$theme.png');
-        await file.parent.create(recursive: true);
-        await file.writeAsBytes(bytes!.buffer.asUint8List());
-      });
+      await _capture(tester, 'usage_${lang}_$theme');
     });
   }
 }

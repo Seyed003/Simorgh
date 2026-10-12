@@ -7,6 +7,8 @@
 Open-source VPN client for **Android** and **Windows**, powered by the
 [sing-box](https://github.com/SagerNet/sing-box) core.
 
+*The phoenix rises from its ashes: freedom to reach the whole internet.*
+
 [فارسی](#فارسی) · [English](#english)
 
 </div>
@@ -73,6 +75,15 @@ Open-source VPN client for **Android** and **Windows**, powered by the
   filters cannot read the server name, and Mux (h2mux/smux/yamux) for
   VMess/VLESS/Trojan/Shadowsocks servers that support it. Both are applied to
   every server that does not set them itself, latency tests included.
+- **Faster video and apps (on by default):** QUIC (UDP 443) is not sent
+  through the proxy, so YouTube, Instagram and browsers fall back to TCP right
+  away. QUIC tunnelled over a TCP-based proxy (and REALITY/Vision servers that
+  drop it) is the usual reason a VPN feels slow on video. VLESS/VMess UDP uses
+  XUDP by default, like Xray clients.
+- **Liquid Glass design:** frosted glass panels with lit rims over an aurora
+  backdrop that warms up while connected, a floating glass tab bar (a side
+  rail on wide windows) and the phoenix as the connect button: ash grey when
+  off, catching fire as the tunnel comes up.
 - **Persian + English** with full right-to-left layout, light/dark themes,
   bundled Vazirmatn font.
 - **Connection settings:** remote/direct DNS (DoH, DoT, DoQ, UDP, system),
@@ -97,7 +108,7 @@ lib/
 android/app/src/main/kotlin/com/aghelan/ghiamat/vpn/
                       VpnService + libbox PlatformInterface, Flutter bridge
 windows/              runner (admin manifest, single instance), core/sing-box.exe
-scripts/              build/fetch the sing-box core, icon generator
+scripts/              build/fetch the sing-box core, brand generator (phoenix + all icons)
 test/                 unit, widget and real-core integration tests
 ```
 
@@ -242,6 +253,17 @@ are adapted from [sing-box-for-android](https://github.com/SagerNet/sing-box-for
 - **ضدفیلتر:** فرگمنت TLS («سبک» و «قوی») تا فیلترینگ نتواند نام سرور را
   بخواند، و Mux برای سرورهایی که پشتیبانی می‌کنند. هر دو در تنظیمات «اتصال»
   هستند و به‌طور پیش‌فرض خاموش‌اند.
+- **سرعت بیشتر ویدیو و برنامه‌ها (به‌طور پیش‌فرض روشن):** ترافیک QUIC از
+  پراکسی رد نمی‌شود تا یوتیوب، اینستاگرام و مرورگرها فوراً از TCP استفاده
+  کنند؛ عبور QUIC از داخل سرورهای TCP (و سرورهای REALITY/Vision که آن را رد
+  می‌کنند) دلیل اصلی کندی ویدیو در VPN است. UDP در VLESS/VMess هم مثل
+  کلاینت‌های Xray با XUDP فرستاده می‌شود.
+- **طراحی شیشه‌ای (Liquid Glass):** پنل‌های شیشه‌ای مات با لبه‌های نورانی
+  روی پس‌زمینه‌ی شفقی که هنگام اتصال گرم و آتشین می‌شود، نوار تب شناور
+  شیشه‌ای و دکمه‌ی اتصال به شکل ققنوس: خاکستری وقتی قطع است و شعله‌ور وقتی
+  وصل می‌شود.
+- **نماد ققنوس:** ققنوس از خاکستر خود برمی‌خیزد؛ نماد آزادی دسترسی به دنیای
+  اینترنت.
 - **فارسی و انگلیسی** با چیدمان کامل راست‌به‌چپ، تم روشن و تیره و فونت وزیرمتن.
 - **بدون SDK اختصاصی گوگل**؛ مناسب برای انتشار در F-Droid.
 

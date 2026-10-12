@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#0B1220</color>
-    <color name="notification_accent">#14B8A6</color>
+    <color name="ic_launcher_background">#141A3A</color>
+    <color name="notification_accent">#FF8A2B</color>
+    <!-- Night of the aurora, behind the splash and the first frame. -->
+    <color name="splash_background">#100E26</color>
 </resources>

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/glass.dart';
 import '../../../core/theme/status_colors.dart';
 import '../../../core/utils/context_ext.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/glass_widgets.dart';
 import '../application/latency_controller.dart';
 import '../domain/latency_result.dart';
 
@@ -41,7 +43,7 @@ class LatencyBadge extends ConsumerWidget {
         LatencyResult(:final delay?) => (
           l10n.latencyMs(formatNumber(delay, locale: context.localeCode)),
           delay < 300
-              ? status.connected
+              ? status.good
               : delay < 800
               ? status.connecting
               : status.error,
@@ -92,29 +94,36 @@ class TestAllButton extends ConsumerWidget {
     final l10n = context.l10n;
     final controller = ref.read(latencyProvider.notifier);
     if (!state.running) {
-      return IconButton(
+      return GlassIconButton(
         tooltip: l10n.testAll,
-        icon: const Icon(Icons.speed_rounded),
+        icon: Icons.speed_rounded,
         onPressed: controller.testAll,
       );
     }
     final locale = context.localeCode;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          l10n.testProgress(
-            formatNumber(state.done, locale: locale),
-            formatNumber(state.total, locale: locale),
-          ),
-          style: context.theme.textTheme.labelMedium,
+    return Glass(
+      radius: 22,
+      padding: const EdgeInsetsDirectional.only(start: 14),
+      child: SizedBox(
+        height: 44,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              l10n.testProgress(
+                formatNumber(state.done, locale: locale),
+                formatNumber(state.total, locale: locale),
+              ),
+              style: context.theme.textTheme.labelMedium,
+            ),
+            IconButton(
+              tooltip: l10n.stopTest,
+              icon: const Icon(Icons.stop_circle_outlined),
+              onPressed: controller.cancel,
+            ),
+          ],
         ),
-        IconButton(
-          tooltip: l10n.stopTest,
-          icon: const Icon(Icons.stop_circle_outlined),
-          onPressed: controller.cancel,
-        ),
-      ],
+      ),
     );
   }
 }

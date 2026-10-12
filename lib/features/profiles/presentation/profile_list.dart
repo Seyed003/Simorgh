@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/branding/phoenix.dart';
 import '../../../core/utils/context_ext.dart';
 import '../../../core/widgets/dialogs.dart';
+import '../../../core/widgets/glass_widgets.dart';
 import '../application/profiles_controller.dart';
 import '../domain/profile.dart';
 import '../domain/profiles_state.dart';
@@ -12,6 +14,7 @@ import '../../latency/application/profile_sort.dart';
 import '../../latency/application/speed_controller.dart';
 import '../../latency/presentation/latency_badge.dart';
 import '../../latency/presentation/speed_badge.dart';
+import 'add_config_sheet.dart';
 import 'import_actions.dart';
 import 'profile_actions.dart';
 import 'widgets/auto_select_tile.dart';
@@ -33,30 +36,26 @@ class ProfileList extends ConsumerWidget {
     final slivers = <Widget>[
       if (header != null) SliverToBoxAdapter(child: header),
       SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(20, 8, 8, 0),
-          child: Row(
-            children: [
-              Text(
-                l10n.configs,
-                style: context.theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const Spacer(),
-              if ((async.value?.profiles ?? const []).isNotEmpty) ...[
-                const TestAllButton(),
-                const _SortButton(),
-              ],
-              if ((async.value?.subscriptions ?? const []).isNotEmpty)
-                IconButton(
-                  tooltip: l10n.updateAllSubscriptions,
-                  icon: const Icon(Icons.sync_rounded),
-                  onPressed: () =>
-                      ImportActions(context, ref).updateAllSubscriptions(),
-                ),
+        child: LargeTitle(
+          title: l10n.configs,
+          actions: [
+            if ((async.value?.profiles ?? const []).isNotEmpty) ...[
+              const TestAllButton(),
+              const _SortButton(),
             ],
-          ),
+            if ((async.value?.subscriptions ?? const []).isNotEmpty)
+              GlassIconButton(
+                tooltip: l10n.updateAllSubscriptions,
+                icon: Icons.sync_rounded,
+                onPressed: () =>
+                    ImportActions(context, ref).updateAllSubscriptions(),
+              ),
+            GlassIconButton(
+              tooltip: l10n.addConfig,
+              icon: Icons.add_rounded,
+              onPressed: () => showAddConfigSheet(context, ref),
+            ),
+          ],
         ),
       ),
     ];
@@ -90,8 +89,12 @@ class ProfileList extends ConsumerWidget {
           ),
         );
     }
-    // Room for the floating action button.
-    slivers.add(const SliverToBoxAdapter(child: SizedBox(height: 96)));
+    // Room for the floating tab bar.
+    slivers.add(
+      SliverToBoxAdapter(
+        child: SizedBox(height: MediaQuery.paddingOf(context).bottom + 16),
+      ),
+    );
 
     return CustomScrollView(slivers: slivers);
   }
@@ -210,9 +213,9 @@ class _SortButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final current = ref.watch(profileSortProvider);
-    return PopupMenuButton<ProfileSort>(
+    return GlassMenuButton<ProfileSort>(
       tooltip: l10n.sortBy,
-      icon: const Icon(Icons.sort_rounded),
+      icon: Icons.sort_rounded,
       initialValue: current,
       onSelected: ref.read(profileSortProvider.notifier).set,
       itemBuilder: (context) => [
@@ -231,23 +234,28 @@ class _SortButton extends ConsumerWidget {
   }
 }
 
-class _EmptyState extends StatelessWidget {
+class _EmptyState extends ConsumerWidget {
   const _EmptyState();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
       child: Column(
         children: [
-          Icon(
-            Icons.travel_explore_rounded,
-            size: 56,
-            color: context.colors.outline,
+          PhoenixMark(
+            size: 72,
+            heat: 0,
+            ash: context.colors.onSurfaceVariant.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
-          Text(l10n.noConfigs, style: context.theme.textTheme.titleMedium),
+          Text(
+            l10n.noConfigs,
+            style: context.theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           const SizedBox(height: 8),
           Text(
             l10n.noConfigsHint,
@@ -255,6 +263,12 @@ class _EmptyState extends StatelessWidget {
             style: context.theme.textTheme.bodyMedium?.copyWith(
               color: context.colors.onSurfaceVariant,
             ),
+          ),
+          const SizedBox(height: 20),
+          FireButton(
+            icon: Icons.add_rounded,
+            label: l10n.addConfig,
+            onPressed: () => showAddConfigSheet(context, ref),
           ),
         ],
       ),

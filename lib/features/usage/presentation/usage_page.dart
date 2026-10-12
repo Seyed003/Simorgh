@@ -3,16 +3,14 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/glass.dart';
 import '../../../core/utils/context_ext.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/utils/jalali.dart';
 import '../../../core/widgets/dialogs.dart';
+import '../../../core/widgets/glass_widgets.dart';
 import '../application/usage_controller.dart';
 import '../domain/usage.dart';
-
-/// Bar colour of the usage chart; validated against both card surfaces
-/// (lightness band, chroma floor, >= 3:1 contrast).
-const _barColor = Color(0xFF0D9488);
 
 const _chartDays = 14;
 const _tableDays = 30;
@@ -46,107 +44,136 @@ class _UsagePageState extends ConsumerState<UsagePage> {
       for (var i = 0; i < _tableDays; i++) today.subtract(Duration(days: i)),
     ].where((d) => usage.on(d).total > 0).toList();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.usage),
-        actions: [
-          PopupMenuButton<void>(
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                onTap: () async {
-                  final ok = await confirmDialog(
-                    context,
-                    title: l10n.usageReset,
-                    message: l10n.usageResetConfirm,
-                    confirmLabel: l10n.delete,
-                    destructive: true,
-                  );
-                  if (ok) await ref.read(usageProvider.notifier).reset();
-                },
-                child: Text(l10n.usageReset),
-              ),
-            ],
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-        children: [
-          Row(
-            children: [
-              for (final (label, total) in [
-                (l10n.usageToday, usage.on(today)),
-                (l10n.usageWeek, usage.lastDays(7, today)),
-                (l10n.usageMonth, usage.lastDays(30, today)),
-              ])
-                Expanded(
-                  child: _StatTile(label: label, usage: total),
+    return ListView(
+      padding: EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
+      children: [
+        LargeTitle(
+          title: l10n.usage,
+          actions: [
+            GlassMenuButton<void>(
+              tooltip: l10n.usageReset,
+              icon: Icons.more_horiz_rounded,
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  onTap: () async {
+                    final ok = await confirmDialog(
+                      context,
+                      title: l10n.usageReset,
+                      message: l10n.usageResetConfirm,
+                      confirmLabel: l10n.delete,
+                      destructive: true,
+                    );
+                    if (ok) await ref.read(usageProvider.notifier).reset();
+                  },
+                  child: Text(l10n.usageReset),
                 ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Card(
-            margin: EdgeInsets.zero,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              ],
+            ),
+          ],
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
                 children: [
-                  Text(
-                    l10n.usageChartTitle,
-                    style: context.theme.textTheme.titleSmall,
-                  ),
-                  const SizedBox(height: 2),
-                  _SelectionLine(
-                    day: _selected == null ? null : chartDays[_selected!],
-                    usage: _selected == null
-                        ? null
-                        : usage.on(chartDays[_selected!]),
-                  ),
-                  const SizedBox(height: 8),
-                  _UsageChart(
-                    days: chartDays,
-                    values: [for (final d in chartDays) usage.on(d).total],
-                    selected: _selected,
-                    onSelect: (i) =>
-                        setState(() => _selected = _selected == i ? null : i),
-                  ),
+                  for (final (label, total) in [
+                    (l10n.usageToday, usage.on(today)),
+                    (l10n.usageWeek, usage.lastDays(7, today)),
+                    (l10n.usageMonth, usage.lastDays(30, today)),
+                  ])
+                    Expanded(
+                      child: _StatTile(label: label, usage: total),
+                    ),
                 ],
               ),
-            ),
+              const SizedBox(height: 12),
+              Glass(
+                blur: false,
+                radius: 26,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.usageChartTitle,
+                        style: context.theme.textTheme.titleSmall,
+                      ),
+                      const SizedBox(height: 2),
+                      _SelectionLine(
+                        day: _selected == null ? null : chartDays[_selected!],
+                        usage: _selected == null
+                            ? null
+                            : usage.on(chartDays[_selected!]),
+                      ),
+                      const SizedBox(height: 8),
+                      _UsageChart(
+                        days: chartDays,
+                        values: [for (final d in chartDays) usage.on(d).total],
+                        selected: _selected,
+                        onSelect: (i) => setState(
+                          () => _selected = _selected == i ? null : i,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsetsDirectional.only(start: 4, bottom: 8),
+                child: Text(
+                  l10n.usageDaily,
+                  style: context.theme.textTheme.titleSmall,
+                ),
+              ),
+              Glass(
+                blur: false,
+                radius: 26,
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                child: tableDays.isEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        child: Text(
+                          l10n.usageEmpty,
+                          textAlign: TextAlign.center,
+                          style: context.theme.textTheme.bodyMedium?.copyWith(
+                            color: context.colors.onSurfaceVariant,
+                          ),
+                        ),
+                      )
+                    : Column(
+                        children: [
+                          _TableRow(
+                            label: '',
+                            cells: (
+                              l10n.download,
+                              l10n.upload,
+                              l10n.totalTraffic,
+                            ),
+                            header: true,
+                          ),
+                          for (final day in tableDays)
+                            _TableRow(
+                              label: formatDate(day, locale: locale),
+                              cells: (
+                                formatBytes(usage.on(day).down, locale: locale),
+                                formatBytes(usage.on(day).up, locale: locale),
+                                formatBytes(
+                                  usage.on(day).total,
+                                  locale: locale,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          Text(l10n.usageDaily, style: context.theme.textTheme.titleSmall),
-          const SizedBox(height: 4),
-          if (tableDays.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24),
-              child: Text(
-                l10n.usageEmpty,
-                textAlign: TextAlign.center,
-                style: context.theme.textTheme.bodyMedium?.copyWith(
-                  color: context.colors.onSurfaceVariant,
-                ),
-              ),
-            )
-          else ...[
-            _TableRow(
-              label: '',
-              cells: (l10n.download, l10n.upload, l10n.totalTraffic),
-              header: true,
-            ),
-            for (final day in tableDays)
-              _TableRow(
-                label: formatDate(day, locale: locale),
-                cells: (
-                  formatBytes(usage.on(day).down, locale: locale),
-                  formatBytes(usage.on(day).up, locale: locale),
-                  formatBytes(usage.on(day).total, locale: locale),
-                ),
-              ),
-          ],
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -163,9 +190,11 @@ class _StatTile extends StatelessWidget {
     final muted = context.theme.textTheme.bodySmall?.copyWith(
       color: context.colors.onSurfaceVariant,
     );
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      child: Padding(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Glass(
+        blur: false,
+        radius: 22,
         padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -294,6 +323,7 @@ class _UsageChart extends StatelessWidget {
       fontFeatures: const [FontFeature.tabularFigures()],
     );
     final top = _niceCeiling(values.fold<int>(0, max));
+    final barColor = context.colors.primary;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -341,8 +371,8 @@ class _UsageChart extends StatelessWidget {
                                 height: value > 0 ? max(height, 2) : 0,
                                 decoration: BoxDecoration(
                                   color: selected == null || selected == i
-                                      ? _barColor
-                                      : _barColor.withValues(alpha: 0.45),
+                                      ? barColor
+                                      : barColor.withValues(alpha: 0.45),
                                   borderRadius: const BorderRadius.vertical(
                                     top: Radius.circular(4),
                                   ),

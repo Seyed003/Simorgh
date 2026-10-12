@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/singbox/builder/core_options.dart';
 import '../../../core/utils/context_ext.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/theme/glass.dart';
 import '../application/core_options_controller.dart';
 import '../data/installed_apps.dart';
 
@@ -51,7 +52,7 @@ class _SplitTunnelPageState extends ConsumerState<SplitTunnelPage> {
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) _save();
       },
-      child: Scaffold(
+      child: GlassScaffold(
         appBar: AppBar(
           title: Text(l10n.splitTunnel),
           actions: [
@@ -115,7 +116,6 @@ class _SplitTunnelPageState extends ConsumerState<SplitTunnelPage> {
                   prefixIcon: const Icon(Icons.search_rounded),
                   hintText: l10n.searchApps,
                   isDense: true,
-                  border: const OutlineInputBorder(),
                 ),
                 onChanged: (v) => setState(() => _query = v.trim()),
               ),

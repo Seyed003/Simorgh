@@ -7,6 +7,8 @@ import 'package:aghelan_ghiamat/features/latency/application/latency_controller.
 import 'package:aghelan_ghiamat/features/latency/application/profile_sort.dart';
 import 'package:aghelan_ghiamat/features/latency/application/speed_controller.dart';
 import 'package:aghelan_ghiamat/features/profiles/application/profiles_controller.dart';
+import 'package:aghelan_ghiamat/features/profiles/presentation/profile_list.dart';
+import 'package:aghelan_ghiamat/features/home/presentation/widgets/connect_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,6 +16,11 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../core/singbox/fixtures.dart';
 import '../../fakes.dart';
 import '../../helpers.dart';
+
+Future<void> openConfigs(WidgetTester tester) async {
+  await tester.tap(find.byIcon(Icons.dns_outlined));
+  await tester.pumpAndSettle();
+}
 
 void main() {
   Future<(FakeVpnPlatform, ProviderContainer)> pump(
@@ -64,19 +71,24 @@ void main() {
     expect(find.text('No configs yet'), findsOneWidget);
     expect(find.text('Disconnected'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.power_settings_new_rounded));
+    await tester.tap(find.byType(ConnectButton));
     await tester.pump();
     expect(find.text('Select a config first'), findsOneWidget);
   });
 
   testWidgets('lists configs and connects', (tester) async {
     final (platform, _) = await pump(tester, links: '$vlessReality\n$hy2');
-    expect(find.text('Reality 🇳🇱'), findsWidgets);
+    // Home shows the selected server; the list is on its own tab.
+    expect(find.text('Reality 🇳🇱'), findsOneWidget);
+    expect(find.text('HY2'), findsNothing);
+    await openConfigs(tester);
     expect(find.text('HY2'), findsOneWidget);
     expect(find.text('Manual'), findsOneWidget);
+    await tester.tap(find.text('Home'));
+    await tester.pumpAndSettle();
 
     await tester.runAsync(() async {
-      await tester.tap(find.byIcon(Icons.power_settings_new_rounded));
+      await tester.tap(find.byType(ConnectButton));
       await Future<void>.delayed(const Duration(milliseconds: 100));
     });
     await tester.pump(const Duration(milliseconds: 500));
@@ -91,6 +103,7 @@ void main() {
 
   testWidgets('auto tile switches to auto mode', (tester) async {
     final (_, container) = await pump(tester, links: '$vlessReality\n$hy2');
+    await openConfigs(tester);
     expect(find.text('Auto (fastest server)'), findsOneWidget);
     expect(
       find.text(
@@ -105,15 +118,19 @@ void main() {
     });
     await tester.pumpAndSettle();
     expect(container.read(profilesProvider).value!.isAuto, isTrue);
-    // Tile plus the active-config chip of the connection panel.
-    expect(find.text('Auto (fastest server)'), findsNWidgets(2));
-    expect(find.byIcon(Icons.bolt_rounded), findsNWidgets(2));
+    // The server card on the home tab follows.
+    await tester.tap(find.text('Home'));
+    await tester.pumpAndSettle();
+    expect(find.text('Auto (fastest server)'), findsOneWidget);
+    expect(find.byIcon(Icons.bolt_rounded), findsOneWidget);
   });
 
   testWidgets('wide layout shows panel and list side by side', (tester) async {
     await pump(tester, links: trojanBare, size: const Size(1280, 800));
-    expect(find.byType(VerticalDivider), findsOneWidget);
-    expect(find.text('bare'), findsWidgets);
+    expect(find.byType(ConnectButton), findsOneWidget);
+    expect(find.byType(ProfileList), findsOneWidget);
+    // Card on the panel plus the tile in the list.
+    expect(find.text('bare'), findsNWidgets(2));
   });
 
   testWidgets('shows latency badges and sorts fastest first', (tester) async {
@@ -134,7 +151,7 @@ void main() {
     });
     container.invalidate(latencyProvider);
     container.invalidate(profileSortProvider);
-    await tester.pumpAndSettle();
+    await openConfigs(tester);
 
     expect(find.text('87 ms'), findsOneWidget);
     expect(find.text('Timeout'), findsOneWidget);
@@ -161,7 +178,7 @@ void main() {
           ),
     );
     container.invalidate(speedProvider);
-    await tester.pumpAndSettle();
+    await openConfigs(tester);
     expect(find.text('24.5 Mbps'), findsOneWidget);
     expect(find.text('Speed test failed'), findsOneWidget);
 
@@ -177,5 +194,13 @@ void main() {
     expect(find.text('Import from clipboard'), findsOneWidget);
     expect(find.text('Add subscription'), findsOneWidget);
     expect(find.text('Import QR from image'), findsOneWidget);
+  });
+
+  testWidgets('the configs tab adds configs too', (tester) async {
+    await pump(tester, links: trojanBare);
+    await openConfigs(tester);
+    await tester.tap(find.byTooltip('Add config'));
+    await tester.pumpAndSettle();
+    expect(find.text('Import from clipboard'), findsOneWidget);
   });
 }

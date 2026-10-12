@@ -3,9 +3,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/theme/app_theme.dart';
-import 'features/home/presentation/home_page.dart';
 import 'features/profiles/presentation/subscription_auto_update.dart';
 import 'features/settings/application/settings_controller.dart';
+import 'features/shell/app_shell.dart';
 import 'l10n/generated/app_localizations.dart';
 
 class AghelanApp extends ConsumerWidget {
@@ -31,7 +31,7 @@ class AghelanApp extends ConsumerWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      home: const SubscriptionAutoUpdate(child: HomePage()),
+      home: const SubscriptionAutoUpdate(child: AppShell()),
     );
   }
 }
