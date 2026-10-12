@@ -555,4 +555,13 @@ class AppLocalizationsFa extends AppLocalizations {
   String everyHours(String hours) {
     return 'هر $hours ساعت';
   }
+
+  @override
+  String get dnsSystem => 'DNS سیستم';
+
+  @override
+  String get dnsBlocksAds => 'حذف تبلیغات';
+
+  @override
+  String get dnsCustom => 'دلخواه…';
 }

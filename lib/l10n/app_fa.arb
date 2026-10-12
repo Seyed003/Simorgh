@@ -157,5 +157,8 @@
   "appsSelected": "{count} برنامه انتخاب شده",
   "autoUpdateSubscriptions": "به‌روزرسانی خودکار",
   "autoUpdateSubscriptionsHint": "سابسکریپشن‌ها هنگام باز شدن برنامه به‌روز می‌شوند",
-  "everyHours": "هر {hours} ساعت"
+  "everyHours": "هر {hours} ساعت",
+  "dnsSystem": "DNS سیستم",
+  "dnsBlocksAds": "حذف تبلیغات",
+  "dnsCustom": "دلخواه…"
 }

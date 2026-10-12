@@ -1045,6 +1045,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Every {hours} h'**
   String everyHours(String hours);
+
+  /// No description provided for @dnsSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System DNS'**
+  String get dnsSystem;
+
+  /// No description provided for @dnsBlocksAds.
+  ///
+  /// In en, this message translates to:
+  /// **'blocks ads'**
+  String get dnsBlocksAds;
+
+  /// No description provided for @dnsCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom…'**
+  String get dnsCustom;
 }
 
 class _AppLocalizationsDelegate

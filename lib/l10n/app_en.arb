@@ -320,5 +320,8 @@
         "type": "String"
       }
     }
-  }
+  },
+  "dnsSystem": "System DNS",
+  "dnsBlocksAds": "blocks ads",
+  "dnsCustom": "Custom…"
 }

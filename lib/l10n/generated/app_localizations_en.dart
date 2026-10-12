@@ -564,4 +564,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String everyHours(String hours) {
     return 'Every $hours h';
   }
+
+  @override
+  String get dnsSystem => 'System DNS';
+
+  @override
+  String get dnsBlocksAds => 'blocks ads';
+
+  @override
+  String get dnsCustom => 'Custom…';
 }
