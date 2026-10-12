@@ -98,10 +98,9 @@ jobs:
         run: ./scripts/fetch_core_windows.ps1
       - name: Build
         run: flutter build windows --release
-      - name: Package
-        shell: pwsh
-        run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath aghelan-ghiamat-windows-x64.zip
+      # GitHub zips artifacts itself; uploading the folder avoids a zip
+      # inside a zip with the same name.
       - uses: actions/upload-artifact@v4
         with:
           name: aghelan-ghiamat-windows-x64
-          path: aghelan-ghiamat-windows-x64.zip
+          path: build/windows/x64/runner/Release/
