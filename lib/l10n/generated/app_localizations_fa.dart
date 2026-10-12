@@ -459,4 +459,11 @@ class AppLocalizationsFa extends AppLocalizations {
   @override
   String get errorNoWorkingServer =>
       'هیچ سرور سالمی پیدا نشد. سابسکریپشن‌ها را به‌روز کنید یا کانفیگ جدید اضافه کنید.';
+
+  @override
+  String get bypassIran => 'سایت‌های ایرانی بدون VPN';
+
+  @override
+  String get bypassIranHint =>
+      'سایت‌ها و برنامه‌های ایرانی (دامنه‌های .ir و سرورهای داخل ایران) مستقیم باز می‌شوند: سریع‌تر است، حجم VPN مصرف نمی‌شود و سایت‌های بانکی و دولتی که IP خارجی را مسدود می‌کنند کار می‌کنند';
 }

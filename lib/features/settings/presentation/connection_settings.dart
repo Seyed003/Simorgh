@@ -82,6 +82,13 @@ class ConnectionSettingsSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        SwitchListTile(
+          secondary: const Icon(Icons.alt_route_rounded),
+          title: Text(l10n.bypassIran),
+          subtitle: Text(l10n.bypassIranHint),
+          value: options.bypassIran,
+          onChanged: (v) => controller.update((o) => o.copyWith(bypassIran: v)),
+        ),
         ListTile(
           leading: const Icon(Icons.public_rounded),
           title: Text(l10n.remoteDns),

@@ -16,6 +16,7 @@ class CoreOptions {
     this.mixedPort,
     this.sniff = true,
     this.defaultFingerprint = 'chrome',
+    this.bypassIran = true,
   });
 
   static const logLevels = [
@@ -51,6 +52,10 @@ class CoreOptions {
   /// `null` keeps Go's native TLS fingerprint.
   final String? defaultFingerprint;
 
+  /// Send Iranian sites (`.ir`, well-known Iranian services and Iranian IP
+  /// ranges) directly instead of through the proxy.
+  final bool bypassIran;
+
   CoreOptions copyWith({
     String? logLevel,
     String? remoteDns,
@@ -62,6 +67,7 @@ class CoreOptions {
     int? Function()? mixedPort,
     bool? sniff,
     String? Function()? defaultFingerprint,
+    bool? bypassIran,
   }) {
     return CoreOptions(
       logLevel: logLevel ?? this.logLevel,
@@ -76,6 +82,7 @@ class CoreOptions {
       defaultFingerprint: defaultFingerprint != null
           ? defaultFingerprint()
           : this.defaultFingerprint,
+      bypassIran: bypassIran ?? this.bypassIran,
     );
   }
 
@@ -90,6 +97,7 @@ class CoreOptions {
     'mixedPort': mixedPort,
     'sniff': sniff,
     'defaultFingerprint': defaultFingerprint,
+    'bypassIran': bypassIran,
   };
 
   factory CoreOptions.fromJson(
@@ -112,6 +120,7 @@ class CoreOptions {
       defaultFingerprint: json.containsKey('defaultFingerprint')
           ? json['defaultFingerprint'] as String?
           : d.defaultFingerprint,
+      bypassIran: json['bypassIran'] as bool? ?? d.bypassIran,
     );
   }
 

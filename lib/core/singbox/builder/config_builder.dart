@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../proxy_config.dart';
+import '../rules/iran_rules.dart';
 import 'core_options.dart';
 import 'dns_server.dart';
 
@@ -145,6 +146,15 @@ class SingBoxConfigBuilder {
 
     return {
       'servers': servers,
+      if (options.bypassIran)
+        'rules': [
+          // Iranian sites get their domestic answers, without a round trip
+          // through the tunnel.
+          {
+            'rule_set': [IranRuleSets.domains],
+            'server': ConfigTags.dnsDirect,
+          },
+        ],
       'final': ConfigTags.dnsRemote,
       'strategy': options.enableIpv6 ? 'prefer_ipv4' : 'ipv4_only',
     };
@@ -186,7 +196,14 @@ class SingBoxConfigBuilder {
         if (options.sniff) {'action': 'sniff'},
         {'protocol': 'dns', 'action': 'hijack-dns'},
         {'ip_is_private': true, 'outbound': ConfigTags.direct},
+        if (options.bypassIran)
+          {
+            'rule_set': [IranRuleSets.domains, IranRuleSets.ips],
+            'outbound': ConfigTags.direct,
+          },
       ],
+      if (options.bypassIran)
+        'rule_set': iranRuleSets(ipv6: options.enableIpv6),
       'final': ConfigTags.proxy,
       'auto_detect_interface': true,
       'default_domain_resolver': defaultDomainResolver(options),
