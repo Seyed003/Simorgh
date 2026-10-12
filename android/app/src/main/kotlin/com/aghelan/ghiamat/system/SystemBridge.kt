@@ -2,6 +2,7 @@ package com.aghelan.ghiamat.system
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import com.aghelan.ghiamat.vpn.AghelanVpnService
@@ -15,6 +16,7 @@ import io.flutter.plugin.common.MethodChannel
  *
  * Methods (`com.aghelan.ghiamat/system`):
  * - openVpnSettings: Android's VPN settings (always-on / lockdown live there).
+ * - openUrl {url}: the browser.
  * - vpnLockdown: {alwaysOn, lockdown} of the running VPN, null when unknown.
  * - takeShared: links/text that opened the app before Flutter listened.
  * Events (`com.aghelan.ghiamat/shared`): text from later VIEW/SEND intents.
@@ -48,6 +50,13 @@ class SystemBridge(private val activity: Activity) : MethodChannel.MethodCallHan
             "openVpnSettings" -> {
                 val opened = runCatching { activity.startActivity(Intent(Settings.ACTION_VPN_SETTINGS)) }
                 if (opened.isFailure) runCatching { activity.startActivity(Intent(Settings.ACTION_SETTINGS)) }
+                result.success(null)
+            }
+            "openUrl" -> {
+                val url = call.argument<String>("url") ?: ""
+                runCatching {
+                    activity.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                }
                 result.success(null)
             }
             "vpnLockdown" -> {

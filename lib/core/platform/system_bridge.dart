@@ -18,6 +18,15 @@ class SystemBridge {
     if (_android) await _methods.invokeMethod<void>('openVpnSettings');
   }
 
+  /// Opens [url] in the browser.
+  Future<void> openUrl(String url) async {
+    if (_android) {
+      await _methods.invokeMethod<void>('openUrl', {'url': url});
+    } else if (Platform.isWindows) {
+      await Process.run('rundll32', ['url.dll,FileProtocolHandler', url]);
+    }
+  }
+
   /// Always-on / lockdown state of the running VPN; `null` when unknown
   /// (not connected, older Android, other platforms).
   Future<({bool alwaysOn, bool lockdown})?> vpnLockdown() async {

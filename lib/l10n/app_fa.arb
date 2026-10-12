@@ -216,5 +216,12 @@
   "copyAll": "کپی همه",
   "importLinkTitle": "افزودن از لینک",
   "importConfigsQuestion": "{count, plural, =1{۱ کانفیگ پیدا شد. اضافه شود؟} other{{count} کانفیگ پیدا شد. اضافه شوند؟}}",
-  "importSubscriptionQuestion": "سابسکریپشن {host} اضافه شود؟"
+  "importSubscriptionQuestion": "سابسکریپشن {host} اضافه شود؟",
+  "updateAvailable": "نسخه {version} آماده است",
+  "updateHint": "روی همین نسخه نصب کنید؛ کانفیگ‌ها سر جایشان می‌مانند.",
+  "updateDownload": "دانلود",
+  "updateLater": "بعداً",
+  "updateCheck": "بررسی نسخه جدید",
+  "updateLatest": "آخرین نسخه را دارید",
+  "updateFailed": "بررسی نسخه جدید ممکن نشد"
 }

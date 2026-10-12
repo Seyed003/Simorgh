@@ -8,6 +8,9 @@ import 'package:aghelan_ghiamat/features/latency/application/latency_controller.
 import 'package:aghelan_ghiamat/features/latency/application/profile_sort.dart';
 import 'package:aghelan_ghiamat/features/latency/application/speed_controller.dart';
 import 'package:aghelan_ghiamat/features/profiles/application/profiles_controller.dart';
+import 'package:aghelan_ghiamat/features/updates/data/update_checker.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:aghelan_ghiamat/features/profiles/presentation/profile_list.dart';
 import 'package:aghelan_ghiamat/features/home/presentation/widgets/connect_button.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +32,7 @@ void main() {
     String links = '',
     Size size = const Size(420, 900),
     SystemBridge system = const SystemBridge(),
+    String latestRelease = 'v0.0.1',
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -42,6 +46,16 @@ void main() {
         profileStoreProvider.overrideWithValue(MemoryProfileStore()),
         vpnPlatformProvider.overrideWithValue(platform),
         systemBridgeProvider.overrideWithValue(system),
+        updateCheckerProvider.overrideWithValue(
+          UpdateChecker(
+            MockClient(
+              (_) async => http.Response(
+                '{"tag_name":"$latestRelease","html_url":"https://x/r"}',
+                200,
+              ),
+            ),
+          ),
+        ),
         trafficProvider.overrideWith(
           (ref) => Stream.value(
             const TrafficStats(
@@ -225,5 +239,20 @@ void main() {
     system.shared.add('not a config');
     await tester.pumpAndSettle();
     expect(find.byType(AlertDialog), findsNothing);
+  });
+
+  testWidgets('a newer release shows a banner until dismissed', (tester) async {
+    await pump(tester, links: trojanBare, latestRelease: 'v99.0.0');
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Version 99.0.0 is available'), findsOneWidget);
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Later'));
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+    });
+    await tester.pumpAndSettle();
+    expect(find.text('Version 99.0.0 is available'), findsNothing);
   });
 }

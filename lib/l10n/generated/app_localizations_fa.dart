@@ -768,4 +768,28 @@ class AppLocalizationsFa extends AppLocalizations {
   String importSubscriptionQuestion(String host) {
     return 'سابسکریپشن $host اضافه شود؟';
   }
+
+  @override
+  String updateAvailable(String version) {
+    return 'نسخه $version آماده است';
+  }
+
+  @override
+  String get updateHint =>
+      'روی همین نسخه نصب کنید؛ کانفیگ‌ها سر جایشان می‌مانند.';
+
+  @override
+  String get updateDownload => 'دانلود';
+
+  @override
+  String get updateLater => 'بعداً';
+
+  @override
+  String get updateCheck => 'بررسی نسخه جدید';
+
+  @override
+  String get updateLatest => 'آخرین نسخه را دارید';
+
+  @override
+  String get updateFailed => 'بررسی نسخه جدید ممکن نشد';
 }

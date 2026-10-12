@@ -444,5 +444,19 @@
         "type": "String"
       }
     }
-  }
+  },
+  "updateAvailable": "Version {version} is available",
+  "@updateAvailable": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateHint": "Install it over this one; your configs stay.",
+  "updateDownload": "Download",
+  "updateLater": "Later",
+  "updateCheck": "Check for updates",
+  "updateLatest": "You have the latest version",
+  "updateFailed": "Could not check for updates"
 }

@@ -80,6 +80,25 @@ jobs:
           go clean -cache -modcache
           rm -rf .core-build
           df -h /
+      - name: Release signing key
+        # One key for every build, so a new APK installs over the old one
+        # (and keeps the configs). Without the secrets the APKs are signed
+        # with this runner's throwaway debug key.
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEYSTORE_PASSWORD" ]; then
+            echo "::warning::ANDROID_KEYSTORE_BASE64 / ANDROID_KEYSTORE_PASSWORD are not set; APKs get a throwaway debug signature and will not update each other."
+            exit 0
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          cat > android/key.properties <<EOF
+          storeFile=$RUNNER_TEMP/release.jks
+          storePassword=$KEYSTORE_PASSWORD
+          keyAlias=aghelan
+          keyPassword=$KEYSTORE_PASSWORD
+          EOF
       - name: Build APKs
         run: flutter build apk --release --split-per-abi
       - uses: actions/upload-artifact@v4
@@ -114,3 +133,27 @@ jobs:
         with:
           name: aghelan-ghiamat-windows-x64
           path: build/windows/x64/runner/Release/
+
+  release:
+    name: GitHub release
+    # A pushed tag such as v0.2.0 publishes the APKs and the Windows zip;
+    # the app's update check reads the latest release.
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [android, windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Package
+        run: |
+          mkdir dist
+          cp artifacts/aghelan-ghiamat-android/*.apk dist/
+          (cd artifacts/aghelan-ghiamat-windows-x64 && zip -qr "$GITHUB_WORKSPACE/dist/aghelan-ghiamat-windows-x64.zip" .)
+          ls -la dist
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true

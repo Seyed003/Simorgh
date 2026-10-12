@@ -1399,6 +1399,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add the subscription from {host}?'**
   String importSubscriptionQuestion(String host);
+
+  /// No description provided for @updateAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version} is available'**
+  String updateAvailable(String version);
+
+  /// No description provided for @updateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Install it over this one; your configs stay.'**
+  String get updateHint;
+
+  /// No description provided for @updateDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get updateDownload;
+
+  /// No description provided for @updateLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get updateLater;
+
+  /// No description provided for @updateCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for updates'**
+  String get updateCheck;
+
+  /// No description provided for @updateLatest.
+  ///
+  /// In en, this message translates to:
+  /// **'You have the latest version'**
+  String get updateLatest;
+
+  /// No description provided for @updateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not check for updates'**
+  String get updateFailed;
 }
 
 class _AppLocalizationsDelegate

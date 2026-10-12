@@ -777,4 +777,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String importSubscriptionQuestion(String host) {
     return 'Add the subscription from $host?';
   }
+
+  @override
+  String updateAvailable(String version) {
+    return 'Version $version is available';
+  }
+
+  @override
+  String get updateHint => 'Install it over this one; your configs stay.';
+
+  @override
+  String get updateDownload => 'Download';
+
+  @override
+  String get updateLater => 'Later';
+
+  @override
+  String get updateCheck => 'Check for updates';
+
+  @override
+  String get updateLatest => 'You have the latest version';
+
+  @override
+  String get updateFailed => 'Could not check for updates';
 }

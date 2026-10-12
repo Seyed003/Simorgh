@@ -15,6 +15,7 @@ import '../profiles/application/incoming_import.dart';
 import '../profiles/presentation/import_actions.dart';
 import '../profiles/presentation/profile_list.dart';
 import '../settings/presentation/settings_page.dart';
+import '../updates/application/update_controller.dart';
 import '../usage/application/usage_controller.dart';
 import '../usage/presentation/usage_page.dart';
 
@@ -50,6 +51,12 @@ class _AppShellState extends ConsumerState<AppShell> {
   @override
   void initState() {
     super.initState();
+    // After the first frame: providers cannot change while it builds.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        unawaited(ref.read(updateProvider.notifier).checkAutomatically());
+      }
+    });
     // Config links tapped in other apps and text shared to this one.
     _shared = ref.read(systemBridgeProvider).sharedText().listen((text) {
       final incoming = IncomingImport.parse(text);
