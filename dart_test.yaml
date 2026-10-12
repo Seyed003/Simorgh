@@ -1,0 +1,4 @@
+tags:
+  # Validates generated configs with a real sing-box binary.
+  # Run with: SING_BOX_BIN=/path/to/sing-box flutter test --tags singbox
+  singbox:
