@@ -126,6 +126,51 @@ void main() {
       expect(_map(_map(outbounds[1]['tls'])['utls'])['fingerprint'], isNotNull);
     });
 
+    test('Iranian sites go direct unless disabled', () {
+      Map<String, Object?> build(CoreOptions options) => SingBoxConfigBuilder(
+        options: options,
+        platform: CorePlatform.android,
+      ).build(LinkParser.parse(trojanBare));
+
+      final config = build(const CoreOptions());
+      final route = _map(config['route']);
+      final rules = _list(route['rules']);
+      expect(rules.last, {
+        'rule_set': ['iran-domains', 'iran-ips'],
+        'outbound': 'direct',
+      });
+      final sets = {for (final s in _list(route['rule_set'])) s['tag']: s};
+      final domains = _list(sets['iran-domains']!['rules']).single;
+      expect(domains['domain_suffix'], contains('ir'));
+      final cidrs =
+          (_list(sets['iran-ips']!['rules']).single['ip_cidr']! as List)
+              .cast<String>();
+      expect(cidrs, contains('2.176.0.0/12'));
+      // IPv6 ranges only when IPv6 is routed at all.
+      expect(cidrs.where((c) => c.contains(':')), isEmpty);
+      expect(_list(_map(config['dns'])['rules']).single, {
+        'rule_set': ['iran-domains'],
+        'server': 'dns-direct',
+      });
+
+      final v6 = build(const CoreOptions(enableIpv6: true));
+      final v6Sets = _list(_map(v6['route'])['rule_set']);
+      expect(
+        (_list(v6Sets.last['rules']).single['ip_cidr']! as List).any(
+          (c) => (c as String).contains(':'),
+        ),
+        isTrue,
+      );
+
+      final off = build(const CoreOptions(bypassIran: false));
+      expect(_map(off['route']).containsKey('rule_set'), isFalse);
+      expect(_map(off['dns']).containsKey('rules'), isFalse);
+      expect(
+        _list(_map(off['route'])['rules']).where((r) => r['rule_set'] != null),
+        isEmpty,
+      );
+    });
+
     test('auto tags round trip', () {
       expect(
         SingBoxConfigBuilder.autoIndexOf(SingBoxConfigBuilder.autoTag(7)),
@@ -208,9 +253,13 @@ void main() {
       mixedPort: 1080,
       enableIpv6: true,
       logLevel: 'info',
+      bypassIran: false,
     );
     final restored = CoreOptions.fromJson(options.toJson());
     expect(restored, options);
+    expect(restored.bypassIran, isFalse);
+    // Settings saved before the option existed keep the default.
+    expect(CoreOptions.fromJson(const {}).bypassIran, isTrue);
     expect(restored.copyWith(mixedPort: () => null).mixedPort, isNull);
   });
 }

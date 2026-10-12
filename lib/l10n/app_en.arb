@@ -268,5 +268,7 @@
         "type": "String"
       }
     }
-  }
+  },
+  "bypassIran": "Iranian sites without VPN",
+  "bypassIranHint": "Iranian sites and apps (.ir and servers in Iran) connect directly: faster, saves your VPN traffic, and banking or government sites that block foreign IPs keep working"
 }

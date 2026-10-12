@@ -42,6 +42,12 @@ Open-source VPN client for **Android** and **Windows**, powered by the
   hour) and hands up to 10 of them to the core as a `urltest` group. The core
   re-tests them every minute and moves to another server when the current one
   stops answering; the home screen shows which server is in use.
+- **Iranian sites without VPN (on by default):** `.ir` domains, well-known
+  Iranian services and every IP range RIPE has delegated to Iran go direct and
+  are resolved by the direct DNS. Faster, saves VPN traffic, and Iranian banks
+  and government sites that block foreign IPs keep working. The ranges are
+  built into the app (no download at connect time); refresh them with
+  `python3 scripts/update_iran_ip_ranges.py`.
 - **Persian + English** with full right-to-left layout, light/dark themes,
   bundled Vazirmatn font.
 - **Connection settings:** remote/direct DNS (DoH, DoT, DoQ, UDP, system),
@@ -153,7 +159,8 @@ SCREENSHOTS=1 flutter test test/screenshots               # render UI screenshot
 ### Roadmap (phase 2)
 
 ~~Real ping test of all servers~~ (done) · ~~auto-select best server +
-failover~~ (done) · speed test · per-app split tunnel · Iran routing rules (domestic direct) · TLS fragment ·
+failover~~ (done) · ~~Iran routing rules (domestic direct)~~ (done) · speed
+test · per-app split tunnel · TLS fragment ·
 Mux · DoH presets · Cloudflare clean-IP scanner · usage charts · Android Quick
 Settings tile and widget · scheduled subscription updates.
 
@@ -193,6 +200,10 @@ are adapted from [sing-box-for-android](https://github.com/SagerNet/sing-box-for
 - **حالت خودکار (سریع‌ترین سرور):** برنامه سریع‌ترین سرورها را انتخاب می‌کند
   و اگر سرور فعلی قطع شد، خودش به سرور سالم بعدی می‌رود. در صفحه اصلی نمایش
   داده می‌شود که الان از کدام سرور استفاده می‌شود.
+- **سایت‌های ایرانی بدون VPN (به‌طور پیش‌فرض روشن):** دامنه‌های `.ir`،
+  سرویس‌های معروف ایرانی و همه‌ی IPهای ایران مستقیم باز می‌شوند؛ سریع‌تر است،
+  حجم VPN مصرف نمی‌شود و سایت‌های بانکی و دولتی هم کار می‌کنند. از تنظیمات
+  «اتصال» قابل خاموش کردن است.
 - **فارسی و انگلیسی** با چیدمان کامل راست‌به‌چپ، تم روشن و تیره و فونت وزیرمتن.
 - **بدون SDK اختصاصی گوگل**؛ مناسب برای انتشار در F-Droid.
 

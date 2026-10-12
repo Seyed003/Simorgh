@@ -877,6 +877,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No working server found. Update your subscriptions or add new configs.'**
   String get errorNoWorkingServer;
+
+  /// No description provided for @bypassIran.
+  ///
+  /// In en, this message translates to:
+  /// **'Iranian sites without VPN'**
+  String get bypassIran;
+
+  /// No description provided for @bypassIranHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Iranian sites and apps (.ir and servers in Iran) connect directly: faster, saves your VPN traffic, and banking or government sites that block foreign IPs keep working'**
+  String get bypassIranHint;
 }
 
 class _AppLocalizationsDelegate

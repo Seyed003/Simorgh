@@ -468,4 +468,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errorNoWorkingServer =>
       'No working server found. Update your subscriptions or add new configs.';
+
+  @override
+  String get bypassIran => 'Iranian sites without VPN';
+
+  @override
+  String get bypassIranHint =>
+      'Iranian sites and apps (.ir and servers in Iran) connect directly: faster, saves your VPN traffic, and banking or government sites that block foreign IPs keep working';
 }
