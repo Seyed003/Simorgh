@@ -207,6 +207,11 @@ class SingBoxConfigBuilder {
             'rule_set': [IranRuleSets.domains, IranRuleSets.ips],
             'outbound': ConfigTags.direct,
           },
+        // QUIC (HTTP/3) tunnelled through a TCP-based proxy is slow and
+        // fragile; rejecting it makes browsers and apps fall back to TCP at
+        // once, as Xray does with Vision. Domestic QUIC went direct above.
+        if (options.blockQuic)
+          {'network': 'udp', 'port': 443, 'action': 'reject'},
       ],
       if (options.bypassIran)
         'rule_set': iranRuleSets(ipv6: options.enableIpv6),
@@ -263,6 +268,12 @@ Map<String, Object?> prepareOutbound(
       case TlsFragmentMode.record || TlsFragmentMode.tcp:
         break;
     }
+  }
+  // UDP the way Xray-based clients send it (one connection, many
+  // destinations); Xray servers expect it.
+  if (const {'vless', 'vmess'}.contains(type) &&
+      outbound['packet_encoding'] == null) {
+    outbound['packet_encoding'] = 'xudp';
   }
   // XTLS Vision (any `flow`) cannot be multiplexed.
   final flow = outbound['flow'];

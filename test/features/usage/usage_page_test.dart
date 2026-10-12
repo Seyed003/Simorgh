@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:aghelan_ghiamat/core/storage/preferences.dart';
+import 'package:aghelan_ghiamat/core/theme/glass.dart';
 import 'package:aghelan_ghiamat/features/connection/application/vpn_controller.dart';
 import 'package:aghelan_ghiamat/features/profiles/data/profile_store.dart';
 import 'package:aghelan_ghiamat/features/usage/application/usage_controller.dart';
@@ -42,7 +43,9 @@ void main() {
           locale: const Locale('en'),
           supportedLocales: AppLocalizations.supportedLocales,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
-          home: UsagePage(today: DateTime(2026, 10, 12, 15)),
+          home: GlassScaffold(
+            body: UsagePage(today: DateTime(2026, 10, 12, 15)),
+          ),
         ),
       ),
     );
@@ -61,7 +64,7 @@ void main() {
     expect(find.text('Oct 12, 2026:'), findsOneWidget);
     expect(find.text('90 MB'), findsWidgets);
 
-    await tester.tap(find.byIcon(Icons.more_vert));
+    await tester.tap(find.byIcon(Icons.more_horiz_rounded));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Reset statistics'));
     await tester.pumpAndSettle();

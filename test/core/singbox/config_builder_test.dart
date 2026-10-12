@@ -135,7 +135,7 @@ void main() {
       final config = build(const CoreOptions());
       final route = _map(config['route']);
       final rules = _list(route['rules']);
-      expect(rules.last, {
+      expect(rules.where((r) => r['rule_set'] != null).single, {
         'rule_set': ['iran-domains', 'iran-ips'],
         'outbound': 'direct',
       });
@@ -263,6 +263,49 @@ void main() {
       );
     });
 
+    test('QUIC to proxied sites is rejected, after the direct rules', () {
+      final rules = _list(
+        _map(
+          const SingBoxConfigBuilder(
+            options: CoreOptions(),
+            platform: CorePlatform.android,
+          ).build(LinkParser.parse(trojanBare))['route'],
+        )['rules'],
+      );
+      final quic = rules.indexWhere((r) => r['action'] == 'reject');
+      final iran = rules.indexWhere((r) => r['rule_set'] != null);
+      expect(rules[quic], {'network': 'udp', 'port': 443, 'action': 'reject'});
+      expect(quic, greaterThan(iran));
+      expect(quic, rules.length - 1);
+
+      final allowed = _list(
+        _map(
+          const SingBoxConfigBuilder(
+            options: CoreOptions(blockQuic: false),
+            platform: CorePlatform.android,
+          ).build(LinkParser.parse(trojanBare))['route'],
+        )['rules'],
+      );
+      expect(allowed.where((r) => r['action'] == 'reject'), isEmpty);
+    });
+
+    test('VLESS and VMess send UDP as xudp unless the link says otherwise', () {
+      Map<String, Object?> out(String link) => prepareOutbound(
+        LinkParser.parse(link),
+        tag: 'proxy',
+        options: const CoreOptions(),
+      );
+      expect(out(vlessWs)['packet_encoding'], 'xudp');
+      expect(out(vmessWsTls)['packet_encoding'], 'xudp');
+      expect(
+        out(
+          vlessWs.replaceFirst('#', '&packetEncoding=packetaddr#'),
+        )['packet_encoding'],
+        'packetaddr',
+      );
+      expect(out(trojanTls).containsKey('packet_encoding'), isFalse);
+    });
+
     test('auto tags round trip', () {
       expect(
         SingBoxConfigBuilder.autoIndexOf(SingBoxConfigBuilder.autoTag(7)),
@@ -350,6 +393,12 @@ void main() {
     final restored = CoreOptions.fromJson(options.toJson());
     expect(restored, options);
     expect(restored.bypassIran, isFalse);
+    expect(CoreOptions.fromJson(const {}).blockQuic, isTrue);
+    expect(
+      CoreOptions.fromJson(const CoreOptions(blockQuic: false).toJson())
+          .blockQuic,
+      isFalse,
+    );
     const hardened = CoreOptions(
       tlsFragment: TlsFragmentMode.tcp,
       mux: true,

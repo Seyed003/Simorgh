@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/status_colors.dart';
 import '../../../core/utils/context_ext.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/theme/glass.dart';
 import '../../connection/application/vpn_controller.dart';
 import '../../connection/domain/vpn_state.dart';
 import '../../profiles/application/profiles_controller.dart';
@@ -31,7 +32,7 @@ class CleanIpPage extends ConsumerWidget {
       vpnControllerProvider.select((s) => s.status == VpnStatus.disconnected),
     );
 
-    return Scaffold(
+    return GlassScaffold(
       appBar: AppBar(title: Text(l10n.cleanIpScan)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
@@ -180,7 +181,7 @@ class _HitTile extends StatelessWidget {
     final status = StatusColors.of(context);
     final ms = hit.latencyMs;
     final color = ms < 300
-        ? status.connected
+        ? status.good
         : ms < 800
         ? status.connecting
         : status.error;

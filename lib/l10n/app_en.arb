@@ -370,5 +370,13 @@
         "type": "String"
       }
     }
-  }
+  },
+  "blockQuic": "Faster video and apps (block QUIC)",
+  "blockQuicHint": "YouTube, Instagram and browsers use TCP instead of QUIC through the VPN, which is much faster on most servers",
+  "home": "Home",
+  "tabUsage": "Usage",
+  "advanced": "Advanced",
+  "server": "Server",
+  "tagline": "Freedom to reach the whole internet",
+  "brandStory": "The phoenix rises from its ashes: no filter can keep the internet from you for long."
 }

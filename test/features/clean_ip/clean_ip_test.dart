@@ -153,6 +153,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await tester.tap(find.byIcon(Icons.dns_outlined));
+    await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.more_vert_rounded).first);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Find clean Cloudflare IP'));
@@ -203,6 +205,8 @@ void main() {
       ),
     );
     await tester.pump(const Duration(milliseconds: 100));
+    await tester.tap(find.byIcon(Icons.dns_outlined));
+    await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.more_vert_rounded).first);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Find clean Cloudflare IP'));

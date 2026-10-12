@@ -634,4 +634,30 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get copyIp => 'کپی IP';
+
+  @override
+  String get blockQuic => 'سرعت بیشتر ویدیو و برنامه‌ها (مسدود کردن QUIC)';
+
+  @override
+  String get blockQuicHint =>
+      'یوتیوب، اینستاگرام و مرورگرها به‌جای QUIC از TCP استفاده می‌کنند که از داخل VPN روی بیشتر سرورها خیلی سریع‌تر است';
+
+  @override
+  String get home => 'خانه';
+
+  @override
+  String get tabUsage => 'مصرف';
+
+  @override
+  String get advanced => 'پیشرفته';
+
+  @override
+  String get server => 'سرور';
+
+  @override
+  String get tagline => 'آزادی دسترسی به دنیای اینترنت';
+
+  @override
+  String get brandStory =>
+      'ققنوس از خاکستر خود برمی‌خیزد؛ هیچ فیلتری نمی‌تواند اینترنت را برای همیشه از شما دور نگه دارد.';
 }
