@@ -102,6 +102,19 @@ install(CODE "
 install(DIRECTORY "${PROJECT_BUILD_DIR}/${FLUTTER_ASSET_DIR_NAME}"
   DESTINATION "${INSTALL_BUNDLE_DATA_DIR}" COMPONENT Runtime)
 
+# sing-box core, fetched by scripts/fetch_core_windows.ps1 (or the bash
+# variant) into windows/core/. The app looks for core\sing-box.exe next to
+# its executable.
+set(SING_BOX_CORE "${CMAKE_CURRENT_SOURCE_DIR}/core/sing-box.exe")
+if(EXISTS "${SING_BOX_CORE}")
+  install(FILES "${SING_BOX_CORE}" DESTINATION "${CMAKE_INSTALL_PREFIX}/core"
+    COMPONENT Runtime)
+else()
+  message(WARNING "sing-box core not found at ${SING_BOX_CORE}. "
+    "Run scripts/fetch_core_windows.ps1 before building, otherwise "
+    "connecting will fail with 'core not found'.")
+endif()
+
 # Install the AOT library on non-Debug builds only.
 install(FILES "${AOT_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}"
   CONFIGURATIONS Profile;Release

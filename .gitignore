@@ -49,6 +49,8 @@ app.*.map.json
 
 # sing-box core artifacts (downloaded/built by scripts/, never committed)
 /android/app/libs/*.aar
+/android/app/libs/*.jar
 /windows/core/*.exe
 /windows/core/*.dll
 /.core-build/
+/android/build/
