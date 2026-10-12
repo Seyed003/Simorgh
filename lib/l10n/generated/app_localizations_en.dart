@@ -449,4 +449,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sortLatency => 'Fastest first';
+
+  @override
+  String get autoSelect => 'Auto (fastest server)';
+
+  @override
+  String get autoSelectHint =>
+      'Uses the fastest server and switches to another one if it stops working';
+
+  @override
+  String autoActive(String name) {
+    return 'Auto: $name';
+  }
+
+  @override
+  String get autoFinding => 'Finding the fastest server…';
+
+  @override
+  String get errorNoWorkingServer =>
+      'No working server found. Update your subscriptions or add new configs.';
 }

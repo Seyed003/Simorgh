@@ -88,6 +88,27 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
+  testWidgets('auto tile switches to auto mode', (tester) async {
+    final (_, container) = await pump(tester, links: '$vlessReality\n$hy2');
+    expect(find.text('Auto (fastest server)'), findsOneWidget);
+    expect(
+      find.text(
+        'Uses the fastest server and switches to another one if it stops working',
+      ),
+      findsOneWidget,
+    );
+
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Auto (fastest server)'));
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    });
+    await tester.pumpAndSettle();
+    expect(container.read(profilesProvider).value!.isAuto, isTrue);
+    // Tile plus the active-config chip of the connection panel.
+    expect(find.text('Auto (fastest server)'), findsNWidgets(2));
+    expect(find.byIcon(Icons.bolt_rounded), findsNWidgets(2));
+  });
+
   testWidgets('wide layout shows panel and list side by side', (tester) async {
     await pump(tester, links: trojanBare, size: const Size(1280, 800));
     expect(find.byType(VerticalDivider), findsOneWidget);

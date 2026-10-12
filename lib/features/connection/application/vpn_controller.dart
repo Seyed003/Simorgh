@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,9 +8,14 @@ import '../../../core/singbox/builder/config_builder.dart';
 import '../../../core/singbox/builder/core_options.dart';
 import '../../../core/storage/preferences.dart';
 import '../../../core/utils/net_utils.dart';
+import '../../../l10n/generated/app_localizations.dart';
+import '../../latency/application/auto_candidates.dart';
+import '../../latency/application/latency_controller.dart';
 import '../../profiles/application/profiles_controller.dart';
 import '../../profiles/domain/profile.dart';
+import '../../profiles/domain/profiles_state.dart';
 import '../../settings/application/core_options_controller.dart';
+import '../../settings/application/settings_controller.dart';
 import '../data/clash_api_client.dart';
 import '../data/platform_factory.dart';
 import '../data/vpn_platform.dart';
@@ -44,13 +50,49 @@ final trafficProvider = StreamProvider.autoDispose<TrafficStats>((ref) async* {
   }
 });
 
+/// In auto mode, the profile the core currently routes through (`null`
+/// until the core's first test picks one).
+final autoActiveProfileIdProvider = StreamProvider.autoDispose<String?>((
+  ref,
+) async* {
+  final session = ref.watch(
+    vpnControllerProvider.select(
+      (s) => s.isConnected && s.isAuto && s.clashApi != null
+          ? (api: s.clashApi!, ids: s.autoProfileIds)
+          : null,
+    ),
+  );
+  if (session == null) {
+    yield null;
+    return;
+  }
+  final client = ClashApiClient(session.api);
+  while (ref.mounted) {
+    final tag = await client.proxyNow(ConfigTags.proxy);
+    final index = tag == null ? null : SingBoxConfigBuilder.autoIndexOf(tag);
+    yield index != null && index < session.ids.length
+        ? session.ids[index]
+        : null;
+    await Future<void>.delayed(const Duration(seconds: 3));
+  }
+});
+
 class VpnController extends Notifier<VpnState> {
-  static const _clashKey = 'vpn.clash_api';
+  /// Clash API endpoint and profile of the running core, so a relaunched UI
+  /// can reattach to a VpnService that kept running.
+  static const _sessionKey = 'vpn.clash_api';
 
   StreamSubscription<VpnPlatformEvent>? _events;
   bool _restartPending = false;
 
+  /// Bumped by every connect and disconnect, so a connect that is still
+  /// searching for a server notices it was cancelled.
+  int _attempt = 0;
+
   VpnPlatform get _platform => ref.read(vpnPlatformProvider);
+
+  AppLocalizations get _l10n =>
+      lookupAppLocalizations(ref.read(settingsProvider).language.locale);
 
   @override
   VpnState build() {
@@ -58,9 +100,12 @@ class VpnController extends Notifier<VpnState> {
     _events = platform.events.listen(_onEvent);
     ref.onDispose(() => _events?.cancel());
 
-    // Switching servers while connected restarts the core on the new one.
-    ref.listen<Profile?>(selectedProfileProvider, (previous, next) {
-      if (next != null && state.isConnected && next.id != state.profileId) {
+    // Switching servers (or to auto mode) while connected restarts the core.
+    ref.listen<String?>(profilesProvider.select((s) => s.value?.selectedId), (
+      previous,
+      next,
+    ) {
+      if (next != null && state.isConnected && next != state.profileId) {
         unawaited(restart());
       }
     });
@@ -87,18 +132,85 @@ class VpnController extends Notifier<VpnState> {
   }
 
   Future<void> connect() async {
-    final profile = ref.read(selectedProfileProvider);
+    final attempt = ++_attempt;
+    final ProfilesState profiles;
+    try {
+      profiles = await ref.read(profilesProvider.future);
+    } on Object catch (e) {
+      state = VpnState(error: VpnError(VpnErrorCode.unknown, e.toString()));
+      return;
+    }
+    if (attempt != _attempt) return;
+    if (profiles.isAuto) return _connectAuto(attempt);
+
+    final profile = profiles.selected;
     if (profile == null) {
       state = state.copyWith(
         error: () => const VpnError(VpnErrorCode.invalidConfig),
       );
       return;
     }
+    await _start(
+      attempt,
+      profileId: profile.id,
+      profileName: profile.name,
+      build: (builder) => builder.buildJson(profile.config),
+    );
+  }
+
+  /// Auto mode: the fastest recently tested servers go into a `urltest`
+  /// group; the core then keeps using the best one and fails over by itself.
+  /// Without fresh results the servers are measured first.
+  Future<void> _connectAuto(int attempt) async {
+    state = const VpnState(
+      status: VpnStatus.connecting,
+      profileId: ProfilesState.autoId,
+      findingServer: true,
+    );
+    var (candidates, total) = await _autoCandidates();
+    if (candidates.length < min(autoMinCandidates, total)) {
+      await ref.read(latencyProvider.notifier).testAll();
+      if (attempt != _attempt) return;
+      (candidates, total) = await _autoCandidates();
+    }
+    if (attempt != _attempt) return;
+    if (candidates.isEmpty) {
+      state = const VpnState(error: VpnError(VpnErrorCode.noWorkingServer));
+      return;
+    }
+    await _start(
+      attempt,
+      profileId: ProfilesState.autoId,
+      profileName: _l10n.autoSelect,
+      autoProfileIds: [for (final p in candidates) p.id],
+      build: (builder) =>
+          builder.buildAutoJson([for (final p in candidates) p.config]),
+    );
+  }
+
+  Future<(List<Profile>, int)> _autoCandidates() async {
+    final profiles = (await ref.read(profilesProvider.future)).profiles;
+    final candidates = pickAutoCandidates(
+      profiles,
+      ref.read(latencyProvider).results,
+      now: DateTime.now(),
+    );
+    return (candidates, profiles.length);
+  }
+
+  Future<void> _start(
+    int attempt, {
+    required String profileId,
+    required String profileName,
+    required String Function(SingBoxConfigBuilder builder) build,
+    List<String> autoProfileIds = const [],
+  }) async {
     final platform = _platform;
     final clashApi = ClashApiOptions(
       port: await findFreeLocalPort(),
       secret: randomHexSecret(),
     );
+    if (attempt != _attempt) return;
     final builder = SingBoxConfigBuilder(
       options: ref.read(coreOptionsProvider),
       platform: platform.corePlatform,
@@ -107,28 +219,35 @@ class VpnController extends Notifier<VpnState> {
 
     final String configJson;
     try {
-      configJson = builder.buildJson(profile.config);
+      configJson = build(builder);
     } on Exception catch (e) {
-      state = state.copyWith(
-        error: () => VpnError(VpnErrorCode.invalidConfig, e.toString()),
+      state = VpnState(
+        error: VpnError(VpnErrorCode.invalidConfig, e.toString()),
       );
       return;
     }
 
     state = VpnState(
       status: VpnStatus.connecting,
-      profileId: profile.id,
+      profileId: profileId,
       clashApi: clashApi,
+      autoProfileIds: autoProfileIds,
     );
     await ref
         .read(sharedPreferencesProvider)
         .setString(
-          _clashKey,
-          jsonEncode({'port': clashApi.port, 'secret': clashApi.secret}),
+          _sessionKey,
+          jsonEncode({
+            'port': clashApi.port,
+            'secret': clashApi.secret,
+            'profileId': profileId,
+            'auto': autoProfileIds,
+          }),
         );
+    if (attempt != _attempt) return;
     try {
       await platform.start(
-        VpnStartRequest(configJson: configJson, profileName: profile.name),
+        VpnStartRequest(configJson: configJson, profileName: profileName),
       );
     } on VpnError catch (e) {
       state = VpnState(error: e);
@@ -139,6 +258,14 @@ class VpnController extends Notifier<VpnState> {
 
   Future<void> disconnect() async {
     if (state.status == VpnStatus.disconnected) return;
+    _attempt++;
+    if (state.findingServer) {
+      // The core was never started: just abandon the search.
+      state = const VpnState();
+      await ref.read(latencyProvider.notifier).cancel();
+      _connectIfRestartPending(null);
+      return;
+    }
     state = state.copyWith(status: VpnStatus.disconnecting);
     try {
       await _platform.stop();
@@ -147,7 +274,7 @@ class VpnController extends Notifier<VpnState> {
     }
   }
 
-  /// Reconnects with the currently selected profile.
+  /// Reconnects with the current selection.
   Future<void> restart() async {
     if (state.status == VpnStatus.disconnected) return connect();
     _restartPending = true;
@@ -165,35 +292,62 @@ class VpnController extends Notifier<VpnState> {
           error: () => null,
         );
       case VpnStopped(:final error):
+        // A stale stop from the platform must not end a server search.
+        if (state.findingServer) return;
         state = VpnState(error: error);
-        if (_restartPending) {
-          _restartPending = false;
-          if (error == null) unawaited(connect());
-        }
+        _connectIfRestartPending(error);
       case VpnLogLine():
         break;
     }
+  }
+
+  void _connectIfRestartPending(VpnError? error) {
+    if (!_restartPending) return;
+    _restartPending = false;
+    if (error == null) unawaited(connect());
   }
 
   /// Android keeps the VpnService alive when the UI is closed; reattach to
   /// it so the home screen reflects reality after a relaunch.
   Future<void> _restoreRunningService(VpnPlatform platform) async {
     if (!await platform.isRunning()) return;
-    final raw = ref.read(sharedPreferencesProvider).getString(_clashKey);
-    ClashApiOptions? clashApi;
-    if (raw != null) {
-      final json = jsonDecode(raw) as Map<String, Object?>;
-      clashApi = ClashApiOptions(
-        port: json['port']! as int,
-        secret: json['secret']! as String,
-      );
+    final session = _loadSession();
+    var profileId = session?.profileId;
+    if (profileId == null) {
+      try {
+        profileId = (await ref.read(profilesProvider.future)).selectedId;
+      } on Object {
+        // Shown as connected without a known profile.
+      }
     }
     if (state.status != VpnStatus.disconnected) return;
     state = VpnState(
       status: VpnStatus.connected,
       connectedSince: DateTime.now(),
-      profileId: ref.read(selectedProfileProvider)?.id,
-      clashApi: clashApi,
+      profileId: profileId,
+      clashApi: session?.clashApi,
+      autoProfileIds: session?.autoProfileIds ?? const [],
     );
+  }
+
+  ({ClashApiOptions clashApi, String? profileId, List<String> autoProfileIds})?
+  _loadSession() {
+    final raw = ref.read(sharedPreferencesProvider).getString(_sessionKey);
+    if (raw == null) return null;
+    try {
+      final json = jsonDecode(raw) as Map<String, Object?>;
+      return (
+        clashApi: ClashApiOptions(
+          port: json['port']! as int,
+          secret: json['secret']! as String,
+        ),
+        profileId: json['profileId'] as String?,
+        autoProfileIds: [
+          ...((json['auto'] as List?) ?? const []).whereType<String>(),
+        ],
+      );
+    } on Object {
+      return null;
+    }
   }
 }

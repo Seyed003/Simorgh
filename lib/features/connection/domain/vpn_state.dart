@@ -9,6 +9,9 @@ enum VpnErrorCode {
   coreExited,
   unsupportedPlatform,
   invalidConfig,
+
+  /// Auto mode found no server that answers.
+  noWorkingServer,
   unknown,
 }
 
@@ -30,6 +33,8 @@ class VpnState {
     this.connectedSince,
     this.profileId,
     this.clashApi,
+    this.autoProfileIds = const [],
+    this.findingServer = false,
   });
 
   final VpnStatus status;
@@ -39,6 +44,15 @@ class VpnState {
 
   /// Clash API endpoint of the running core, used for live statistics.
   final ClashApiOptions? clashApi;
+
+  /// Auto mode: the candidate profiles in the order of their core tags
+  /// (`auto-0`, `auto-1`, …). Empty for a single selected server.
+  final List<String> autoProfileIds;
+
+  /// Auto mode is measuring servers before the core starts.
+  final bool findingServer;
+
+  bool get isAuto => autoProfileIds.isNotEmpty;
 
   bool get isBusy =>
       status == VpnStatus.connecting || status == VpnStatus.disconnecting;
@@ -51,6 +65,8 @@ class VpnState {
     DateTime? Function()? connectedSince,
     String? Function()? profileId,
     ClashApiOptions? Function()? clashApi,
+    List<String>? autoProfileIds,
+    bool? findingServer,
   }) => VpnState(
     status: status ?? this.status,
     error: error != null ? error() : this.error,
@@ -59,5 +75,7 @@ class VpnState {
         : this.connectedSince,
     profileId: profileId != null ? profileId() : this.profileId,
     clashApi: clashApi != null ? clashApi() : this.clashApi,
+    autoProfileIds: autoProfileIds ?? this.autoProfileIds,
+    findingServer: findingServer ?? this.findingServer,
   );
 }

@@ -12,6 +12,14 @@ class ProfilesState {
   final List<Subscription> subscriptions;
   final String? selectedId;
 
+  /// [selectedId] value meaning "pick the fastest server automatically".
+  static const autoId = 'auto';
+
+  bool get isAuto => selectedId == autoId;
+
+  /// Whether the connect button has something to connect to.
+  bool get hasSelection => isAuto ? profiles.isNotEmpty : selected != null;
+
   Profile? get selected {
     for (final p in profiles) {
       if (p.id == selectedId) return p;

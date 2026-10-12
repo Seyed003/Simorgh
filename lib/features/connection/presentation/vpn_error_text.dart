@@ -16,6 +16,7 @@ String vpnErrorText(BuildContext context, VpnError error) {
       message.isEmpty
           ? l10n.selectConfigFirst
           : l10n.errorInvalidConfig(message),
+    VpnErrorCode.noWorkingServer => l10n.errorNoWorkingServer,
     VpnErrorCode.unknown => l10n.errorUnknown(message),
   };
 }

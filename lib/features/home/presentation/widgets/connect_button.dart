@@ -42,7 +42,9 @@ class _ConnectButtonState extends ConsumerState<ConnectButton>
   }
 
   void _onTap() {
-    if (ref.read(selectedProfileProvider) == null &&
+    final hasSelection =
+        ref.read(profilesProvider).value?.hasSelection ?? false;
+    if (!hasSelection &&
         ref.read(vpnControllerProvider).status == VpnStatus.disconnected) {
       context.showSnack(context.l10n.selectConfigFirst);
       return;

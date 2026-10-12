@@ -9,6 +9,7 @@ import '../../../connection/application/vpn_controller.dart';
 import '../../../connection/domain/traffic.dart';
 import '../../../connection/domain/vpn_state.dart';
 import '../../../profiles/application/profiles_controller.dart';
+import '../../../profiles/domain/profile.dart';
 import 'connect_button.dart';
 
 /// Connect button, status line, active config and live speeds.
@@ -46,9 +47,11 @@ class ConnectionPanel extends ConsumerWidget {
             child: state.isConnected && state.connectedSince != null
                 ? _ConnectedTimer(since: state.connectedSince!)
                 : Text(
-                    state.status == VpnStatus.disconnected
-                        ? l10n.tapToConnect
-                        : '',
+                    switch (state.status) {
+                      VpnStatus.disconnected => l10n.tapToConnect,
+                      _ when state.findingServer => l10n.autoFinding,
+                      _ => '',
+                    },
                     style: context.theme.textTheme.bodyMedium?.copyWith(
                       color: context.colors.onSurfaceVariant,
                     ),
@@ -105,7 +108,25 @@ class _ActiveProfileChip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final profile = ref.watch(selectedProfileProvider);
+    final l10n = context.l10n;
+    final isAuto = ref.watch(
+      profilesProvider.select((s) => s.value?.isAuto ?? false),
+    );
+    final Profile? profile;
+    final String label;
+    if (isAuto) {
+      final activeId = ref.watch(autoActiveProfileIdProvider).value;
+      profile = ref
+          .watch(profilesProvider)
+          .value
+          ?.profiles
+          .where((p) => p.id == activeId)
+          .firstOrNull;
+      label = profile == null ? l10n.autoSelect : l10n.autoActive(profile.name);
+    } else {
+      profile = ref.watch(selectedProfileProvider);
+      label = profile?.name ?? l10n.noActiveConfig;
+    }
     return Container(
       constraints: const BoxConstraints(maxWidth: 360),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -117,14 +138,14 @@ class _ActiveProfileChip extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            Icons.dns_rounded,
+            isAuto ? Icons.bolt_rounded : Icons.dns_rounded,
             size: 18,
             color: context.colors.onSecondaryContainer,
           ),
           const SizedBox(width: 8),
           Flexible(
             child: Text(
-              profile?.name ?? context.l10n.noActiveConfig,
+              label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(

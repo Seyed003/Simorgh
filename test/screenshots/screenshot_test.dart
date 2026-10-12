@@ -12,6 +12,7 @@ import 'package:aghelan_ghiamat/features/connection/domain/vpn_state.dart';
 import 'package:aghelan_ghiamat/features/latency/application/latency_controller.dart';
 import 'package:aghelan_ghiamat/features/profiles/application/profiles_controller.dart';
 import 'package:aghelan_ghiamat/features/profiles/data/profile_store.dart';
+import 'package:aghelan_ghiamat/features/profiles/domain/profiles_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -53,11 +54,11 @@ void main() {
       : null;
   setUpAll(_loadFonts);
 
-  for (final (lang, theme, connected, width) in [
-    ('fa', 'dark', true, 412.0),
-    ('fa', 'light', false, 412.0),
-    ('en', 'light', true, 412.0),
-    ('en', 'dark', true, 1280.0),
+  for (final (lang, theme, connected, width, auto) in [
+    ('fa', 'dark', true, 412.0, true),
+    ('fa', 'light', false, 412.0, false),
+    ('en', 'light', true, 412.0, false),
+    ('en', 'dark', true, 1280.0, false),
   ]) {
     testWidgets(
       'home $lang $theme ${connected ? 'connected' : 'idle'} $width',
@@ -73,6 +74,7 @@ void main() {
           'settings.theme_mode': theme,
         });
         final platform = FakeVpnPlatform();
+        String? activeAutoId;
         final container = ProviderContainer(
           overrides: [
             sharedPreferencesProvider.overrideWithValue(prefs),
@@ -90,6 +92,9 @@ void main() {
                     : TrafficStats.zero,
               ),
             ),
+            autoActiveProfileIdProvider.overrideWith(
+              (ref) => Stream.value(activeAutoId),
+            ),
           ],
         );
         addTearDown(container.dispose);
@@ -106,11 +111,18 @@ void main() {
               .profiles
               .map((p) => p.id)
               .toList();
+          final t = DateTime.now().millisecondsSinceEpoch;
           await prefs.setString(
             'latency.results',
-            '{"${ids[0]}":{"d":142,"t":1},"${ids[1]}":{"d":486,"t":1},"${ids[2]}":{"f":"unreachable","t":1},"${ids[3]}":{"d":1240,"t":1}}',
+            '{"${ids[0]}":{"d":142,"t":$t},"${ids[1]}":{"d":486,"t":$t},"${ids[2]}":{"f":"unreachable","t":$t},"${ids[3]}":{"d":1240,"t":$t}}',
           );
           container.invalidate(latencyProvider);
+          if (auto) {
+            await container
+                .read(profilesProvider.notifier)
+                .select(ProfilesState.autoId);
+            activeAutoId = ids[0];
+          }
           if (connected) {
             await container.read(vpnControllerProvider.notifier).connect();
             await Future<void>.delayed(const Duration(milliseconds: 50));
@@ -140,7 +152,7 @@ void main() {
           final image = await boundary.toImage();
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
           final file = File(
-            'build/screenshots/home_${lang}_${theme}_${connected ? 'on' : 'off'}_${width.toInt()}.png',
+            'build/screenshots/home_${lang}_${theme}_${connected ? 'on' : 'off'}${auto ? '_auto' : ''}_${width.toInt()}.png',
           );
           await file.parent.create(recursive: true);
           await file.writeAsBytes(bytes!.buffer.asUint8List());

@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:aghelan_ghiamat/core/singbox/builder/core_options.dart';
 import 'package:aghelan_ghiamat/features/connection/data/clash_api_client.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 
 void main() {
   test('parses traffic lines', () {
@@ -13,6 +15,32 @@ void main() {
     ));
     expect(ClashApiClient.parseTrafficLine(''), isNull);
     expect(ClashApiClient.parseTrafficLine('nope'), isNull);
+  });
+
+  test('proxyNow reads the selected member of a group', () async {
+    final requested = <Uri>[];
+    ClashApiClient client(http.Response response) => ClashApiClient(
+      const ClashApiOptions(port: 9090, secret: 's'),
+      clientFactory: () => MockClient((request) async {
+        requested.add(request.url);
+        return response;
+      }),
+    );
+    expect(
+      await client(
+        http.Response('{"type":"URLTest","now":"auto-3","all":[]}', 200),
+      ).proxyNow('proxy'),
+      'auto-3',
+    );
+    expect(requested.single.path, '/proxies/proxy');
+    expect(
+      await client(http.Response('{"now":""}', 200)).proxyNow('proxy'),
+      isNull,
+    );
+    expect(
+      await client(http.Response('not found', 404)).proxyNow('proxy'),
+      isNull,
+    );
   });
 
   group('against a real sing-box core', () {

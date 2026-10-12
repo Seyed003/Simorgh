@@ -15,7 +15,7 @@ Open-source VPN client for **Android** and **Windows**, powered by the
 
 ## English
 
-### Features (phase 1)
+### Features
 
 - **Protocols:** VMess, VLESS (incl. REALITY + XTLS-Vision), Trojan,
   Shadowsocks (SIP002, 2022 ciphers, legacy, obfs/v2ray plugins), Hysteria2
@@ -37,6 +37,11 @@ Open-source VPN client for **Android** and **Windows**, powered by the
   HTTPS request timed by a separate sing-box test core, so it works with or
   without the VPN on), shows per-server ms badges, sorts fastest first, and
   skips configs the core rejects instead of failing the whole run.
+- **Auto mode (fastest server + failover):** picks the fastest servers from
+  recent latency results (testing first if they are missing or older than an
+  hour) and hands up to 10 of them to the core as a `urltest` group. The core
+  re-tests them every minute and moves to another server when the current one
+  stops answering; the home screen shows which server is in use.
 - **Persian + English** with full right-to-left layout, light/dark themes,
   bundled Vazirmatn font.
 - **Connection settings:** remote/direct DNS (DoH, DoT, DoQ, UDP, system),
@@ -147,9 +152,8 @@ SCREENSHOTS=1 flutter test test/screenshots               # render UI screenshot
 
 ### Roadmap (phase 2)
 
-~~Real ping test of all servers~~ (done) · speed test · auto-select best
-server + failover ·
-per-app split tunnel · Iran routing rules (domestic direct) · TLS fragment ·
+~~Real ping test of all servers~~ (done) · ~~auto-select best server +
+failover~~ (done) · speed test · per-app split tunnel · Iran routing rules (domestic direct) · TLS fragment ·
 Mux · DoH presets · Cloudflare clean-IP scanner · usage charts · Android Quick
 Settings tile and widget · scheduled subscription updates.
 
@@ -166,7 +170,7 @@ are adapted from [sing-box-for-android](https://github.com/SagerNet/sing-box-for
 
 ## فارسی
 
-### امکانات (فاز ۱)
+### امکانات
 
 - **پروتکل‌ها:** VMess، VLESS (همراه REALITY و XTLS-Vision)، Trojan،
   Shadowsocks (SIP002، رمزهای ۲۰۲۲، قالب قدیمی، پلاگین obfs و v2ray)،
@@ -186,6 +190,9 @@ are adapted from [sing-box-for-android](https://github.com/SagerNet/sing-box-for
 - **تست پینگ واقعی:** همه‌ی سرورها از داخل خود پراکسی تست می‌شوند (چه VPN
   روشن باشد چه خاموش)، کنار هر سرور عدد پینگ نمایش داده می‌شود و می‌توان
   سرورها را از سریع‌ترین مرتب کرد.
+- **حالت خودکار (سریع‌ترین سرور):** برنامه سریع‌ترین سرورها را انتخاب می‌کند
+  و اگر سرور فعلی قطع شد، خودش به سرور سالم بعدی می‌رود. در صفحه اصلی نمایش
+  داده می‌شود که الان از کدام سرور استفاده می‌شود.
 - **فارسی و انگلیسی** با چیدمان کامل راست‌به‌چپ، تم روشن و تیره و فونت وزیرمتن.
 - **بدون SDK اختصاصی گوگل**؛ مناسب برای انتشار در F-Droid.
 

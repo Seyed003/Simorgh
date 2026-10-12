@@ -847,6 +847,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Fastest first'**
   String get sortLatency;
+
+  /// No description provided for @autoSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto (fastest server)'**
+  String get autoSelect;
+
+  /// No description provided for @autoSelectHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Uses the fastest server and switches to another one if it stops working'**
+  String get autoSelectHint;
+
+  /// No description provided for @autoActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto: {name}'**
+  String autoActive(String name);
+
+  /// No description provided for @autoFinding.
+  ///
+  /// In en, this message translates to:
+  /// **'Finding the fastest server…'**
+  String get autoFinding;
+
+  /// No description provided for @errorNoWorkingServer.
+  ///
+  /// In en, this message translates to:
+  /// **'No working server found. Update your subscriptions or add new configs.'**
+  String get errorNoWorkingServer;
 }
 
 class _AppLocalizationsDelegate

@@ -440,4 +440,23 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get sortLatency => 'سریع‌ترین اول';
+
+  @override
+  String get autoSelect => 'خودکار (سریع‌ترین سرور)';
+
+  @override
+  String get autoSelectHint =>
+      'به سریع‌ترین سرور وصل می‌شود و اگر قطع شد، خودش سرور دیگری را جایگزین می‌کند';
+
+  @override
+  String autoActive(String name) {
+    return 'خودکار: $name';
+  }
+
+  @override
+  String get autoFinding => 'در حال پیدا کردن سریع‌ترین سرور…';
+
+  @override
+  String get errorNoWorkingServer =>
+      'هیچ سرور سالمی پیدا نشد. سابسکریپشن‌ها را به‌روز کنید یا کانفیگ جدید اضافه کنید.';
 }

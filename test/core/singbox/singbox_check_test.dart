@@ -63,4 +63,15 @@ void main() {
       });
     }
   }
+
+  // Auto mode: every fixture at once behind a urltest group.
+  for (final MapEntry(key: name, value: builder) in variants.entries) {
+    test('sing-box check auto mode $name', skip: skip, () async {
+      final proxies = allValidLinks.map(LinkParser.parse).toList();
+      final file = File('${dir.path}/config-auto-$name.json');
+      await file.writeAsString(builder.buildAutoJson(proxies));
+      final result = await Process.run(binary!, ['check', '-c', file.path]);
+      expect(result.exitCode, 0, reason: '${result.stderr}${result.stdout}');
+    });
+  }
 }

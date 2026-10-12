@@ -12,6 +12,7 @@ import '../../latency/application/profile_sort.dart';
 import '../../latency/presentation/latency_badge.dart';
 import 'import_actions.dart';
 import 'profile_actions.dart';
+import 'widgets/auto_select_tile.dart';
 import 'widgets/profile_tile.dart';
 import 'widgets/subscription_header.dart';
 
@@ -63,7 +64,9 @@ class ProfileList extends ConsumerWidget {
         if (value.profiles.isEmpty) {
           slivers.add(const SliverToBoxAdapter(child: _EmptyState()));
         } else {
-          slivers.addAll(_groups(context, ref, value));
+          slivers
+            ..add(const SliverToBoxAdapter(child: AutoSelectTile()))
+            ..addAll(_groups(context, ref, value));
         }
       case AsyncError(:final error):
         slivers.add(

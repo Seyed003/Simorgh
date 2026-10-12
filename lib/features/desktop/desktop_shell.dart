@@ -74,7 +74,10 @@ class _DesktopShellState extends ConsumerState<DesktopShell>
       VpnStatus.connected => l10n.statusConnected,
       VpnStatus.disconnecting => l10n.statusDisconnecting,
     };
-    final profile = ref.read(selectedProfileProvider)?.name;
+    final profiles = ref.read(profilesProvider).value;
+    final profile = profiles != null && profiles.isAuto
+        ? l10n.autoSelect
+        : profiles?.selected?.name;
     await trayManager.setIcon(
       connected
           ? 'assets/tray/tray_connected.ico'
@@ -135,7 +138,14 @@ class _DesktopShellState extends ConsumerState<DesktopShell>
     if (isDesktop) {
       ref.listen(vpnControllerProvider, (_, _) => unawaited(_updateTray()));
       ref.listen(settingsProvider, (_, _) => unawaited(_updateTray()));
-      ref.listen(selectedProfileProvider, (_, _) => unawaited(_updateTray()));
+      ref.listen(
+        profilesProvider.select((s) => s.value?.selected?.name),
+        (_, _) => unawaited(_updateTray()),
+      );
+      ref.listen(
+        profilesProvider.select((s) => s.value?.isAuto),
+        (_, _) => unawaited(_updateTray()),
+      );
     }
     return widget.child;
   }
