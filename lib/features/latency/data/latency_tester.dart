@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '../../../core/singbox/builder/config_builder.dart';
 import '../../../core/singbox/builder/core_options.dart';
 import '../../../core/singbox/builder/test_config_builder.dart';
 import '../../../core/singbox/proxy_config.dart';
@@ -25,7 +26,7 @@ class LatencyTester {
   }) : _clientFactory = clientFactory ?? ClashApiClient.new,
        _clock = clock ?? DateTime.now;
 
-  static const defaultUrl = 'https://www.gstatic.com/generate_204';
+  static const defaultUrl = SingBoxConfigBuilder.defaultTestUrl;
 
   final VpnPlatform platform;
   final CoreOptions options;

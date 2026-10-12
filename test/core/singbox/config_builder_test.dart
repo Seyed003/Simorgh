@@ -96,6 +96,45 @@ void main() {
       expect(_list(config['outbounds']).map((o) => o['tag']), ['direct']);
     });
 
+    test('auto mode puts every candidate behind a urltest group', () {
+      final config =
+          const SingBoxConfigBuilder(
+            options: CoreOptions(),
+            platform: CorePlatform.android,
+          ).buildAuto([
+            LinkParser.parse(vlessReality),
+            LinkParser.parse(wireguard),
+            LinkParser.parse(hy2),
+          ]);
+      final outbounds = _list(config['outbounds']);
+      expect(outbounds.map((o) => o['tag']), [
+        'proxy',
+        'auto-0',
+        'auto-2',
+        'direct',
+      ]);
+      final group = outbounds.first;
+      expect(group['type'], 'urltest');
+      expect(group['outbounds'], ['auto-0', 'auto-1', 'auto-2']);
+      expect(group['url'], SingBoxConfigBuilder.defaultTestUrl);
+      expect(group['interval'], '60s');
+      expect(group['tolerance'], 150);
+      expect(group['interrupt_exist_connections'], isTrue);
+      expect(_list(config['endpoints']).single['tag'], 'auto-1');
+      expect(_map(config['route'])['final'], 'proxy');
+      // The default fingerprint still reaches TLS candidates.
+      expect(_map(_map(outbounds[1]['tls'])['utls'])['fingerprint'], isNotNull);
+    });
+
+    test('auto tags round trip', () {
+      expect(
+        SingBoxConfigBuilder.autoIndexOf(SingBoxConfigBuilder.autoTag(7)),
+        7,
+      );
+      expect(SingBoxConfigBuilder.autoIndexOf('proxy'), isNull);
+      expect(SingBoxConfigBuilder.autoIndexOf('auto-x'), isNull);
+    });
+
     test('fingerprint is not forced on QUIC protocols or when disabled', () {
       final hy = const SingBoxConfigBuilder(
         options: CoreOptions(),

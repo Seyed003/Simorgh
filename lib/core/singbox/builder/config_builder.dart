@@ -34,25 +34,94 @@ class SingBoxConfigBuilder {
   final String? cacheFilePath;
 
   Map<String, Object?> build(ProxyConfig proxy) {
-    final proxyOutbound = _prepareOutbound(proxy);
+    final outbound = _prepareOutbound(proxy);
     final isEndpoint = proxy.protocol.isEndpoint;
+    return _assemble(
+      outbounds: [if (!isEndpoint) outbound],
+      endpoints: [if (isEndpoint) outbound],
+    );
+  }
 
+  String buildJson(ProxyConfig proxy) =>
+      const JsonEncoder.withIndent('  ').convert(build(proxy));
+
+  /// Auto mode: every candidate as its own outbound ([autoTag]) behind a
+  /// `urltest` group tagged `proxy`. The core keeps using the fastest
+  /// candidate and moves to another one when it stops answering.
+  ///
+  /// The group re-tests every [interval], so that bounds how long a dead
+  /// server stays in use. A switch also drops open connections, so
+  /// [toleranceMs] is generous: a working server is only replaced for one
+  /// that is clearly faster, not for jitter.
+  Map<String, Object?> buildAuto(
+    List<ProxyConfig> candidates, {
+    String testUrl = defaultTestUrl,
+    Duration interval = const Duration(minutes: 1),
+    int toleranceMs = 150,
+  }) {
+    if (candidates.isEmpty) {
+      throw ArgumentError.value(candidates, 'candidates', 'must not be empty');
+    }
+    final outbounds = <Map<String, Object?>>[];
+    final endpoints = <Map<String, Object?>>[];
+    final tags = <String>[];
+    for (final (i, proxy) in candidates.indexed) {
+      final tag = autoTag(i);
+      tags.add(tag);
+      final outbound = prepareOutbound(
+        proxy,
+        tag: tag,
+        defaultFingerprint: options.defaultFingerprint,
+      );
+      (proxy.protocol.isEndpoint ? endpoints : outbounds).add(outbound);
+    }
+    return _assemble(
+      outbounds: [
+        {
+          'type': 'urltest',
+          'tag': ConfigTags.proxy,
+          'outbounds': tags,
+          'url': testUrl,
+          'interval': '${interval.inSeconds}s',
+          'tolerance': toleranceMs,
+          // Drop connections on a dead server right away instead of
+          // letting apps hang until their own timeouts.
+          'interrupt_exist_connections': true,
+        },
+        ...outbounds,
+      ],
+      endpoints: endpoints,
+    );
+  }
+
+  String buildAutoJson(List<ProxyConfig> candidates) =>
+      const JsonEncoder.withIndent('  ').convert(buildAuto(candidates));
+
+  static String autoTag(int index) => 'auto-$index';
+
+  /// Inverse of [autoTag]; `null` for any other tag.
+  static int? autoIndexOf(String tag) =>
+      tag.startsWith('auto-') ? int.tryParse(tag.substring(5)) : null;
+
+  static const defaultTestUrl = 'https://www.gstatic.com/generate_204';
+
+  Map<String, Object?> _assemble({
+    required List<Map<String, Object?>> outbounds,
+    required List<Map<String, Object?>> endpoints,
+  }) {
     return {
       'log': {'level': options.logLevel, 'timestamp': true},
       'dns': _dns(),
       'inbounds': _inbounds(),
-      if (isEndpoint) 'endpoints': [proxyOutbound],
+      if (endpoints.isNotEmpty) 'endpoints': endpoints,
       'outbounds': [
-        if (!isEndpoint) proxyOutbound,
+        ...outbounds,
         {'type': 'direct', 'tag': ConfigTags.direct},
       ],
       'route': _route(),
       'experimental': _experimental(),
     };
   }
-
-  String buildJson(ProxyConfig proxy) =>
-      const JsonEncoder.withIndent('  ').convert(build(proxy));
 
   Map<String, Object?> _prepareOutbound(ProxyConfig proxy) => prepareOutbound(
     proxy,

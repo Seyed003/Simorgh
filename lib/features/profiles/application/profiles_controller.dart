@@ -58,7 +58,7 @@ class ProfilesController extends AsyncNotifier<ProfilesState> {
       await _commit(
         current.copyWith(
           profiles: [...current.profiles, ...added],
-          selectedId: current.selected == null ? () => added.first.id : null,
+          selectedId: current.hasSelection ? null : () => added.first.id,
         ),
       );
     }
@@ -85,7 +85,7 @@ class ProfilesController extends AsyncNotifier<ProfilesState> {
       current.copyWith(
         profiles: [...current.profiles, ...profiles],
         subscriptions: [...current.subscriptions, subscription],
-        selectedId: current.selected == null ? () => profiles.first.id : null,
+        selectedId: current.hasSelection ? null : () => profiles.first.id,
       ),
     );
     return ImportOutcome(
@@ -202,9 +202,7 @@ class ProfilesController extends AsyncNotifier<ProfilesState> {
     await _commit(
       current.copyWith(
         profiles: remaining,
-        selectedId: current.selectedId == id
-            ? () => remaining.isEmpty ? null : remaining.first.id
-            : null,
+        selectedId: _selectionAfterRemoval(current, remaining),
       ),
     );
   }
@@ -214,16 +212,25 @@ class ProfilesController extends AsyncNotifier<ProfilesState> {
     final remaining = current.profiles
         .where((p) => p.subscriptionId != id)
         .toList();
-    final selectedRemoved = !remaining.any((p) => p.id == current.selectedId);
     await _commit(
       current.copyWith(
         profiles: remaining,
         subscriptions: current.subscriptions.where((s) => s.id != id).toList(),
-        selectedId: selectedRemoved
-            ? () => remaining.isEmpty ? null : remaining.first.id
-            : null,
+        selectedId: _selectionAfterRemoval(current, remaining),
       ),
     );
+  }
+
+  /// Keeps the selection (auto mode included) while it still points at
+  /// something; otherwise falls back to the first remaining profile.
+  static String? Function()? _selectionAfterRemoval(
+    ProfilesState current,
+    List<Profile> remaining,
+  ) {
+    if (remaining.isEmpty) return () => null;
+    if (current.isAuto) return null;
+    if (remaining.any((p) => p.id == current.selectedId)) return null;
+    return () => remaining.first.id;
   }
 
   List<Profile> _profilesFor(String subscriptionId, List<ProxyConfig> configs) {

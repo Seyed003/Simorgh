@@ -60,6 +60,28 @@ class ClashApiClient {
     }
   }
 
+  /// The member a `selector`/`urltest` [group] currently routes through,
+  /// `null` when unknown (e.g. before the group's first test).
+  Future<String?> proxyNow(String group) async {
+    final client = _clientFactory();
+    try {
+      final response = await client
+          .get(
+            _uri('/proxies/${Uri.encodeComponent(group)}'),
+            headers: _headers,
+          )
+          .timeout(const Duration(seconds: 2));
+      if (response.statusCode != 200) return null;
+      final json = jsonDecode(response.body);
+      final now = json is Map ? json['now'] : null;
+      return now is String && now.isNotEmpty ? now : null;
+    } on Exception {
+      return null;
+    } finally {
+      client.close();
+    }
+  }
+
   /// Per-second `(up, down)` byte counts streamed by `GET /traffic`.
   Stream<({int up, int down})> traffic() {
     late final StreamController<({int up, int down})> controller;

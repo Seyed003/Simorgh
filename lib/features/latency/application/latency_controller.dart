@@ -28,6 +28,9 @@ class LatencyController extends Notifier<LatencyState> {
 
   StreamSubscription<LatencyUpdate>? _run;
 
+  /// Completes when the current run ends, finished or cancelled.
+  Completer<void>? _done;
+
   @override
   LatencyState build() {
     ref.onDispose(() => _run?.cancel());
@@ -40,23 +43,29 @@ class LatencyController extends Notifier<LatencyState> {
     await test(profiles.map((p) => p.id));
   }
 
-  /// Tests the given profiles. Ignored while another run is in progress.
+  /// Tests the given profiles. While another run is in progress this only
+  /// waits for that run instead of starting a second one.
   Future<void> test(Iterable<String> ids) async {
-    if (state.running) return;
+    if (_done case final running?) return running.future;
+    final done = _done = Completer<void>();
     final profiles = (await ref.read(profilesProvider.future)).profiles;
+    if (!identical(_done, done)) return; // cancelled meanwhile
     final wanted = ids.toSet();
     final targets = {
       for (final p in profiles)
         if (wanted.contains(p.id)) p.id: p.config,
     };
-    if (targets.isEmpty) return;
+    if (targets.isEmpty) {
+      _done = null;
+      done.complete();
+      return;
+    }
 
     state = state.copyWith(
       testing: targets.keys.toSet(),
       total: targets.length,
       done: 0,
     );
-    final completer = Completer<void>();
     _run = ref
         .read(latencyTesterFactoryProvider)()
         .run(targets)
@@ -68,23 +77,28 @@ class LatencyController extends Notifier<LatencyState> {
               done: state.done + 1,
             );
           },
-          onDone: completer.complete,
-          onError: (Object _) => completer.complete(),
+          onDone: _finish,
+          onError: (Object _) => _finish(),
           cancelOnError: true,
         );
-    await completer.future;
-    _finish();
+    return done.future;
   }
 
   /// Stops the current run, keeping results gathered so far.
   Future<void> cancel() async {
-    await _run?.cancel();
+    final run = _run;
+    _run = null;
+    await run?.cancel();
     _finish();
   }
 
   void _finish() {
+    final done = _done;
+    if (done == null) return;
+    _done = null;
     _run = null;
     state = state.copyWith(testing: const {});
+    done.complete();
     unawaited(_save());
   }
 

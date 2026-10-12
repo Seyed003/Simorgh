@@ -129,6 +129,38 @@ void main() {
     expect(c.read(profilesProvider).value!.selected!.name, 'AnyTLS');
   });
 
+  test('auto mode survives imports and deletions', () async {
+    const url = 'https://sub.example.com/auto';
+    served[url] = '$hy2\n$anytls';
+    final c = await create();
+    final controller = c.read(profilesProvider.notifier);
+    await controller.importText(trojanBare);
+    await controller.select(ProfilesState.autoId);
+
+    // New configs do not steal the selection from auto mode.
+    final added = await controller.addSubscription(url);
+    await controller.importText(tuic);
+    var state = c.read(profilesProvider).value!;
+    expect(state.isAuto, isTrue);
+    expect(state.selected, isNull);
+    expect(state.hasSelection, isTrue);
+
+    await controller.deleteSubscription(added.subscription!.id);
+    await controller.deleteProfile(state.manualProfiles().first.id);
+    state = c.read(profilesProvider).value!;
+    expect(state.isAuto, isTrue);
+
+    // Nothing left to pick from: auto mode ends.
+    await controller.deleteProfile(state.profiles.single.id);
+    state = c.read(profilesProvider).value!;
+    expect(state.selectedId, isNull);
+    expect(state.hasSelection, isFalse);
+
+    // And the next import selects normally again.
+    await controller.importText(trojanBare);
+    expect(c.read(profilesProvider).value!.selected!.name, 'bare');
+  });
+
   test('failed download surfaces SubscriptionException', () async {
     final c = await create();
     expect(

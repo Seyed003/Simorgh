@@ -256,5 +256,17 @@
   "latencyError": "Error",
   "sortBy": "Sort",
   "sortDefault": "Default order",
-  "sortLatency": "Fastest first"
+  "sortLatency": "Fastest first",
+  "autoSelect": "Auto (fastest server)",
+  "autoSelectHint": "Uses the fastest server and switches to another one if it stops working",
+  "autoActive": "Auto: {name}",
+  "autoFinding": "Finding the fastest server…",
+  "errorNoWorkingServer": "No working server found. Update your subscriptions or add new configs.",
+  "@autoActive": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

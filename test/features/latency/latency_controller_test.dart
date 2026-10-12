@@ -98,4 +98,24 @@ void main() {
       'latency',
     );
   });
+
+  test('a second run waits for the one in progress', () async {
+    final c = await create({'t0': 250, 't1': 120, 't2': 90});
+    final notifier = c.read(latencyProvider.notifier);
+    final first = notifier.testAll();
+    final second = notifier.testAll();
+    await second;
+    expect(c.read(latencyProvider).running, isFalse);
+    expect(c.read(latencyProvider).results, hasLength(3));
+    await first;
+  });
+
+  test('cancel releases callers waiting for the run', () async {
+    final c = await create({'t0': 250, 't1': 120, 't2': 90});
+    final notifier = c.read(latencyProvider.notifier);
+    final run = notifier.testAll();
+    await notifier.cancel();
+    await run.timeout(const Duration(seconds: 1));
+    expect(c.read(latencyProvider).running, isFalse);
+  });
 }
