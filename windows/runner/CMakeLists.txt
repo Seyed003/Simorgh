@@ -27,6 +27,11 @@ target_compile_definitions(${BINARY_NAME} PRIVATE "FLUTTER_VERSION_MINOR=${FLUTT
 target_compile_definitions(${BINARY_NAME} PRIVATE "FLUTTER_VERSION_PATCH=${FLUTTER_VERSION_PATCH}")
 target_compile_definitions(${BINARY_NAME} PRIVATE "FLUTTER_VERSION_BUILD=${FLUTTER_VERSION_BUILD}")
 
+# The UAC level (requireAdministrator, needed for TUN) is declared in
+# runner.exe.manifest. Stop the linker from emitting its own default
+# asInvoker block; mt.exe cannot merge two different levels (LNK1327).
+target_link_options(${BINARY_NAME} PRIVATE "/MANIFESTUAC:NO")
+
 # Disable Windows macros that collide with C++ standard library functions.
 target_compile_definitions(${BINARY_NAME} PRIVATE "NOMINMAX")
 
