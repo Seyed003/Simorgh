@@ -75,6 +75,69 @@ class ProxyConfig {
     return parts.join(' · ');
   }
 
+  /// Host name the server is reached by in TLS (SNI), else the address.
+  String get tlsHost {
+    final tls = outbound['tls'];
+    final sni = tls is Map ? tls['server_name'] : null;
+    return sni is String && sni.isNotEmpty ? sni : server;
+  }
+
+  /// Looks like a config served through a CDN such as Cloudflare: a
+  /// V2Ray-style protocol over an HTTP-based transport, addressed by name.
+  bool get isCdnCandidate {
+    final transport = outbound['transport'];
+    return const {
+          ProxyProtocol.vmess,
+          ProxyProtocol.vless,
+          ProxyProtocol.trojan,
+        }.contains(protocol) &&
+        transport is Map &&
+        const {
+          'ws',
+          'grpc',
+          'httpupgrade',
+          'http',
+        }.contains(transport['type']) &&
+        !_isIpLiteral(server);
+  }
+
+  /// A copy that connects to [address] (a "clean" CDN IP) while still
+  /// presenting the original host name in TLS (SNI) and in the HTTP Host
+  /// header, so the CDN routes it to the same server.
+  ProxyConfig withAddress(String address) {
+    final copy = (jsonDecode(jsonEncode(outbound)) as Map)
+        .cast<String, Object?>();
+    copy['server'] = address;
+    final tls = copy['tls'];
+    if (tls is Map && tls['enabled'] == true) {
+      final sni = tls['server_name'];
+      if (sni is! String || sni.isEmpty) tls['server_name'] = server;
+    }
+    final transport = copy['transport'];
+    if (transport is Map) {
+      switch (transport['type']) {
+        case 'ws':
+          final headers = (transport['headers'] as Map?) ?? {};
+          headers.putIfAbsent('Host', () => server);
+          transport['headers'] = headers;
+        case 'httpupgrade':
+          transport['host'] ??= server;
+        case 'http':
+          transport['host'] ??= [server];
+      }
+    }
+    return ProxyConfig(
+      protocol: protocol,
+      name: '$name · $address',
+      server: address,
+      port: port,
+      outbound: copy,
+    );
+  }
+
+  static bool _isIpLiteral(String host) =>
+      RegExp(r'^\d{1,3}(\.\d{1,3}){3}$').hasMatch(host) || host.contains(':');
+
   ProxyConfig copyWith({String? name}) => ProxyConfig(
     protocol: protocol,
     name: name ?? this.name,

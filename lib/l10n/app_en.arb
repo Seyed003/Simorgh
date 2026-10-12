@@ -333,5 +333,42 @@
   "usageDaily": "By day",
   "usageEmpty": "Nothing recorded yet. Usage is counted while you are connected.",
   "usageReset": "Reset statistics",
-  "usageResetConfirm": "Delete all usage statistics?"
+  "usageResetConfirm": "Delete all usage statistics?",
+  "cleanIpScan": "Find clean Cloudflare IP",
+  "cleanIpHint": "Finds Cloudflare addresses your internet can reach. Configs that go through Cloudflare (CDN) can use one instead of their blocked address.",
+  "cleanIpTestingHost": "Tested with {host}",
+  "cleanIpDisconnectFirst": "Disconnect first: the scan has to use your own internet, not the VPN.",
+  "cleanIpStart": "Start scan",
+  "cleanIpProgress": "Tested {tested} of {total} · {found} working",
+  "cleanIpNone": "No working address found. Try again later or on another network.",
+  "cleanIpUse": "Make a copy of the config with this IP",
+  "cleanIpCreated": "Added “{name}”",
+  "copyIp": "Copy IP",
+  "@cleanIpTestingHost": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "@cleanIpProgress": {
+    "placeholders": {
+      "tested": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      },
+      "found": {
+        "type": "String"
+      }
+    }
+  },
+  "@cleanIpCreated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

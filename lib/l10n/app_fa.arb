@@ -170,5 +170,15 @@
   "usageDaily": "مصرف روزانه",
   "usageEmpty": "هنوز مصرفی ثبت نشده. مصرف در زمان اتصال شمرده می‌شود.",
   "usageReset": "پاک کردن آمار",
-  "usageResetConfirm": "همه‌ی آمار مصرف پاک شود؟"
+  "usageResetConfirm": "همه‌ی آمار مصرف پاک شود؟",
+  "cleanIpScan": "پیدا کردن IP تمیز کلودفلر",
+  "cleanIpHint": "IPهای کلودفلری را پیدا می‌کند که اینترنت شما به آن‌ها دسترسی دارد. کانفیگ‌هایی که از کلودفلر (CDN) رد می‌شوند می‌توانند به‌جای آدرس مسدودشده از آن استفاده کنند.",
+  "cleanIpTestingHost": "تست با دامنه‌ی {host}",
+  "cleanIpDisconnectFirst": "اول VPN را قطع کنید؛ اسکن باید با اینترنت خودتان انجام شود، نه از داخل VPN.",
+  "cleanIpStart": "شروع اسکن",
+  "cleanIpProgress": "{tested} از {total} تست شد · {found} سالم",
+  "cleanIpNone": "IP سالمی پیدا نشد. بعداً یا روی اینترنت دیگری دوباره امتحان کنید.",
+  "cleanIpUse": "ساخت کپی کانفیگ با این IP",
+  "cleanIpCreated": "«{name}» اضافه شد",
+  "copyIp": "کپی IP"
 }

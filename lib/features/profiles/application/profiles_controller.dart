@@ -167,6 +167,23 @@ class ProfilesController extends AsyncNotifier<ProfilesState> {
     return failures;
   }
 
+  /// Adds [config] as a new manual profile and selects it.
+  Future<Profile> addAndSelect(ProxyConfig config) async {
+    final current = await _current();
+    final profile = Profile(
+      id: _uuid.v4(),
+      config: config,
+      createdAt: DateTime.now(),
+    );
+    await _commit(
+      current.copyWith(
+        profiles: [...current.profiles, profile],
+        selectedId: () => profile.id,
+      ),
+    );
+    return profile;
+  }
+
   /// Refreshes every subscription last updated more than [maxAge] ago
   /// (or never) and returns the ids it tried, failures included.
   Future<Set<String>> updateDueSubscriptions(

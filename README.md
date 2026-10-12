@@ -42,6 +42,21 @@ Open-source VPN client for **Android** and **Windows**, powered by the
   the test core as its own local proxy and measured one at a time for up to
   10 s; results in Mbps stay on the server tiles. Latency and speed runs take
   turns on the test core instead of stopping each other.
+- **Per-app proxy (Android):** all apps, only selected apps, or every app
+  except the selected ones go through the VPN.
+- **Clean Cloudflare IP finder:** for configs served through Cloudflare
+  (ws/gRPC/HTTPUpgrade), scans a sample of Cloudflare's addresses from your own
+  connection (TLS with the config's SNI, then `/cdn-cgi/trace`) and makes a
+  copy of the config pointed at the address you pick.
+- **Usage statistics:** today / 7 days / 30 days, a 14-day chart and a daily
+  table, counted from the core's own totals (so traffic while the app was
+  closed is included).
+- **Android quick settings tile and home screen widget** to connect with the
+  last used config or disconnect.
+- **Subscriptions update themselves** when the app opens (every 3–24 h, or off).
+- **DNS presets** (Cloudflare, Google, Quad9, AdGuard; Shecan, Electro, Radar
+  for direct lookups) besides typing any DoH/DoT/DoQ/UDP server.
+- **Persian calendar:** dates are shown in the Solar Hijri calendar in Persian.
 - **Auto mode (fastest server + failover):** picks the fastest servers from
   recent latency results (testing first if they are missing or older than an
   hour) and hands up to 10 of them to the core as a `urltest` group. The core
@@ -166,12 +181,12 @@ SING_BOX_BIN=/path/to/sing-box flutter test --tags singbox  # validate configs w
 SCREENSHOTS=1 flutter test test/screenshots               # render UI screenshots to build/screenshots
 ```
 
-### Roadmap (phase 2)
+### Roadmap
 
-~~Real ping test of all servers~~ (done) · ~~auto-select best server +
-failover~~ (done) · ~~Iran routing rules (domestic direct)~~ (done) · ~~TLS fragment~~ (done) ·
-~~Mux~~ (done) · ~~speed test~~ (done) · per-app split tunnel · DoH presets · Cloudflare clean-IP scanner · usage charts · Android Quick
-Settings tile and widget · scheduled subscription updates.
+Phase 2 is complete: latency and speed tests, auto mode with failover, Iran
+routing, TLS fragment and Mux, per-app proxy, clean IP finder, usage
+statistics, quick settings tile and widget, subscription auto-update, DNS
+presets.
 
 ### License
 
@@ -208,6 +223,15 @@ are adapted from [sing-box-for-android](https://github.com/SagerNet/sing-box-for
   سرورها را از سریع‌ترین مرتب کرد.
 - **تست سرعت دانلود:** برای هر سرور (از منوی سرور) یا همه‌ی سرورهای یک
   سابسکریپشن. سرعت به مگابیت بر ثانیه زیر هر سرور نمایش داده می‌شود.
+- **انتخاب برنامه‌ها (Split Tunnel، اندروید):** همه‌ی برنامه‌ها، فقط
+  برنامه‌های انتخاب‌شده، یا همه به‌جز انتخاب‌شده‌ها از VPN رد می‌شوند.
+- **پیدا کردن IP تمیز کلودفلر:** برای کانفیگ‌هایی که از کلودفلر رد می‌شوند،
+  IPهای سالم را با اینترنت خودتان پیدا می‌کند و با یک لمس کانفیگ جدید می‌سازد.
+- **آمار مصرف اینترنت:** امروز، ۷ و ۳۰ روز اخیر، نمودار ۱۴ روزه و جدول روزانه.
+- **دکمه‌ی سریع در نوار اعلان اندروید و ویجت صفحه‌ی اصلی.**
+- **به‌روزرسانی خودکار سابسکریپشن‌ها** هنگام باز شدن برنامه.
+- **DNSهای آماده** (از جمله شکن، الکترو و رادار برای DNS مستقیم).
+- **تاریخ شمسی** در زبان فارسی.
 - **حالت خودکار (سریع‌ترین سرور):** برنامه سریع‌ترین سرورها را انتخاب می‌کند
   و اگر سرور فعلی قطع شد، خودش به سرور سالم بعدی می‌رود. در صفحه اصلی نمایش
   داده می‌شود که الان از کدام سرور استفاده می‌شود.

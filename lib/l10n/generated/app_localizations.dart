@@ -1123,6 +1123,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete all usage statistics?'**
   String get usageResetConfirm;
+
+  /// No description provided for @cleanIpScan.
+  ///
+  /// In en, this message translates to:
+  /// **'Find clean Cloudflare IP'**
+  String get cleanIpScan;
+
+  /// No description provided for @cleanIpHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Finds Cloudflare addresses your internet can reach. Configs that go through Cloudflare (CDN) can use one instead of their blocked address.'**
+  String get cleanIpHint;
+
+  /// No description provided for @cleanIpTestingHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Tested with {host}'**
+  String cleanIpTestingHost(String host);
+
+  /// No description provided for @cleanIpDisconnectFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect first: the scan has to use your own internet, not the VPN.'**
+  String get cleanIpDisconnectFirst;
+
+  /// No description provided for @cleanIpStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start scan'**
+  String get cleanIpStart;
+
+  /// No description provided for @cleanIpProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Tested {tested} of {total} · {found} working'**
+  String cleanIpProgress(String tested, String total, String found);
+
+  /// No description provided for @cleanIpNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No working address found. Try again later or on another network.'**
+  String get cleanIpNone;
+
+  /// No description provided for @cleanIpUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Make a copy of the config with this IP'**
+  String get cleanIpUse;
+
+  /// No description provided for @cleanIpCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Added “{name}”'**
+  String cleanIpCreated(String name);
+
+  /// No description provided for @copyIp.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy IP'**
+  String get copyIp;
 }
 
 class _AppLocalizationsDelegate

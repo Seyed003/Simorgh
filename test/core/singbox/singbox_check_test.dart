@@ -105,4 +105,12 @@ void main() {
       expect(result.exitCode, 0, reason: '${result.stderr}${result.stdout}');
     });
   }
+
+  test('sing-box check config moved to a clean IP', skip: skip, () async {
+    final proxy = LinkParser.parse(vlessWs).withAddress('104.16.1.2');
+    final file = File('${dir.path}/clean-ip.json');
+    await file.writeAsString(variants['android']!.buildJson(proxy));
+    final result = await Process.run(binary!, ['check', '-c', file.path]);
+    expect(result.exitCode, 0, reason: '${result.stderr}${result.stdout}');
+  });
 }
