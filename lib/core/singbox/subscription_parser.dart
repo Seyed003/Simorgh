@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'encoding.dart';
 import 'link_parser.dart';
+import 'protocols/xray_outbound.dart';
 import 'proxy_config.dart';
 
 /// A line that could not be imported, with the reason.
@@ -53,7 +54,11 @@ abstract final class SubscriptionParser {
 
     if (text.startsWith('{') || text.startsWith('[')) {
       final json = _tryJson(text);
-      if (json != null) return _parseSingBoxJson(json);
+      if (json != null) {
+        return _isXrayJson(json)
+            ? _parseXrayJson(json)
+            : _parseSingBoxJson(json);
+      }
     }
 
     if (!text.contains('://')) {
@@ -170,6 +175,98 @@ abstract final class SubscriptionParser {
           outbound: outbound,
         ),
       );
+    }
+    return ParseResult(proxies, skipped);
+  }
+
+  /// Xray/v2ray JSON (outbounds with `protocol`, not sing-box's `type`):
+  /// one config, or a list of them as some subscriptions serve.
+  static bool _isXrayJson(Object json) {
+    bool isXrayOutbound(Object? o) => o is Map && o['protocol'] is String;
+    bool isXrayConfig(Object? c) =>
+        c is Map &&
+        c['outbounds'] is List &&
+        (c['outbounds'] as List).any(isXrayOutbound);
+    if (json is List) {
+      return json.any((c) => isXrayConfig(c) || isXrayOutbound(c));
+    }
+    return isXrayConfig(json) || isXrayOutbound(json);
+  }
+
+  static const _xrayProtocols = {
+    'vless': ProxyProtocol.vless,
+    'vmess': ProxyProtocol.vmess,
+    'trojan': ProxyProtocol.trojan,
+    'shadowsocks': ProxyProtocol.shadowsocks,
+  };
+
+  static ParseResult _parseXrayJson(Object json) {
+    final configs = <Map<String, Object?>>[];
+    for (final item in json is List ? json : [json]) {
+      if (item is! Map) continue;
+      final map = item.cast<String, Object?>();
+      configs.add(
+        map['outbounds'] is List
+            ? map
+            : {
+                'outbounds': [map],
+              },
+      );
+    }
+    final proxies = <ProxyConfig>[];
+    final skipped = <SkippedEntry>[];
+    for (final config in configs) {
+      final outbounds = [
+        for (final o in config['outbounds']! as List)
+          if (o is Map) o.cast<String, Object?>(),
+      ];
+      final remarks = config['remarks'];
+      final proxyOutbounds = outbounds
+          .where((o) => _xrayProtocols.containsKey(o['protocol']))
+          .toList();
+      for (final (i, item) in proxyOutbounds.indexed) {
+        final protocol = _xrayProtocols[item['protocol']]!;
+        final xray =
+            (jsonDecode(jsonEncode(item)) as Map).cast<String, Object?>()
+              ..remove('tag');
+        final outbound = xrayOutbound(xray);
+        final server = outbound.xrayServer ?? (xray['settings'] as Map?);
+        final address = server?['address'];
+        final port = server?['port'];
+        final label = remarks is String && remarks.isNotEmpty
+            ? (proxyOutbounds.length > 1 ? '$remarks #${i + 1}' : remarks)
+            : null;
+        if (address is! String || address.isEmpty || port is! int) {
+          skipped.add(
+            SkippedEntry(label ?? protocol.displayName, 'missing server'),
+          );
+          continue;
+        }
+        final stream = xray['streamSettings'];
+        if (stream is Map) {
+          // Fragmentation lives in another outbound of the source config.
+          final sockopt = stream['sockopt'];
+          if (sockopt is Map && sockopt['dialerProxy'] is String) {
+            final helper = outbounds
+                .where((o) => o['tag'] == sockopt['dialerProxy'])
+                .firstOrNull;
+            final fragment = (helper?['settings'] as Map?)?['fragment'];
+            if (fragment != null) outbound['fragment'] = fragment;
+            sockopt.remove('dialerProxy');
+          }
+          // Xray no longer skips certificate checks; neither do we.
+          (stream['tlsSettings'] as Map?)?.remove('allowInsecure');
+        }
+        proxies.add(
+          ProxyConfig(
+            protocol: protocol,
+            name: label ?? '${protocol.displayName} $address:$port',
+            server: address,
+            port: port,
+            outbound: outbound,
+          ),
+        );
+      }
     }
     return ParseResult(proxies, skipped);
   }

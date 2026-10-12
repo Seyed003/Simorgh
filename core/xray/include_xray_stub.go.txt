@@ -1,0 +1,7 @@
+//go:build !with_xray
+
+package include
+
+import "github.com/sagernet/sing-box/adapter/outbound"
+
+func registerXrayOutbound(*outbound.Registry) {}

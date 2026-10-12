@@ -4,6 +4,7 @@ import '../encoding.dart';
 import '../proxy_config.dart';
 import '../share_uri.dart';
 import 'v2ray_common.dart';
+import 'xray_outbound.dart';
 
 const _vmessSecurities = {
   'auto',
@@ -52,6 +53,48 @@ ProxyConfig _parseV2rayNJson(String link, String decoded) {
 
   final host = str('host');
   final sni = str('sni');
+  final serverName = sni.isNotEmpty
+      ? sni
+      : (host.isNotEmpty ? splitList(host).first : server);
+  final network = str('net');
+  final name = str('ps').isNotEmpty ? str('ps') : 'VMess $server:$port';
+  if (isXrayTransport(network)) {
+    final kcp = network == 'kcp' || network == 'mkcp';
+    return ProxyConfig(
+      protocol: ProxyProtocol.vmess,
+      name: name,
+      server: server,
+      port: port,
+      outbound: xrayVmess(
+        address: server,
+        port: port,
+        uuid: uuid,
+        security: _security(str('scy')),
+        stream: xrayStreamSettings(
+          network: network,
+          security: str('tls'),
+          serverName: serverName,
+          alpn: str('alpn'),
+          fingerprint: str('fp'),
+          pinnedCertSha256: str('pcs'),
+          realityPublicKey: str('pbk'),
+          realityShortId: str('sid'),
+          spiderX: str('spx'),
+          host: host,
+          // v2rayN keeps the mKCP seed in `path`, the header type (mKCP) or
+          // the XHTTP mode in `type`.
+          path: kcp ? null : str('path'),
+          seed: kcp ? str('path') : null,
+          headerType: kcp ? str('type') : null,
+          mode: kcp
+              ? null
+              : (str('mode').isNotEmpty ? str('mode') : str('type')),
+          extra: str('extra'),
+        ),
+      ),
+      link: link,
+    );
+  }
   final outbound = <String, Object?>{
     'type': 'vmess',
     'server': server,
@@ -62,9 +105,7 @@ ProxyConfig _parseV2rayNJson(String link, String decoded) {
   };
   final tls = buildTls(
     security: str('tls'),
-    serverName: sni.isNotEmpty
-        ? sni
-        : (host.isNotEmpty ? splitList(host).first : server),
+    serverName: serverName,
     alpn: str('alpn'),
     fingerprint: str('fp'),
     insecure: _truthy(json['allowInsecure']) || _truthy(json['insecure']),
@@ -73,7 +114,6 @@ ProxyConfig _parseV2rayNJson(String link, String decoded) {
   );
   if (tls != null) outbound['tls'] = tls;
 
-  final network = str('net');
   final transport = buildTransport(
     network: network,
     host: host,
@@ -84,10 +124,9 @@ ProxyConfig _parseV2rayNJson(String link, String decoded) {
   );
   if (transport != null) outbound['transport'] = transport;
 
-  final name = str('ps');
   return ProxyConfig(
     protocol: ProxyProtocol.vmess,
-    name: name.isNotEmpty ? name : 'VMess $server:$port',
+    name: name,
     server: server,
     port: port,
     outbound: outbound,
@@ -101,6 +140,47 @@ ProxyConfig _parseVmessUrl(String link) {
   final uuid = uri.decodedUserInfo ?? '';
   if (uuid.isEmpty) throw const LinkParseException('missing vmess id');
   final port = uri.port;
+  final host = uri.param(['host']);
+  final network = uri.param(['type', 'net']);
+  final serverName =
+      uri.param(['sni', 'peer']) ??
+      (host != null ? splitList(host).first : uri.host);
+  final name = uri.fragment.isNotEmpty
+      ? uri.fragment
+      : 'VMess ${uri.host}:$port';
+  if (isXrayTransport(network)) {
+    return ProxyConfig(
+      protocol: ProxyProtocol.vmess,
+      name: name,
+      server: uri.host,
+      port: port,
+      outbound: xrayVmess(
+        address: uri.host,
+        port: port,
+        uuid: uuid,
+        security: _security(uri.param(['encryption', 'scy'])),
+        stream: xrayStreamSettings(
+          network: network,
+          security: uri.param(['security']),
+          serverName: serverName,
+          alpn: uri.param(['alpn']),
+          fingerprint: uri.param(['fp']),
+          pinnedCertSha256: uri.param(['pcs']),
+          verifyCertName: uri.param(['vcn']),
+          realityPublicKey: uri.param(['pbk']),
+          realityShortId: uri.param(['sid']),
+          spiderX: uri.param(['spx']),
+          host: host,
+          path: uri.param(['path']),
+          mode: uri.param(['mode']),
+          extra: uri.param(['extra']),
+          headerType: uri.param(['headertype']),
+          seed: uri.param(['seed']),
+        ),
+      ),
+      link: link,
+    );
+  }
   final outbound = <String, Object?>{
     'type': 'vmess',
     'server': uri.host,
@@ -109,12 +189,9 @@ ProxyConfig _parseVmessUrl(String link) {
     'security': _security(uri.param(['encryption', 'scy'])),
     'alter_id': int.tryParse(uri.param(['aid', 'alterid']) ?? '') ?? 0,
   };
-  final host = uri.param(['host']);
   final tls = buildTls(
     security: uri.param(['security']),
-    serverName:
-        uri.param(['sni', 'peer']) ??
-        (host != null ? splitList(host).first : uri.host),
+    serverName: serverName,
     alpn: uri.param(['alpn']),
     fingerprint: uri.param(['fp']),
     insecure: uri.flag(['allowinsecure', 'insecure']),
@@ -123,7 +200,7 @@ ProxyConfig _parseVmessUrl(String link) {
   );
   if (tls != null) outbound['tls'] = tls;
   final transport = buildTransport(
-    network: uri.param(['type', 'net']),
+    network: network,
     host: host,
     path: uri.param(['path']),
     serviceName: uri.param(['servicename']),
@@ -133,7 +210,7 @@ ProxyConfig _parseVmessUrl(String link) {
 
   return ProxyConfig(
     protocol: ProxyProtocol.vmess,
-    name: uri.fragment.isNotEmpty ? uri.fragment : 'VMess ${uri.host}:$port',
+    name: name,
     server: uri.host,
     port: port,
     outbound: outbound,

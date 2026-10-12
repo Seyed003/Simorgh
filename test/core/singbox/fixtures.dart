@@ -70,6 +70,36 @@ const vlessGrpcReality =
 const vlessXhttp =
     'vless://$uuid@example.com:443?security=tls&type=xhttp&path=%2Fx#xhttp';
 
+const vlessXhttpReality =
+    'vless://$uuid@1.2.3.4:443?security=reality&sni=www.microsoft.com&fp=chrome&pbk=$realityKey&sid=6ba8&type=xhttp&path=%2Fxh&mode=packet-up&extra=%7B%22xPaddingBytes%22%3A%22100-1000%22%7D#xhttp-reality';
+
+const vlessKcp =
+    'vless://$uuid@kcp.example.com:9000?type=kcp&headerType=srtp&seed=abc#kcp';
+
+/// v2rayN JSON: the mKCP seed is in `path`, the header type in `type`.
+final vmessKcp = vmessJson({
+  'v': '2',
+  'ps': 'kcp',
+  'add': 'kcp.example.com',
+  'port': '8443',
+  'id': uuid,
+  'aid': '0',
+  'scy': 'auto',
+  'net': 'kcp',
+  'type': 'wechat-video',
+  'path': 's33d',
+  'tls': '',
+});
+
+const trojanXhttp =
+    'trojan://pass@cdn.example.com:443?security=tls&sni=cdn.example.com&type=xhttp&host=cdn.example.com&path=%2Ftr&allowInsecure=1&pcs=$pinnedCert#trojan-xhttp';
+
+const pinnedCert =
+    '6d2f1d1e3c5a7b9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f70';
+
+const vlessEncryption =
+    'vless://$uuid@enc.example.com:443?encryption=mlkem768x25519plus.native.0rtt.L2GZcKEFIc5MmpwhNQ_hcFT9so-i1IerO3dK5uVIdxA&type=tcp&security=none#vless-enc';
+
 const trojanTls =
     'trojan://p%40ss%2Bword@trojan.example.com:443?security=tls&sni=sni.example.com&type=tcp&headerType=none&allowInsecure=1#Trojan';
 
@@ -131,4 +161,10 @@ final allValidLinks = <String>[
   hysteria1,
   anytls,
   socks,
+  vlessXhttp,
+  vlessXhttpReality,
+  vlessKcp,
+  vmessKcp,
+  trojanXhttp,
+  vlessEncryption,
 ];

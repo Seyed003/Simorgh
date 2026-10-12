@@ -31,11 +31,16 @@ jobs:
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test
-      - name: Fetch sing-box for config validation
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: scripts/*_version.txt
+      - name: Build the core (sing-box + Xray) and an Xray test server
         run: |
-          version="$(cat scripts/core_version.txt)"
-          curl -fsSL "https://github.com/SagerNet/sing-box/releases/download/v${version}/sing-box-${version}-linux-amd64.tar.gz" | tar -xz -C "$RUNNER_TEMP"
-          echo "SING_BOX_BIN=$RUNNER_TEMP/sing-box-${version}-linux-amd64/sing-box" >> "$GITHUB_ENV"
+          scripts/build_core.sh linux amd64 "$RUNNER_TEMP/sing-box"
+          GOBIN="$RUNNER_TEMP/xray" go install "github.com/xtls/xray-core/main@$(cat scripts/xray_version.txt)"
+          echo "SING_BOX_BIN=$RUNNER_TEMP/sing-box" >> "$GITHUB_ENV"
+          echo "XRAY_BIN=$RUNNER_TEMP/xray/main" >> "$GITHUB_ENV"
       - name: Validate generated configs with the real core
         run: flutter test --tags singbox
 
@@ -59,6 +64,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
+          cache: false
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
@@ -93,9 +99,13 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
-      - name: Fetch sing-box core
-        shell: pwsh
-        run: ./scripts/fetch_core_windows.ps1
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: scripts/*_version.txt
+      - name: Build the core (sing-box + Xray)
+        shell: bash
+        run: scripts/build_core_windows.sh amd64
       - name: Build
         run: flutter build windows --release
       # GitHub zips artifacts itself; uploading the folder avoids a zip

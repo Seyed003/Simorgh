@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import '../protocols/xray_outbound.dart';
 import '../proxy_config.dart';
 import '../rules/iran_rules.dart';
 import 'core_options.dart';
@@ -269,6 +270,7 @@ Map<String, Object?> prepareOutbound(
         break;
     }
   }
+  if (outbound.isXray) _prepareXray(outbound, options);
   // UDP the way Xray-based clients send it (one connection, many
   // destinations); Xray servers expect it.
   if (const {'vless', 'vmess'}.contains(type) &&
@@ -284,6 +286,33 @@ Map<String, Object?> prepareOutbound(
     outbound['multiplex'] = {'enabled': true, 'protocol': options.muxProtocol};
   }
   return outbound;
+}
+
+/// TLS fragmentation for configs on the Xray engine is Xray's own: the
+/// ClientHello split into TLS records sent at once (light), or into small
+/// TCP segments sent apart (strong).
+void _prepareXray(Map<String, Object?> outbound, CoreOptions options) {
+  if (outbound['fragment'] != null ||
+      outbound.xrayNetwork == 'kcp' ||
+      outbound.xraySecurity != 'tls') {
+    return;
+  }
+  switch (options.tlsFragment) {
+    case TlsFragmentMode.off:
+      break;
+    case TlsFragmentMode.record:
+      outbound['fragment'] = {
+        'packets': 'tlshello',
+        'length': '100-200',
+        'interval': '0',
+      };
+    case TlsFragmentMode.tcp:
+      outbound['fragment'] = {
+        'packets': 'tlshello',
+        'length': '10-20',
+        'interval': '10-20',
+      };
+  }
 }
 
 /// The direct DNS server (plus a `local` resolver when it is a hostname).

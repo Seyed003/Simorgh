@@ -127,11 +127,135 @@ void main() {
       });
     });
 
-    test('xhttp is reported as unsupported', () {
+    test('xhttp runs on the Xray engine', () {
+      final p = LinkParser.parse(vlessXhttp);
+      expect(p.protocol, ProxyProtocol.vless);
+      expect(p.outbound['type'], 'xray');
+      final xray = _map(p.outbound['xray']);
+      expect(xray['protocol'], 'vless');
+      expect(_map(xray['settings'])['vnext'], [
+        {
+          'address': 'example.com',
+          'port': 443,
+          'users': [
+            {'id': uuid, 'encryption': 'none'},
+          ],
+        },
+      ]);
+      expect(xray['streamSettings'], {
+        'network': 'xhttp',
+        'xhttpSettings': {'path': '/x', 'mode': 'auto'},
+        'security': 'tls',
+        'tlsSettings': {'serverName': 'example.com', 'fingerprint': 'chrome'},
+      });
+      expect(p.summary, 'xhttp · tls');
+      expect(p.isCdnCandidate, isTrue);
+    });
+
+    test('xhttp with reality, mode and extra', () {
+      final stream = _map(
+        _map(
+          LinkParser.parse(vlessXhttpReality).outbound['xray'],
+        )['streamSettings'],
+      );
+      expect(stream['xhttpSettings'], {
+        'path': '/xh',
+        'mode': 'packet-up',
+        'extra': {'xPaddingBytes': '100-1000'},
+      });
+      expect(stream['realitySettings'], {
+        'serverName': 'www.microsoft.com',
+        'fingerprint': 'chrome',
+        'publicKey': realityKey,
+        'shortId': '6ba8',
+      });
+    });
+
+    test('old mKCP header and seed become finalmask', () {
+      final vless = _map(
+        _map(LinkParser.parse(vlessKcp).outbound['xray'])['streamSettings'],
+      );
+      expect(vless['finalmask'], {
+        'udp': [
+          {'type': 'header-srtp'},
+          {
+            'type': 'mkcp-aes128gcm',
+            'settings': {'password': 'abc'},
+          },
+        ],
+      });
+      final vmess = LinkParser.parse(vmessKcp);
+      final xray = _map(vmess.outbound['xray']);
+      expect(xray['protocol'], 'vmess');
+      expect(_map(xray['streamSettings'])['finalmask'], {
+        'udp': [
+          {'type': 'header-wechat'},
+          {
+            'type': 'mkcp-aes128gcm',
+            'settings': {'password': 's33d'},
+          },
+        ],
+      });
+      expect(vmess.isCdnCandidate, isFalse);
       expect(
-        () => LinkParser.parse(vlessXhttp),
+        _map(
+          _map(
+            LinkParser.parse('vless://$uuid@k.com:1?type=kcp').outbound['xray'],
+          )['streamSettings'],
+        )['finalmask'],
+        {
+          'udp': [
+            {'type': 'mkcp-original'},
+          ],
+        },
+      );
+    });
+
+    test('Xray TLS verifies certificates, pinned or by name', () {
+      final xray = _map(LinkParser.parse(trojanXhttp).outbound['xray']);
+      final tls = _map(_map(xray['streamSettings'])['tlsSettings']);
+      expect(tls.containsKey('allowInsecure'), isFalse);
+      expect(tls['pinnedPeerCertSha256'], pinnedCert);
+      expect(_map(xray['settings'])['servers'], [
+        {'address': 'cdn.example.com', 'port': 443, 'password': 'pass'},
+      ]);
+    });
+
+    test('VLESS Encryption runs on the Xray engine', () {
+      final xray = _map(LinkParser.parse(vlessEncryption).outbound['xray']);
+      final user =
+          (((_map(xray['settings'])['vnext'] as List).single as Map)['users']
+                      as List)
+                  .single
+              as Map;
+      expect(user['encryption'], startsWith('mlkem768x25519plus.native'));
+      expect(_map(xray['streamSettings'])['network'], 'raw');
+    });
+
+    test('broken Xray-only fields are rejected', () {
+      expect(
+        () => LinkParser.parse(
+          'vless://$uuid@a.com:443?type=xhttp&extra=%7Bnope',
+        ),
+        throwsA(isA<LinkParseException>()),
+      );
+      expect(
+        () => LinkParser.parse('vless://$uuid@a.com:1?type=kcp&headerType=x'),
         throwsA(isA<UnsupportedLinkException>()),
       );
+    });
+
+    test('clean IP copy of an xhttp config keeps the host name', () {
+      final moved = LinkParser.parse(trojanXhttp).withAddress('104.16.1.2');
+      final xray = _map(moved.outbound['xray']);
+      expect(
+        ((_map(xray['settings'])['servers'] as List).single as Map)['address'],
+        '104.16.1.2',
+      );
+      final stream = _map(xray['streamSettings']);
+      expect(_map(stream['xhttpSettings'])['host'], 'cdn.example.com');
+      expect(_map(stream['tlsSettings'])['serverName'], 'cdn.example.com');
+      expect(moved.tlsHost, 'cdn.example.com');
     });
 
     test('reality without public key is rejected', () {

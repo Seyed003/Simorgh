@@ -120,7 +120,7 @@ is pinned in `scripts/core_version.txt` (currently **1.14.3**).
 | Tool | Version |
 |------|---------|
 | Flutter | 3.47.x (stable) |
-| Go | 1.25+ (Android core only) |
+| Go | 1.25+ (the core is built from source) |
 | JDK | 17+ |
 | Android SDK + NDK | platform 36, NDK 28.2.13676358 |
 | Windows | Windows 10/11 x64, Visual Studio 2022 with "Desktop development with C++" |
@@ -131,7 +131,8 @@ is pinned in `scripts/core_version.txt` (currently **1.14.3**).
 WSL or Git Bash (or let CI build it, see below).
 
 ```bash
-# 1. Build the sing-box core for Android (libbox.aar, ~5–10 min the first time)
+# 1. Build the core for Android (libbox.aar: sing-box + the Xray engine,
+#    ~10–20 min the first time)
 export ANDROID_HOME=$HOME/Android/Sdk          # your SDK path
 sdkmanager "ndk;28.2.13676358"
 scripts/build_libbox.sh                         # -> android/app/libs/libbox.aar
@@ -159,12 +160,12 @@ A release APK for one ABI is about 30 MB (the sing-box core is ~20 MB of it).
 ### Build for Windows
 
 Enable **Developer Mode** in Windows settings first (Flutter needs symlinks
-for plugins), then run these in PowerShell:
+for plugins). The core is built from source (the official sing-box release
+has no Xray engine), with Go and Git Bash:
 
 ```powershell
-# 1. Download sing-box.exe into windows\core\
-powershell -ExecutionPolicy Bypass -File scripts\fetch_core_windows.ps1
-#    (if GitHub is blocked: bash scripts/build_core_windows.sh builds it from source)
+# 1. Build sing-box.exe (sing-box + Xray) into windows\core\
+bash scripts/build_core_windows.sh
 
 # 2. Build
 flutter pub get
@@ -179,8 +180,9 @@ Closing the window minimises it to the tray; use the tray menu → *Quit* to exi
 
 ### CI builds
 
-`.github/workflows/build.yml` runs analysis and tests, validates every
-generated config with the real sing-box binary, then builds the Android APKs
+`.github/workflows/build.yml` runs analysis and tests, builds the core and
+validates every generated config with it (plus XHTTP/mKCP traffic through a
+local Xray server), then builds the Android APKs
 and a Windows zip as downloadable artifacts. Push to `main` (or run the
 workflow manually) and grab the files from the run's *Artifacts* section.
 
@@ -289,9 +291,12 @@ WSL یا Git Bash اجرا کنید. برای امضای نسخه نهایی، �
 
 ابتدا **Developer Mode** را در تنظیمات ویندوز روشن کنید، سپس در PowerShell:
 
+هسته از سورس ساخته می‌شود (نسخه رسمی sing-box موتور Xray را ندارد)؛ به Go و
+Git Bash نیاز دارید:
+
 ```powershell
-# ۱. دانلود sing-box.exe در پوشه windows\core
-powershell -ExecutionPolicy Bypass -File scripts\fetch_core_windows.ps1
+# ۱. ساخت sing-box.exe (همراه Xray) در پوشه windows\core
+bash scripts/build_core_windows.sh
 
 # ۲. ساخت برنامه
 flutter pub get

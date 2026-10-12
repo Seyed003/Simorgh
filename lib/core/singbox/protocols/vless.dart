@@ -1,6 +1,7 @@
 import '../proxy_config.dart';
 import '../share_uri.dart';
 import 'v2ray_common.dart';
+import 'xray_outbound.dart';
 
 /// Parses `vless://uuid@host:port?security=reality&pbk=...#name`.
 ProxyConfig parseVless(String link) {
@@ -11,9 +12,50 @@ ProxyConfig parseVless(String link) {
   final port = uri.port;
 
   final encryption = uri.param(['encryption']);
-  if (encryption != null && encryption != 'none') {
-    throw UnsupportedLinkException(
-      'vless encryption "$encryption" is not supported',
+  final network = uri.param(['type', 'net']);
+  final host = uri.param(['host']);
+  final serverName =
+      uri.param(['sni', 'peer']) ??
+      (host != null ? splitList(host).first : uri.host);
+  final name = uri.fragment.isNotEmpty
+      ? uri.fragment
+      : 'VLESS ${uri.host}:$port';
+
+  // XHTTP, mKCP and VLESS Encryption run on the bundled Xray engine.
+  if (isXrayTransport(network) ||
+      (encryption != null && encryption != 'none')) {
+    return ProxyConfig(
+      protocol: ProxyProtocol.vless,
+      name: name,
+      server: uri.host,
+      port: port,
+      outbound: xrayVless(
+        address: uri.host,
+        port: port,
+        uuid: uuid,
+        flow: uri.param(['flow']),
+        encryption: encryption,
+        stream: xrayStreamSettings(
+          network: network,
+          security: uri.param(['security']),
+          serverName: serverName,
+          alpn: uri.param(['alpn']),
+          fingerprint: uri.param(['fp']),
+          pinnedCertSha256: uri.param(['pcs']),
+          verifyCertName: uri.param(['vcn']),
+          realityPublicKey: uri.param(['pbk', 'publickey']),
+          realityShortId: uri.param(['sid', 'shortid']),
+          spiderX: uri.param(['spx', 'spiderx']),
+          host: host,
+          path: uri.param(['path']),
+          serviceName: uri.param(['servicename']),
+          mode: uri.param(['mode']),
+          extra: uri.param(['extra']),
+          headerType: uri.param(['headertype']),
+          seed: uri.param(['seed']),
+        ),
+      ),
+      link: link,
     );
   }
 
@@ -33,12 +75,9 @@ ProxyConfig parseVless(String link) {
     outbound['flow'] = 'xtls-rprx-vision';
   }
 
-  final host = uri.param(['host']);
   final tls = buildTls(
     security: uri.param(['security']),
-    serverName:
-        uri.param(['sni', 'peer']) ??
-        (host != null ? splitList(host).first : uri.host),
+    serverName: serverName,
     alpn: uri.param(['alpn']),
     fingerprint: uri.param(['fp']),
     insecure: uri.flag(['allowinsecure', 'insecure']),
@@ -48,7 +87,7 @@ ProxyConfig parseVless(String link) {
   if (tls != null) outbound['tls'] = tls;
 
   final transport = buildTransport(
-    network: uri.param(['type', 'net']),
+    network: network,
     host: host,
     path: uri.param(['path']),
     serviceName: uri.param(['servicename']),
@@ -63,7 +102,7 @@ ProxyConfig parseVless(String link) {
 
   return ProxyConfig(
     protocol: ProxyProtocol.vless,
-    name: uri.fragment.isNotEmpty ? uri.fragment : 'VLESS ${uri.host}:$port',
+    name: name,
     server: uri.host,
     port: port,
     outbound: outbound,

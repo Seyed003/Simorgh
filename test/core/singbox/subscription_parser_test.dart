@@ -24,10 +24,11 @@ void main() {
       expect(result.proxies.map((p) => p.protocol), [
         ProxyProtocol.vless,
         ProxyProtocol.trojan,
+        ProxyProtocol.vless,
         ProxyProtocol.hysteria2,
       ]);
-      expect(result.skipped, hasLength(2));
-      expect(result.skipped.last.reason, contains('xhttp'));
+      expect(result.proxies[2].outbound['type'], 'xray');
+      expect(result.skipped, hasLength(1));
     });
 
     test('standard base64 with line wrapping', () {
@@ -37,7 +38,7 @@ void main() {
           .map((m) => m.group(0))
           .join('\n');
       final result = SubscriptionParser.parse(wrapped);
-      expect(result.proxies, hasLength(3));
+      expect(result.proxies, hasLength(4));
     });
 
     test('URL-safe base64 without padding', () {
@@ -109,6 +110,67 @@ void main() {
       expect(result.proxies.last.protocol, ProxyProtocol.wireguard);
       expect(result.proxies.last.server, '9.9.9.9');
       expect(result.proxies.last.port, 51820);
+    });
+
+    test('Xray JSON configs run on the Xray engine', () {
+      final json = jsonEncode([
+        {
+          'remarks': 'DE xhttp',
+          'outbounds': [
+            {
+              'tag': 'proxy',
+              'protocol': 'vless',
+              'settings': {
+                'vnext': [
+                  {
+                    'address': 'de.example.com',
+                    'port': 443,
+                    'users': [
+                      {'id': uuid, 'encryption': 'none'},
+                    ],
+                  },
+                ],
+              },
+              'streamSettings': {
+                'network': 'xhttp',
+                'security': 'tls',
+                'tlsSettings': {
+                  'serverName': 'de.example.com',
+                  'allowInsecure': true,
+                },
+                'sockopt': {'dialerProxy': 'frag'},
+              },
+            },
+            {
+              'tag': 'frag',
+              'protocol': 'freedom',
+              'settings': {
+                'fragment': {'packets': 'tlshello', 'length': '10-20'},
+              },
+            },
+            {'tag': 'direct', 'protocol': 'freedom'},
+          ],
+        },
+      ]);
+      final result = SubscriptionParser.parse(json);
+      final proxy = result.proxies.single;
+      expect(proxy.name, 'DE xhttp');
+      expect(proxy.protocol, ProxyProtocol.vless);
+      expect(proxy.server, 'de.example.com');
+      expect(proxy.port, 443);
+      expect(proxy.outbound['type'], 'xray');
+      expect(proxy.outbound['fragment'], {
+        'packets': 'tlshello',
+        'length': '10-20',
+      });
+      final xray = proxy.outbound['xray']! as Map;
+      expect(xray.containsKey('tag'), isFalse);
+      final stream = xray['streamSettings'] as Map;
+      expect(stream['sockopt'], isEmpty);
+      expect(
+        (stream['tlsSettings'] as Map).containsKey('allowInsecure'),
+        isFalse,
+      );
     });
 
     test('single outbound object', () {

@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'protocols/xray_outbound.dart';
+
 /// Protocols the parser understands. `wireguard` is emitted as a sing-box
 /// endpoint, every other protocol as an outbound.
 enum ProxyProtocol {
@@ -58,6 +60,9 @@ class ProxyConfig {
 
   /// Short transport/security summary for list tiles, e.g. `ws · tls`.
   String get summary {
+    if (outbound.isXray) {
+      return [?outbound.xrayNetwork, ?outbound.xraySecurity].join(' · ');
+    }
     final parts = <String>[];
     final transport = outbound['transport'];
     if (transport is Map && transport['type'] is String) {
@@ -77,6 +82,10 @@ class ProxyConfig {
 
   /// Host name the server is reached by in TLS (SNI), else the address.
   String get tlsHost {
+    if (outbound.isXray) {
+      final sni = outbound.xrayServerName;
+      return sni != null && sni.isNotEmpty ? sni : server;
+    }
     final tls = outbound['tls'];
     final sni = tls is Map ? tls['server_name'] : null;
     return sni is String && sni.isNotEmpty ? sni : server;
@@ -85,6 +94,15 @@ class ProxyConfig {
   /// Looks like a config served through a CDN such as Cloudflare: a
   /// V2Ray-style protocol over an HTTP-based transport, addressed by name.
   bool get isCdnCandidate {
+    if (outbound.isXray) {
+      return const {
+            'xhttp',
+            'ws',
+            'grpc',
+            'httpupgrade',
+          }.contains(outbound.xrayNetwork) &&
+          !_isIpLiteral(server);
+    }
     final transport = outbound['transport'];
     return const {
           ProxyProtocol.vmess,
@@ -107,6 +125,30 @@ class ProxyConfig {
   ProxyConfig withAddress(String address) {
     final copy = (jsonDecode(jsonEncode(outbound)) as Map)
         .cast<String, Object?>();
+    if (copy.isXray) {
+      copy.xrayServer?['address'] = address;
+      final stream = copy.xrayStream;
+      final tls = stream['tlsSettings'] as Map?;
+      if (tls != null) {
+        final sni = tls['serverName'];
+        if (sni is! String || sni.isEmpty) tls['serverName'] = server;
+      }
+      for (final key in const [
+        'xhttpSettings',
+        'wsSettings',
+        'httpupgradeSettings',
+      ]) {
+        final settings = stream[key] as Map?;
+        if (settings != null) settings['host'] ??= server;
+      }
+      return ProxyConfig(
+        protocol: protocol,
+        name: '$name · $address',
+        server: address,
+        port: port,
+        outbound: copy,
+      );
+    }
     copy['server'] = address;
     final tls = copy['tls'];
     if (tls is Map && tls['enabled'] == true) {
