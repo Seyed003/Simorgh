@@ -25,7 +25,8 @@ Open-source VPN client for **Android** and **Windows**, powered by the
   SOCKS.
 - **OpenVPN, Cisco AnyConnect and Outline:** `.ovpn` profiles with their
   certificates inside (UDP/TCP, several servers, tls-auth, tls-crypt,
-  tls-crypt-v2, username/password asked for when the file has none); Cisco
+  tls-crypt-v2, username/password asked for when the file has none, through
+  an `http-proxy` or `socks-proxy` with its login inside the file); Cisco
   AnyConnect / ocserv servers from address + login (a self-signed
   certificate is shown and pinned once you trust it); Outline dynamic access
   keys (`ssconf://`), refreshed like subscriptions. These run on sing-box's
@@ -279,7 +280,8 @@ are adapted from [sing-box-for-android](https://github.com/SagerNet/sing-box-for
   Hysteria نسخه ۱، AnyTLS و SOCKS.
 - **OpenVPN، سیسکو و Outline:** فایل‌های `.ovpn` که گواهی‌ها داخلشان است
   (UDP و TCP، چند سرور، tls-auth، tls-crypt، tls-crypt-v2؛ اگر نام کاربری و
-  رمز در فایل نباشد پرسیده می‌شود)، سرورهای Cisco AnyConnect / ocserv با
+  رمز در فایل نباشد پرسیده می‌شود؛ از پشت پروکسی `http-proxy` یا
+  `socks-proxy` که رمزش داخل فایل باشد)، سرورهای Cisco AnyConnect / ocserv با
   آدرس و نام کاربری و رمز (گواهی خودامضا نشان داده می‌شود و بعد از تأیید شما
   ثابت می‌ماند) و کلیدهای Outline (`ssconf://`) که مثل سابسکریپشن به‌روز
   می‌شوند. حدود ۲ مگابایت به برنامه اضافه می‌کنند.

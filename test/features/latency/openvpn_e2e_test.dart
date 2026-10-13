@@ -6,6 +6,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:aghelan_ghiamat/core/singbox/builder/core_options.dart';
+import 'package:aghelan_ghiamat/core/singbox/proxy_config.dart';
 import 'package:aghelan_ghiamat/core/singbox/subscription_parser.dart';
 import 'package:aghelan_ghiamat/features/connection/data/windows_vpn_platform.dart';
 import 'package:aghelan_ghiamat/features/latency/data/latency_tester.dart';
@@ -185,5 +186,144 @@ $ovpnStaticKey</tls-crypt>
       greaterThan(SpeedTester.minBytes),
       reason: 'TCP + tls-crypt should download',
     );
+  }, timeout: const Timeout(Duration(minutes: 3)));
+
+  test('OpenVPN through an HTTP or SOCKS proxy', skip: skip, () async {
+    final dir = await Directory.systemTemp.createTemp('openvpn-proxy-e2e');
+    addTearDown(() => dir.delete(recursive: true));
+
+    final http = await HttpServer.bind(InternetAddress.anyIPv4, 0);
+    addTearDown(() => http.close(force: true));
+    final chunk = Uint8List(64 * 1024);
+    http.listen((request) async {
+      try {
+        for (var i = 0; i < 100; i++) {
+          request.response.add(chunk);
+          await request.response.flush();
+        }
+        await request.response.close();
+      } on Object {
+        // Client stopped reading.
+      }
+    });
+
+    final tcp = await _freePort();
+    final udp = await _freePort();
+    final httpProxy = await _freePort();
+    final socksProxy = await _freePort();
+    Map<String, Object?> server(int port, String network, String subnet) => {
+      'type': 'openvpn-server',
+      'tag': 'ovpn-$network',
+      'listen': '127.0.0.1',
+      'listen_port': port,
+      'network': network,
+      'address': [subnet],
+      'users': [
+        {'username': 'alice', 'password': 's3cret'},
+      ],
+      'tls': {
+        'certificate': ovpnServerCert,
+        'key': ovpnServerKey,
+        'verify_client_certificate': 'none',
+        'control_wrap': {'type': 'tls_crypt', 'key': ovpnStaticKey},
+      },
+    };
+    final log = File('${dir.path}/server.log');
+    final serverConfig = File('${dir.path}/server.json')
+      ..writeAsStringSync(
+        jsonEncode({
+          'log': {'level': 'info', 'output': log.path},
+          'inbounds': [
+            {
+              'type': 'http',
+              'tag': 'http-proxy-in',
+              'listen': '127.0.0.1',
+              'listen_port': httpProxy,
+              'users': [
+                {'username': 'bob', 'password': 'pw'},
+              ],
+            },
+            {
+              'type': 'socks',
+              'tag': 'socks-proxy-in',
+              'listen': '127.0.0.1',
+              'listen_port': socksProxy,
+            },
+          ],
+          'endpoints': [
+            server(tcp, 'tcp', '10.8.2.1/24'),
+            server(udp, 'udp', '10.8.3.1/24'),
+          ],
+          'outbounds': [
+            {'type': 'direct'},
+          ],
+        }),
+      );
+    final core = await Process.start(binary!, ['run', '-c', serverConfig.path]);
+    addTearDown(core.kill);
+    await Future<void>.delayed(const Duration(seconds: 1));
+
+    String profile(String proto, int port, String proxy) =>
+        '''
+client
+dev tun
+proto $proto
+remote 127.0.0.1 $port
+$proxy
+<auth-user-pass>
+alice
+s3cret
+</auth-user-pass>
+<ca>
+$ovpnCa</ca>
+<tls-crypt>
+$ovpnStaticKey</tls-crypt>
+''';
+    final viaHttp = SubscriptionParser.parse(
+      profile(
+        'tcp-client',
+        tcp,
+        'http-proxy 127.0.0.1 $httpProxy\n'
+            '<http-proxy-user-pass>\nbob\npw\n</http-proxy-user-pass>',
+      ),
+    ).proxies.single;
+    final viaSocks = SubscriptionParser.parse(
+      profile('udp', udp, 'socks-proxy 127.0.0.1 $socksProxy'),
+    ).proxies.single;
+    expect(viaHttp.via!.protocol.singBoxType, 'http');
+    expect(viaSocks.via!.protocol.singBoxType, 'socks');
+
+    final platform = WindowsVpnPlatform(
+      coreExecutable: binary,
+      dataDirectory: () async => dir,
+      elevationCheck: () async => true,
+    );
+    Future<double?> speed(String subnetHost, ProxyConfig config) async {
+      final tester = SpeedTester(
+        platform: platform,
+        options: const CoreOptions(directDns: '1.1.1.1'),
+        url: 'http://$subnetHost:${http.port}/blob',
+        duration: const Duration(seconds: 1),
+        connectTimeout: const Duration(seconds: 5),
+      );
+      final updates = await tester.run({'x': config}).toList();
+      return updates.single.result.bytesPerSecond?.toDouble();
+    }
+
+    expect(
+      await speed('10.8.2.1', viaHttp),
+      greaterThan(SpeedTester.minBytes),
+      reason: 'OpenVPN over TCP through the HTTP proxy should download',
+    );
+    expect(
+      await speed('10.8.3.1', viaSocks),
+      greaterThan(SpeedTester.minBytes),
+      reason: 'OpenVPN over UDP through the SOCKS proxy should download',
+    );
+
+    // The traffic really went through the proxies.
+    final text = await log.readAsString();
+    expect(text, contains('inbound/http[http-proxy-in]'));
+    expect(text, contains('inbound/socks[socks-proxy-in]'));
   }, timeout: const Timeout(Duration(minutes: 3)));
 }

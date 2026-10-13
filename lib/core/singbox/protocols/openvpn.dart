@@ -75,8 +75,6 @@ ProxyConfig parseOpenVpn(String text, {String? name}) {
     'cryptoapicert': 'Windows certificate store',
     'management-external-key': 'external private keys',
     'management-external-cert': 'external certificates',
-    'http-proxy': 'OpenVPN through an HTTP proxy',
-    'socks-proxy': 'OpenVPN through a SOCKS proxy',
     'static-challenge': 'one-time-password logins',
     'askpass': 'password-protected private keys',
     'tls-server': 'server profiles',
@@ -337,6 +335,82 @@ ProxyConfig parseOpenVpn(String text, {String? name}) {
     server: first['server']! as String,
     port: first['server_port']! as int,
     outbound: out,
+    via: _proxy(profile, servers),
+  );
+}
+
+/// `http-proxy` / `socks-proxy`: the OpenVPN connection goes through that
+/// proxy, as the first hop of a chain.
+ProxyConfig? _proxy(_Profile profile, List<Map<String, Object?>> servers) {
+  final http = profile.last('http-proxy');
+  final socks = profile.last('socks-proxy');
+  if (http == null && socks == null) return null;
+  final args = (http ?? socks)!;
+  final host = args.elementAtOrNull(0);
+  if (host == null || host.isEmpty) {
+    throw const LinkParseException('proxy without an address');
+  }
+  final port = _port(args.elementAtOrNull(1)) ?? (http != null ? 8080 : 1080);
+
+  // Credentials only from the profile itself: a separate file or a prompt
+  // on the console cannot be reached.
+  final authFile = args.elementAtOrNull(2);
+  final block = http != null ? 'http-proxy-user-pass' : 'socks-proxy-user-pass';
+  final lines = (profile.blocks[block] ?? '')
+      .split(RegExp(r'\r?\n'))
+      .map((l) => l.trim())
+      .where((l) => l.isNotEmpty)
+      .toList();
+  if (lines.isEmpty &&
+      authFile != null &&
+      !const {'auto', 'auto-nct', 'none'}.contains(authFile.toLowerCase())) {
+    throw LinkParseException(
+      'the proxy password is a separate file; put it inside as <$block>',
+    );
+  }
+  final login = {
+    if (lines.isNotEmpty) 'username': lines[0],
+    if (lines.length > 1) 'password': lines[1],
+  };
+
+  if (http != null) {
+    // OpenVPN itself only goes through HTTP proxies over TCP.
+    if (servers.any((s) => s['network'] != 'tcp')) {
+      throw const LinkParseException('http-proxy needs "proto tcp-client"');
+    }
+    final headers = <String, String>{
+      for (final option in profile.all('http-proxy-option'))
+        if (option.length >= 3 && option[0].toUpperCase() == 'CUSTOM-HEADER')
+          option[1]: option.sublist(2).join(' ')
+        else if (option.length >= 2 && option[0].toUpperCase() == 'AGENT')
+          'User-Agent': option.sublist(1).join(' '),
+    };
+    return ProxyConfig(
+      protocol: ProxyProtocol.http,
+      name: 'HTTP proxy $host:$port',
+      server: host,
+      port: port,
+      outbound: {
+        'type': 'http',
+        'server': host,
+        'server_port': port,
+        ...login,
+        if (headers.isNotEmpty) 'headers': headers,
+      },
+    );
+  }
+  return ProxyConfig(
+    protocol: ProxyProtocol.socks,
+    name: 'SOCKS proxy $host:$port',
+    server: host,
+    port: port,
+    outbound: {
+      'type': 'socks',
+      'server': host,
+      'server_port': port,
+      'version': '5',
+      ...login,
+    },
   );
 }
 

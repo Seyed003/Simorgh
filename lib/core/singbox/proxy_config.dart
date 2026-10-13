@@ -18,7 +18,11 @@ enum ProxyProtocol {
   anytls('AnyTLS', 'anytls'),
   socks('SOCKS', 'socks'),
   openvpn('OpenVPN', 'openvpn-client'),
-  openconnect('Cisco AnyConnect', 'openconnect');
+  openconnect('Cisco AnyConnect', 'openconnect'),
+
+  /// An HTTP CONNECT proxy; only ever the first hop of a chain (OpenVPN
+  /// profiles with `http-proxy`).
+  http('HTTP proxy', 'http');
 
   const ProxyProtocol(this.displayName, this.singBoxType);
 

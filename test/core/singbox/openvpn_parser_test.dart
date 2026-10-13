@@ -95,7 +95,11 @@ void main() {
         'separate CA file': '${without('ca')}ca ca.crt\n',
         'no CA': without('ca'),
         'TAP': ovpnTlsCrypt.replaceFirst('dev tun', 'dev tap'),
-        'HTTP proxy': '${ovpnTlsCrypt}http-proxy 1.2.3.4 8080\n',
+        'proxy password in a file':
+            '${ovpnTlsCrypt}http-proxy 1.2.3.4 8080 creds.txt basic\n',
+        'HTTP proxy over UDP':
+            '${ovpnTlsCrypt.replaceFirst('proto tcp-client', 'proto udp')}'
+            'http-proxy 1.2.3.4 8080\n',
         'OTP': '${ovpnTlsCrypt}static-challenge "OTP" 1\n',
         'separate tls-auth file': '${without('tls-crypt')}tls-auth ta.key 1\n',
       };
@@ -104,6 +108,41 @@ void main() {
         expect(result.proxies, isEmpty, reason: reason);
         expect(result.skipped, hasLength(1), reason: reason);
       }
+    });
+
+    test('http-proxy and socks-proxy become the first hop', () {
+      final viaHttp = parseOpenVpn(
+        '${ovpnTlsCrypt}http-proxy proxy.example.com 3128 auto\n'
+        'http-proxy-option CUSTOM-HEADER Host cdn.example.com\n'
+        'http-proxy-option AGENT Mozilla/5.0\n'
+        '<http-proxy-user-pass>\nbob\npw\n</http-proxy-user-pass>\n',
+      );
+      expect(viaHttp.via!.protocol, ProxyProtocol.http);
+      expect(viaHttp.via!.outbound, {
+        'type': 'http',
+        'server': 'proxy.example.com',
+        'server_port': 3128,
+        'username': 'bob',
+        'password': 'pw',
+        'headers': {'Host': 'cdn.example.com', 'User-Agent': 'Mozilla/5.0'},
+      });
+      expect(viaHttp.via!.isConsistent, isTrue);
+      expect(viaHttp.isInsecure, isFalse);
+
+      final viaSocks = parseOpenVpn(
+        '${ovpnTlsCrypt.replaceFirst('proto tcp-client', 'proto udp')}'
+        'socks-proxy 10.0.0.1\n',
+      );
+      expect(viaSocks.via!.outbound, {
+        'type': 'socks',
+        'server': '10.0.0.1',
+        'server_port': 1080,
+        'version': '5',
+      });
+
+      // The chain survives storage and reaches the core config.
+      final stored = ProxyConfig.fromJson(viaHttp.toJson());
+      expect(stored.via!.outbound['type'], 'http');
     });
 
     test('quoting, comments and peer fingerprints', () {
