@@ -248,6 +248,19 @@ class ProfilesController extends AsyncNotifier<ProfilesState> {
     );
   }
 
+  /// Swaps the config of profile [id], e.g. a new WARP endpoint.
+  Future<void> replaceConfig(String id, ProxyConfig config) async {
+    final current = await _current();
+    await _commit(
+      current.copyWith(
+        profiles: [
+          for (final p in current.profiles)
+            p.id == id ? p.copyWith(config: config) : p,
+        ],
+      ),
+    );
+  }
+
   /// Adds what a backup has and this device lacks: subscriptions by URL
   /// (with their configs) and manual configs by content. Everything gets
   /// fresh ids. Returns the number of configs added.

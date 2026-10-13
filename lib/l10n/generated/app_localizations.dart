@@ -1549,6 +1549,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No fragment'**
   String get fragmentOff;
+
+  /// No description provided for @warpAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Free Cloudflare WARP'**
+  String get warpAdd;
+
+  /// No description provided for @warpExplain.
+  ///
+  /// In en, this message translates to:
+  /// **'Creates a free Cloudflare WARP account on this device, adds it as a config and looks for an endpoint that works on your internet. WARP makes a good backup: it opens most sites, but it is not anonymous and is sometimes slow or blocked in Iran.'**
+  String get warpExplain;
+
+  /// No description provided for @warpAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'WARP added (endpoint {endpoint})'**
+  String warpAdded(String endpoint);
+
+  /// No description provided for @warpAddedNoEndpoint.
+  ///
+  /// In en, this message translates to:
+  /// **'WARP added, but no endpoint answered right now. Try \"Find a WARP endpoint\" from its menu later.'**
+  String get warpAddedNoEndpoint;
+
+  /// No description provided for @warpFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach Cloudflare ({error}). Connect to a server first and try again.'**
+  String warpFailed(String error);
+
+  /// No description provided for @warpScan.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a WARP endpoint'**
+  String get warpScan;
+
+  /// No description provided for @warpScanDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Endpoint changed to {endpoint}'**
+  String warpScanDone(String endpoint);
+
+  /// No description provided for @warpScanNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No WARP endpoint answered on this network'**
+  String get warpScanNone;
 }
 
 class _AppLocalizationsDelegate

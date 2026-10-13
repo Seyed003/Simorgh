@@ -510,5 +510,34 @@
       }
     }
   },
-  "fragmentOff": "No fragment"
+  "fragmentOff": "No fragment",
+  "warpAdd": "Free Cloudflare WARP",
+  "warpExplain": "Creates a free Cloudflare WARP account on this device, adds it as a config and looks for an endpoint that works on your internet. WARP makes a good backup: it opens most sites, but it is not anonymous and is sometimes slow or blocked in Iran.",
+  "warpAdded": "WARP added (endpoint {endpoint})",
+  "@warpAdded": {
+    "placeholders": {
+      "endpoint": {
+        "type": "String"
+      }
+    }
+  },
+  "warpAddedNoEndpoint": "WARP added, but no endpoint answered right now. Try \"Find a WARP endpoint\" from its menu later.",
+  "warpFailed": "Could not reach Cloudflare ({error}). Connect to a server first and try again.",
+  "@warpFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "warpScan": "Find a WARP endpoint",
+  "warpScanDone": "Endpoint changed to {endpoint}",
+  "@warpScanDone": {
+    "placeholders": {
+      "endpoint": {
+        "type": "String"
+      }
+    }
+  },
+  "warpScanNone": "No WARP endpoint answered on this network"
 }

@@ -866,4 +866,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fragmentOff => 'No fragment';
+
+  @override
+  String get warpAdd => 'Free Cloudflare WARP';
+
+  @override
+  String get warpExplain =>
+      'Creates a free Cloudflare WARP account on this device, adds it as a config and looks for an endpoint that works on your internet. WARP makes a good backup: it opens most sites, but it is not anonymous and is sometimes slow or blocked in Iran.';
+
+  @override
+  String warpAdded(String endpoint) {
+    return 'WARP added (endpoint $endpoint)';
+  }
+
+  @override
+  String get warpAddedNoEndpoint =>
+      'WARP added, but no endpoint answered right now. Try \"Find a WARP endpoint\" from its menu later.';
+
+  @override
+  String warpFailed(String error) {
+    return 'Could not reach Cloudflare ($error). Connect to a server first and try again.';
+  }
+
+  @override
+  String get warpScan => 'Find a WARP endpoint';
+
+  @override
+  String warpScanDone(String endpoint) {
+    return 'Endpoint changed to $endpoint';
+  }
+
+  @override
+  String get warpScanNone => 'No WARP endpoint answered on this network';
 }

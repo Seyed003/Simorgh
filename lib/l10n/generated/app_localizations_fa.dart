@@ -858,4 +858,36 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get fragmentOff => 'بدون فرگمنت';
+
+  @override
+  String get warpAdd => 'WARP رایگان کلودفلر';
+
+  @override
+  String get warpExplain =>
+      'یک حساب رایگان WARP کلودفلر روی همین دستگاه می‌سازد، آن را به‌عنوان کانفیگ اضافه می‌کند و دنبال آدرسی می‌گردد که روی اینترنت شما کار کند. WARP پشتیبان خوبی است: بیشتر سایت‌ها را باز می‌کند، ولی ناشناس نیست و در ایران گاهی کند یا مسدود است.';
+
+  @override
+  String warpAdded(String endpoint) {
+    return 'WARP اضافه شد (آدرس $endpoint)';
+  }
+
+  @override
+  String get warpAddedNoEndpoint =>
+      'WARP اضافه شد، ولی الان هیچ آدرسی جواب نداد. بعداً از منوی آن «پیدا کردن آدرس WARP» را بزنید.';
+
+  @override
+  String warpFailed(String error) {
+    return 'اتصال به کلودفلر ممکن نشد ($error). اول به یک سرور وصل شوید و دوباره امتحان کنید.';
+  }
+
+  @override
+  String get warpScan => 'پیدا کردن آدرس WARP';
+
+  @override
+  String warpScanDone(String endpoint) {
+    return 'آدرس به $endpoint تغییر کرد';
+  }
+
+  @override
+  String get warpScanNone => 'روی این شبکه هیچ آدرس WARP جواب نداد';
 }
