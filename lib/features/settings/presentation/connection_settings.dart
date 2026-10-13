@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/platform/system_bridge.dart';
 import '../../../core/singbox/builder/core_options.dart';
 import '../../../core/singbox/builder/dns_server.dart';
 import '../../../core/singbox/proxy_config.dart';
@@ -13,6 +14,8 @@ import '../../../core/utils/net_utils.dart';
 import '../../connection/application/vpn_controller.dart';
 import '../application/core_options_controller.dart';
 import '../domain/dns_presets.dart';
+import '../../network/application/network_tuning.dart';
+import '../../network/presentation/smart_setup_tile.dart';
 import 'kill_switch_tile.dart';
 import 'split_tunnel_page.dart';
 
@@ -155,6 +158,7 @@ class ConnectionSettingsSection extends ConsumerWidget {
       children: [
         GlassGroup(
           children: [
+            const SmartSetupTile(),
             if (android) const KillSwitchTile(),
             if (android)
               ListTile(
@@ -315,8 +319,17 @@ class ConnectionSettingsSection extends ConsumerWidget {
                     child: Text(l10n.fragmentStrong),
                   ),
                 ],
-                onChanged: (v) =>
-                    controller.update((o) => o.copyWith(tlsFragment: v)),
+                onChanged: (v) async {
+                  if (v == null) return;
+                  await controller.update((o) => o.copyWith(tlsFragment: v));
+                  // A choice made on this network is remembered for it.
+                  final network = await ref
+                      .read(systemBridgeProvider)
+                      .network();
+                  await ref
+                      .read(networkTuningProvider.notifier)
+                      .remember(network, v);
+                },
               ),
             ),
             SwitchListTile(

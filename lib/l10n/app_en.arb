@@ -458,5 +458,57 @@
   "updateLater": "Later",
   "updateCheck": "Check for updates",
   "updateLatest": "You have the latest version",
-  "updateFailed": "Could not check for updates"
+  "updateFailed": "Could not check for updates",
+  "smartSetup": "Smart setup for this internet",
+  "smartSetupHint": "Tries the anti-filtering options with your servers and keeps what gets through best",
+  "networkWifi": "Wi-Fi / home internet",
+  "networkMobile": "Mobile data",
+  "networkEthernet": "Wired internet",
+  "networkThisComputer": "This computer",
+  "networkOther": "This network",
+  "smartSetupStart": "Start test",
+  "smartSetupRunning": "Testing {count} servers with each option…",
+  "@smartSetupRunning": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "smartSetupDone": "Best on {network}: {mode}. Applied.",
+  "@smartSetupDone": {
+    "placeholders": {
+      "network": {
+        "type": "String"
+      },
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "smartSetupNoServers": "Add a config that uses TLS first (VLESS, VMess or Trojan); others do not need this.",
+  "smartSetupNothingWorks": "No server answered on this network with any option. Try other servers or a clean IP.",
+  "smartSetupAuto": "Switch automatically on each network",
+  "smartSetupAutoHint": "When you connect, the setting that worked on that internet is used. Choosing a fragment mode by hand is remembered too.",
+  "smartSetupRemembered": "Remembered here: {mode}",
+  "@smartSetupRemembered": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "smartSetupNotTested": "Not tested on this network yet",
+  "smartSetupScore": "{ok} of {total} servers",
+  "@smartSetupScore": {
+    "placeholders": {
+      "ok": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "fragmentOff": "No fragment"
 }

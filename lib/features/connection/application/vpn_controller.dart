@@ -7,9 +7,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/singbox/builder/config_builder.dart';
 import '../../../core/singbox/builder/core_options.dart';
+import '../../../core/platform/system_bridge.dart';
 import '../../../core/storage/preferences.dart';
 import '../../../core/utils/net_utils.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../network/application/network_tuning.dart';
 import '../../latency/application/auto_candidates.dart';
 import '../../latency/application/latency_controller.dart';
 import '../../latency/application/speed_controller.dart';
@@ -211,6 +213,8 @@ class VpnController extends Notifier<VpnState> {
     List<String> autoProfileIds = const [],
   }) async {
     final platform = _platform;
+    await _applyNetworkTuning();
+    if (attempt != _attempt) return;
     final clashApi = ClashApiOptions(
       port: await findFreeLocalPort(),
       secret: randomHexSecret(),
@@ -258,6 +262,26 @@ class VpnController extends Notifier<VpnState> {
       state = VpnState(error: e);
     } on Exception catch (e) {
       state = VpnState(error: VpnError(VpnErrorCode.unknown, e.toString()));
+    }
+  }
+
+  /// On a network with remembered settings (smart setup or a manual choice
+  /// made there), connect with those.
+  Future<void> _applyNetworkTuning() async {
+    try {
+      final network = await ref.read(systemBridgeProvider).network();
+      final tuning = ref
+          .read(networkTuningProvider.notifier)
+          .forNetwork(network);
+      if (tuning == null) return;
+      if (ref.read(coreOptionsProvider).tlsFragment == tuning.tlsFragment) {
+        return;
+      }
+      await ref
+          .read(coreOptionsProvider.notifier)
+          .update((o) => o.copyWith(tlsFragment: tuning.tlsFragment));
+    } on Object {
+      // Unknown network: keep the current settings.
     }
   }
 

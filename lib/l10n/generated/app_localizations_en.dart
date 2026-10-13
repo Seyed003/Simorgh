@@ -800,4 +800,70 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateFailed => 'Could not check for updates';
+
+  @override
+  String get smartSetup => 'Smart setup for this internet';
+
+  @override
+  String get smartSetupHint =>
+      'Tries the anti-filtering options with your servers and keeps what gets through best';
+
+  @override
+  String get networkWifi => 'Wi-Fi / home internet';
+
+  @override
+  String get networkMobile => 'Mobile data';
+
+  @override
+  String get networkEthernet => 'Wired internet';
+
+  @override
+  String get networkThisComputer => 'This computer';
+
+  @override
+  String get networkOther => 'This network';
+
+  @override
+  String get smartSetupStart => 'Start test';
+
+  @override
+  String smartSetupRunning(String count) {
+    return 'Testing $count servers with each option…';
+  }
+
+  @override
+  String smartSetupDone(String network, String mode) {
+    return 'Best on $network: $mode. Applied.';
+  }
+
+  @override
+  String get smartSetupNoServers =>
+      'Add a config that uses TLS first (VLESS, VMess or Trojan); others do not need this.';
+
+  @override
+  String get smartSetupNothingWorks =>
+      'No server answered on this network with any option. Try other servers or a clean IP.';
+
+  @override
+  String get smartSetupAuto => 'Switch automatically on each network';
+
+  @override
+  String get smartSetupAutoHint =>
+      'When you connect, the setting that worked on that internet is used. Choosing a fragment mode by hand is remembered too.';
+
+  @override
+  String smartSetupRemembered(String mode) {
+    return 'Remembered here: $mode';
+  }
+
+  @override
+  String get smartSetupNotTested => 'Not tested on this network yet';
+
+  @override
+  String smartSetupScore(String ok, String total) {
+    return '$ok of $total servers';
+  }
+
+  @override
+  String get fragmentOff => 'No fragment';
 }

@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../features/network/domain/network_identity.dart';
+
 /// Android system integration (see SystemBridge.kt); no-ops elsewhere.
 class SystemBridge {
   const SystemBridge();
@@ -37,6 +39,15 @@ class SystemBridge {
       alwaysOn: raw['alwaysOn'] == true,
       lockdown: raw['lockdown'] == true,
     );
+  }
+
+  /// The network under the VPN; a desktop counts as one network.
+  Future<NetworkIdentity> network() async {
+    if (!_android) return NetworkIdentity.desktop;
+    final raw = await _methods.invokeMapMethod<String, Object?>('networkInfo');
+    return raw == null
+        ? const NetworkIdentity(kind: NetworkKind.other)
+        : NetworkIdentity.fromMap(raw);
   }
 
   /// Links and text other apps opened or shared the app with: first what

@@ -295,28 +295,35 @@ Map<String, Object?> prepareOutbound(
 /// TLS fragmentation for configs on the Xray engine is Xray's own: the
 /// ClientHello split into TLS records sent at once (light), or into small
 /// TCP segments sent apart (strong).
+Map<String, Object?>? xrayFragment(TlsFragmentMode mode) => switch (mode) {
+  TlsFragmentMode.off => null,
+  TlsFragmentMode.record => {
+    'packets': 'tlshello',
+    'length': '100-200',
+    'interval': '0',
+  },
+  TlsFragmentMode.tcp => {
+    'packets': 'tlshello',
+    'length': '10-20',
+    'interval': '10-20',
+  },
+};
+
+/// Whether TLS fragmentation can change anything for [outbound].
+bool canFragment(Map<String, Object?> outbound) {
+  if (outbound.isXray) {
+    return outbound.xrayNetwork != 'kcp' && outbound.xraySecurity == 'tls';
+  }
+  final tls = outbound['tls'];
+  return _tcpTlsTypes.contains(outbound['type']) &&
+      tls is Map &&
+      tls['enabled'] == true;
+}
+
 void _prepareXray(Map<String, Object?> outbound, CoreOptions options) {
-  if (outbound['fragment'] != null ||
-      outbound.xrayNetwork == 'kcp' ||
-      outbound.xraySecurity != 'tls') {
-    return;
-  }
-  switch (options.tlsFragment) {
-    case TlsFragmentMode.off:
-      break;
-    case TlsFragmentMode.record:
-      outbound['fragment'] = {
-        'packets': 'tlshello',
-        'length': '100-200',
-        'interval': '0',
-      };
-    case TlsFragmentMode.tcp:
-      outbound['fragment'] = {
-        'packets': 'tlshello',
-        'length': '10-20',
-        'interval': '10-20',
-      };
-  }
+  if (outbound['fragment'] != null || !canFragment(outbound)) return;
+  final fragment = xrayFragment(options.tlsFragment);
+  if (fragment != null) outbound['fragment'] = fragment;
 }
 
 /// The direct DNS server (plus a `local` resolver when it is a hostname).

@@ -1441,6 +1441,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not check for updates'**
   String get updateFailed;
+
+  /// No description provided for @smartSetup.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart setup for this internet'**
+  String get smartSetup;
+
+  /// No description provided for @smartSetupHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tries the anti-filtering options with your servers and keeps what gets through best'**
+  String get smartSetupHint;
+
+  /// No description provided for @networkWifi.
+  ///
+  /// In en, this message translates to:
+  /// **'Wi-Fi / home internet'**
+  String get networkWifi;
+
+  /// No description provided for @networkMobile.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile data'**
+  String get networkMobile;
+
+  /// No description provided for @networkEthernet.
+  ///
+  /// In en, this message translates to:
+  /// **'Wired internet'**
+  String get networkEthernet;
+
+  /// No description provided for @networkThisComputer.
+  ///
+  /// In en, this message translates to:
+  /// **'This computer'**
+  String get networkThisComputer;
+
+  /// No description provided for @networkOther.
+  ///
+  /// In en, this message translates to:
+  /// **'This network'**
+  String get networkOther;
+
+  /// No description provided for @smartSetupStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start test'**
+  String get smartSetupStart;
+
+  /// No description provided for @smartSetupRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'Testing {count} servers with each option…'**
+  String smartSetupRunning(String count);
+
+  /// No description provided for @smartSetupDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Best on {network}: {mode}. Applied.'**
+  String smartSetupDone(String network, String mode);
+
+  /// No description provided for @smartSetupNoServers.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a config that uses TLS first (VLESS, VMess or Trojan); others do not need this.'**
+  String get smartSetupNoServers;
+
+  /// No description provided for @smartSetupNothingWorks.
+  ///
+  /// In en, this message translates to:
+  /// **'No server answered on this network with any option. Try other servers or a clean IP.'**
+  String get smartSetupNothingWorks;
+
+  /// No description provided for @smartSetupAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch automatically on each network'**
+  String get smartSetupAuto;
+
+  /// No description provided for @smartSetupAutoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'When you connect, the setting that worked on that internet is used. Choosing a fragment mode by hand is remembered too.'**
+  String get smartSetupAutoHint;
+
+  /// No description provided for @smartSetupRemembered.
+  ///
+  /// In en, this message translates to:
+  /// **'Remembered here: {mode}'**
+  String smartSetupRemembered(String mode);
+
+  /// No description provided for @smartSetupNotTested.
+  ///
+  /// In en, this message translates to:
+  /// **'Not tested on this network yet'**
+  String get smartSetupNotTested;
+
+  /// No description provided for @smartSetupScore.
+  ///
+  /// In en, this message translates to:
+  /// **'{ok} of {total} servers'**
+  String smartSetupScore(String ok, String total);
+
+  /// No description provided for @fragmentOff.
+  ///
+  /// In en, this message translates to:
+  /// **'No fragment'**
+  String get fragmentOff;
 }
 
 class _AppLocalizationsDelegate

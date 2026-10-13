@@ -2,10 +2,14 @@ package com.aghelan.ghiamat.system
 
 import android.app.Activity
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.telephony.TelephonyManager
 import com.aghelan.ghiamat.vpn.AghelanVpnService
+import com.aghelan.ghiamat.vpn.DefaultNetworkMonitor
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
@@ -17,6 +21,8 @@ import io.flutter.plugin.common.MethodChannel
  * Methods (`com.aghelan.ghiamat/system`):
  * - openVpnSettings: Android's VPN settings (always-on / lockdown live there).
  * - openUrl {url}: the browser.
+ * - networkInfo: {kind: wifi|cellular|ethernet|other, operator, mccMnc} of
+ *   the network under the VPN.
  * - vpnLockdown: {alwaysOn, lockdown} of the running VPN, null when unknown.
  * - takeShared: links/text that opened the app before Flutter listened.
  * Events (`com.aghelan.ghiamat/shared`): text from later VIEW/SEND intents.
@@ -67,12 +73,40 @@ class SystemBridge(private val activity: Activity) : MethodChannel.MethodCallHan
                     result.success(mapOf("alwaysOn" to service.isAlwaysOn, "lockdown" to service.isLockdownEnabled))
                 }
             }
+            "networkInfo" -> result.success(networkInfo())
             "takeShared" -> {
                 result.success(pending.toList())
                 pending.clear()
             }
             else -> result.notImplemented()
         }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun networkInfo(): Map<String, Any?> {
+        val connectivity = activity.getSystemService(ConnectivityManager::class.java)
+        // While connected the VPN is the active network; look underneath it.
+        val networks = listOfNotNull(DefaultNetworkMonitor.defaultNetwork, connectivity.activeNetwork) +
+            connectivity.allNetworks.toList()
+        var kind = "other"
+        for (network in networks) {
+            val caps = connectivity.getNetworkCapabilities(network) ?: continue
+            if (caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) continue
+            if (!caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) continue
+            kind = when {
+                caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "wifi"
+                caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "cellular"
+                caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "ethernet"
+                else -> "other"
+            }
+            break
+        }
+        val telephony = activity.getSystemService(TelephonyManager::class.java)
+        return mapOf(
+            "kind" to kind,
+            "operator" to telephony?.networkOperatorName,
+            "mccMnc" to telephony?.networkOperator,
+        )
     }
 
     override fun onListen(arguments: Any?, events: EventChannel.EventSink) {

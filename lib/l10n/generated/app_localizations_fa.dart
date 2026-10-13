@@ -792,4 +792,70 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get updateFailed => 'بررسی نسخه جدید ممکن نشد';
+
+  @override
+  String get smartSetup => 'تنظیم هوشمند برای این اینترنت';
+
+  @override
+  String get smartSetupHint =>
+      'گزینه‌های ضدفیلتر را با سرورهای شما امتحان می‌کند و آن را که بهتر عبور می‌کند نگه می‌دارد';
+
+  @override
+  String get networkWifi => 'وای‌فای / اینترنت خانگی';
+
+  @override
+  String get networkMobile => 'اینترنت همراه';
+
+  @override
+  String get networkEthernet => 'اینترنت کابلی';
+
+  @override
+  String get networkThisComputer => 'این کامپیوتر';
+
+  @override
+  String get networkOther => 'این شبکه';
+
+  @override
+  String get smartSetupStart => 'شروع آزمایش';
+
+  @override
+  String smartSetupRunning(String count) {
+    return 'در حال آزمایش $count سرور با هر گزینه…';
+  }
+
+  @override
+  String smartSetupDone(String network, String mode) {
+    return 'بهترین گزینه روی $network: $mode. اعمال شد.';
+  }
+
+  @override
+  String get smartSetupNoServers =>
+      'ابتدا یک کانفیگ دارای TLS اضافه کنید (VLESS، VMess یا Trojan)؛ بقیه به این تنظیم نیاز ندارند.';
+
+  @override
+  String get smartSetupNothingWorks =>
+      'روی این شبکه هیچ سروری با هیچ گزینه‌ای جواب نداد. سرورهای دیگر یا IP تمیز را امتحان کنید.';
+
+  @override
+  String get smartSetupAuto => 'تغییر خودکار روی هر شبکه';
+
+  @override
+  String get smartSetupAutoHint =>
+      'هنگام اتصال، تنظیمی که روی همان اینترنت جواب داده استفاده می‌شود. انتخاب دستی فرگمنت هم برای همان شبکه به خاطر سپرده می‌شود.';
+
+  @override
+  String smartSetupRemembered(String mode) {
+    return 'ذخیره‌شده برای این شبکه: $mode';
+  }
+
+  @override
+  String get smartSetupNotTested => 'هنوز روی این شبکه آزمایش نشده';
+
+  @override
+  String smartSetupScore(String ok, String total) {
+    return '$ok از $total سرور';
+  }
+
+  @override
+  String get fragmentOff => 'بدون فرگمنت';
 }
