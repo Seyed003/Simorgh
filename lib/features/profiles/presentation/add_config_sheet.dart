@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/utils/context_ext.dart';
-import '../../warp/presentation/warp_actions.dart';
+import '../../warp/presentation/free_config_actions.dart';
 import 'import_actions.dart';
 
 Future<void> showAddConfigSheet(BuildContext context, WidgetRef ref) async {
@@ -52,8 +52,8 @@ Future<void> showAddConfigSheet(BuildContext context, WidgetRef ref) async {
               ),
               _Option(
                 icon: Icons.cloud_rounded,
-                label: l10n.warpAdd,
-                action: (a) => WarpActions(a.context, a.ref).add(),
+                label: l10n.freeConfig,
+                action: (a) => getFreeConfig(a.context, a.ref),
               ),
               const SizedBox(height: 8),
             ],

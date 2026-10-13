@@ -172,22 +172,26 @@ jobs:
           # The uninstaller finishes from a copy of itself; give it time.
           for ($i = 0; $i -lt 60 -and (Test-Path (Join-Path $dir 'aghelan_ghiamat.exe')); $i++) { Start-Sleep -Seconds 1 }
           if (Test-Path (Join-Path $dir 'aghelan_ghiamat.exe')) { throw 'uninstall left the app behind' }
-      # GitHub zips artifacts itself; uploading the folder avoids a zip
-      # inside a zip with the same name.
+      - name: One download with both versions
+        # The installer (recommended: Program Files) and a portable folder
+        # that runs from anywhere, e.g. a flash drive.
+        shell: pwsh
+        run: |
+          $dist = 'build\windows-dist'
+          New-Item -ItemType Directory -Force $dist | Out-Null
+          Copy-Item build\installer\aghelan-ghiamat-windows-x64-setup.exe $dist
+          Copy-Item -Recurse build\windows\x64\runner\Release (Join-Path $dist 'aghelan-ghiamat-portable')
+      # GitHub zips artifacts itself, so the folder goes up as it is.
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: aghelan-ghiamat-windows-x64
-          path: build/windows/x64/runner/Release/
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: aghelan-ghiamat-windows-x64-setup
-          path: build/installer/aghelan-ghiamat-windows-x64-setup.exe
+          path: build/windows-dist/
 
   release:
     name: GitHub release
     # A pushed tag such as v0.2.0 publishes the APKs, the Windows setup and
-    # zip;
-    # the app's update check reads the latest release.
+    # the portable Windows zip; the app's update check reads the latest
+    # release.
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [android, windows]
     runs-on: ubuntu-latest
@@ -201,8 +205,8 @@ jobs:
         run: |
           mkdir dist
           cp artifacts/aghelan-ghiamat-android/*.apk dist/
-          cp artifacts/aghelan-ghiamat-windows-x64-setup/*.exe dist/
-          (cd artifacts/aghelan-ghiamat-windows-x64 && zip -qr "$GITHUB_WORKSPACE/dist/aghelan-ghiamat-windows-x64.zip" .)
+          cp artifacts/aghelan-ghiamat-windows-x64/*-setup.exe dist/
+          (cd artifacts/aghelan-ghiamat-windows-x64 && zip -qr "$GITHUB_WORKSPACE/dist/aghelan-ghiamat-windows-x64-portable.zip" aghelan-ghiamat-portable)
           ls -la dist
       - uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:

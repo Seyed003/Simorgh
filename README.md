@@ -119,8 +119,12 @@ Open-source VPN client for **Android** and **Windows**, powered by the
 - **Smart setup per network:** tests TLS fragment modes with your servers on
   the current internet, applies the best and remembers it per mobile
   operator (MCI, Irancell, RighTel, ...) or Wi-Fi; used again on connect.
-- **Free Cloudflare WARP:** one tap registers a WARP device, adds it as a
-  WireGuard config and scans WARP addresses/ports for one that answers.
+- **Free config (one tap):** the button at the top of the home screen uses
+  Cloudflare's free WARP: it registers a WARP device once, tries WARP
+  addresses and ports on the current internet, keeps the fastest and
+  connects. The route is remembered per operator (MCI, Irancell, RighTel,
+  Wi-Fi), so on another SIM the free config switches to the route found
+  there; a route that stopped working is replaced by a new search.
 - **Backup and restore** of all configs, subscriptions and settings as one
   file; **links from other apps** (vless://..., subscription pages'
   sing-box:// / v2rayng:// / hiddify:// import links, "Share" to the app);
@@ -231,7 +235,8 @@ flutter build windows --release
 & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" /DAppVersion=0.2.0 windows\installer\aghelan-ghiamat.iss
 ```
 
-Ship the **installer**: it puts the app in Program Files, where only
+Ship the **installer** (CI also offers a portable folder, for flash drives
+and PCs where installing is not possible): it puts the app in Program Files, where only
 administrators can change its files. The app runs as administrator, so run
 from an unzipped folder any program could swap a DLL or the core and have it
 run elevated. Configs stay in the user's profile across updates and
@@ -246,9 +251,9 @@ Closing the window minimises it to the tray; use the tray menu → *Quit* to exi
 
 `.github/workflows/build.yml` runs analysis and tests, builds the core and
 validates every generated config with it (plus XHTTP/mKCP traffic through a
-local Xray server), then builds the Android APKs, the Windows installer
-(installed and uninstalled once on the runner as a check) and the Windows
-folder as downloadable artifacts. Push to `main` (or run the workflow
+local Xray server), then builds the Android APKs and one Windows download
+holding both the installer (installed and uninstalled once on the runner as a
+check) and a portable folder. Push to `main` (or run the workflow
 manually) and grab the files from the run's *Artifacts* section.
 
 **Protecting the release key.** The Android job signs in a `release`
@@ -373,8 +378,12 @@ are adapted from [sing-box-for-android](https://github.com/SagerNet/sing-box-for
 - **تنظیم هوشمند برای هر اینترنت:** گزینه‌های فرگمنت را با سرورهای خودتان
   روی همان اینترنت امتحان می‌کند، بهترین را اعمال و برای همان اپراتور
   (همراه اول، ایرانسل، رایتل) یا وای‌فای به خاطر می‌سپارد.
-- **WARP رایگان کلودفلر:** با یک لمس حساب WARP ساخته، به‌عنوان کانفیگ اضافه
-  و آدرسی که روی اینترنت شما جواب می‌دهد پیدا می‌شود.
+- **کانفیگ رایگان (یک لمس):** دکمه‌ی بالای صفحه‌ی اصلی از WARP رایگان
+  کلودفلر استفاده می‌کند: یک بار حساب WARP می‌سازد، آدرس‌ها و پورت‌های آن را
+  روی اینترنت فعلی امتحان می‌کند، سریع‌ترین را نگه می‌دارد و وصل می‌شود. مسیر
+  برای هر اپراتور (همراه اول، ایرانسل، رایتل، وای‌فای) جدا به خاطر سپرده
+  می‌شود؛ با سیم‌کارت دیگر خودکار به مسیر همان اپراتور می‌رود و اگر مسیری از
+  کار افتاد، دوباره جستجو می‌کند.
 - **پشتیبان‌گیری و بازگردانی** همه کانفیگ‌ها و تنظیمات در یک فایل؛ **باز کردن
   لینک‌ها از برنامه‌های دیگر** (لینک کانفیگ، دکمه‌های افزودن سایت‌های
   سابسکریپشن، «اشتراک‌گذاری» به برنامه)؛ صفحه **لاگ** هسته.
@@ -426,7 +435,8 @@ flutter build windows --release
 & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" /DAppVersion=0.2.0 windows\installer\aghelan-ghiamat.iss
 ```
 
-**فایل نصب** را منتشر کنید: برنامه را در Program Files نصب می‌کند، جایی که
+**فایل نصب** را منتشر کنید (ساخت خودکار یک نسخه‌ی پرتابل هم کنارش می‌گذارد،
+برای فلش و کامپیوترهایی که نصب در آن‌ها ممکن نیست): برنامه را در Program Files نصب می‌کند، جایی که
 فقط مدیر سیستم می‌تواند فایل‌هایش را عوض کند. برنامه با دسترسی مدیر اجرا
 می‌شود؛ اگر از یک پوشه‌ی زیپ اجرا شود، هر برنامه‌ی دیگری می‌تواند فایلی در
 آن بگذارد که با دسترسی مدیر اجرا شود. کانفیگ‌ها در پروفایل کاربر می‌مانند و

@@ -1879,6 +1879,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This address is not encrypted (http, not https): your internet provider could read it and swap its configs for its own servers. Use an https link if the seller has one.'**
   String get subscriptionHttpWarning;
+
+  /// No description provided for @freeConfig.
+  ///
+  /// In en, this message translates to:
+  /// **'Free config'**
+  String get freeConfig;
+
+  /// No description provided for @freeConfigTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A free config for {network}'**
+  String freeConfigTitle(String network);
+
+  /// No description provided for @freeConfigExplain.
+  ///
+  /// In en, this message translates to:
+  /// **'Uses Cloudflare\'s free WARP. The app tries WARP\'s addresses on your internet, picks the fastest and remembers it for this operator; on another SIM or Wi-Fi it finds that network\'s best too. Takes up to a minute the first time.\n\nGood for blocked sites; it is not anonymous, and some operators slow or block WARP.'**
+  String get freeConfigExplain;
+
+  /// No description provided for @freeConfigStepNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking your internet…'**
+  String get freeConfigStepNetwork;
+
+  /// No description provided for @freeConfigStepAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting a free WARP account…'**
+  String get freeConfigStepAccount;
+
+  /// No description provided for @freeConfigStepChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking the route that worked here before…'**
+  String get freeConfigStepChecking;
+
+  /// No description provided for @freeConfigStepScanning.
+  ///
+  /// In en, this message translates to:
+  /// **'Finding the fastest route on {network}…'**
+  String freeConfigStepScanning(String network);
+
+  /// No description provided for @freeConfigName.
+  ///
+  /// In en, this message translates to:
+  /// **'Free · {network}'**
+  String freeConfigName(String network);
+
+  /// No description provided for @freeConfigReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Free config ready for {network}'**
+  String freeConfigReady(String network);
+
+  /// No description provided for @freeConfigUnreachable.
+  ///
+  /// In en, this message translates to:
+  /// **'WARP doesn\'t answer on {network} right now: the operator may be blocking it. Try another network, or again later.'**
+  String freeConfigUnreachable(String network);
+
+  /// No description provided for @freeConfigGo.
+  ///
+  /// In en, this message translates to:
+  /// **'Find and connect'**
+  String get freeConfigGo;
 }
 
 class _AppLocalizationsDelegate

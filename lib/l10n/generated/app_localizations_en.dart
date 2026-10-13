@@ -1059,4 +1059,49 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get subscriptionHttpWarning =>
       'This address is not encrypted (http, not https): your internet provider could read it and swap its configs for its own servers. Use an https link if the seller has one.';
+
+  @override
+  String get freeConfig => 'Free config';
+
+  @override
+  String freeConfigTitle(String network) {
+    return 'A free config for $network';
+  }
+
+  @override
+  String get freeConfigExplain =>
+      'Uses Cloudflare\'s free WARP. The app tries WARP\'s addresses on your internet, picks the fastest and remembers it for this operator; on another SIM or Wi-Fi it finds that network\'s best too. Takes up to a minute the first time.\n\nGood for blocked sites; it is not anonymous, and some operators slow or block WARP.';
+
+  @override
+  String get freeConfigStepNetwork => 'Checking your internet…';
+
+  @override
+  String get freeConfigStepAccount => 'Getting a free WARP account…';
+
+  @override
+  String get freeConfigStepChecking =>
+      'Checking the route that worked here before…';
+
+  @override
+  String freeConfigStepScanning(String network) {
+    return 'Finding the fastest route on $network…';
+  }
+
+  @override
+  String freeConfigName(String network) {
+    return 'Free · $network';
+  }
+
+  @override
+  String freeConfigReady(String network) {
+    return 'Free config ready for $network';
+  }
+
+  @override
+  String freeConfigUnreachable(String network) {
+    return 'WARP doesn\'t answer on $network right now: the operator may be blocking it. Try another network, or again later.';
+  }
+
+  @override
+  String get freeConfigGo => 'Find and connect';
 }
