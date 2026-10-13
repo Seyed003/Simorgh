@@ -1,17 +1,21 @@
 import 'package:aghelan_ghiamat/app.dart';
 import 'package:aghelan_ghiamat/core/storage/preferences.dart';
 import 'package:aghelan_ghiamat/features/profiles/data/profile_store.dart';
+import 'package:aghelan_ghiamat/features/network/application/internet_reach.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'helpers.dart';
 
+import 'fakes.dart';
+
 Future<void> _pumpApp(WidgetTester tester, Map<String, Object> prefs) async {
   final instance = await mockPreferences(prefs);
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        reachProbeProvider.overrideWithValue(const FakeReachProbe()),
         sharedPreferencesProvider.overrideWithValue(instance),
         profileStoreProvider.overrideWithValue(MemoryProfileStore()),
       ],

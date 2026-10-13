@@ -1127,13 +1127,13 @@ abstract class AppLocalizations {
   /// No description provided for @cleanIpScan.
   ///
   /// In en, this message translates to:
-  /// **'Find clean Cloudflare IP'**
+  /// **'Find a clean CDN IP'**
   String get cleanIpScan;
 
   /// No description provided for @cleanIpHint.
   ///
   /// In en, this message translates to:
-  /// **'Finds Cloudflare addresses your internet can reach. Configs that go through Cloudflare (CDN) can use one instead of their blocked address.'**
+  /// **'Finds CDN addresses (Cloudflare or ArvanCloud) your internet can reach. Configs that go through that CDN can use one instead of their blocked address.'**
   String get cleanIpHint;
 
   /// No description provided for @cleanIpTestingHost.
@@ -1747,6 +1747,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'For configs behind ArvanCloud\'s CDN. Its addresses are inside Iran, so they often keep working on the national internet.'**
   String get cdnArvanHint;
+
+  /// No description provided for @shareApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Share the app'**
+  String get shareApp;
+
+  /// No description provided for @shareAppHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Send it to another phone by Bluetooth, Nearby Share or a messenger. No internet needed.'**
+  String get shareAppHint;
+
+  /// No description provided for @shareAppHintWindows.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens the app’s folder: copy it to a flash drive for another PC.'**
+  String get shareAppHintWindows;
+
+  /// No description provided for @shareAppTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Aghelan Ghiamat'**
+  String get shareAppTitle;
+
+  /// No description provided for @shareAppFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'This copy of the app can’t be sent as one file.'**
+  String get shareAppFailed;
+
+  /// No description provided for @nationalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Only Iranian sites are reachable'**
+  String get nationalTitle;
+
+  /// No description provided for @nationalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The international internet looks cut off (national internet). Configs with a server abroad won’t connect directly.'**
+  String get nationalHint;
+
+  /// No description provided for @nationalHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'What works?'**
+  String get nationalHelp;
+
+  /// No description provided for @nationalSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'On the national internet'**
+  String get nationalSheetTitle;
+
+  /// No description provided for @nationalDns.
+  ///
+  /// In en, this message translates to:
+  /// **'DNS switched automatically'**
+  String get nationalDns;
+
+  /// No description provided for @nationalDnsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Foreign DNS servers are cut off too, so server names are looked up with your network’s own DNS until this ends.'**
+  String get nationalDnsHint;
+
+  /// No description provided for @nationalRelay.
+  ///
+  /// In en, this message translates to:
+  /// **'Go through a server inside Iran'**
+  String get nationalRelay;
+
+  /// No description provided for @nationalRelayHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Some servers in Iranian data centres keep their link abroad. If you have a config on one, open your foreign config’s menu → “Connect through another server” and pick it.'**
+  String get nationalRelayHint;
+
+  /// No description provided for @nationalCdn.
+  ///
+  /// In en, this message translates to:
+  /// **'ArvanCloud for CDN configs'**
+  String get nationalCdn;
+
+  /// No description provided for @nationalCdnHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Configs behind ArvanCloud, an Iranian CDN, may keep working: config menu → “Find a clean CDN IP” → ArvanCloud.'**
+  String get nationalCdnHint;
+
+  /// No description provided for @nationalOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'New configs and the app, offline'**
+  String get nationalOffline;
+
+  /// No description provided for @nationalOfflineHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Get fresh configs through Iranian messengers, and pass this app on by Bluetooth with “Share the app”.'**
+  String get nationalOfflineHint;
+
+  /// No description provided for @nationalTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Test configs'**
+  String get nationalTest;
+
+  /// No description provided for @nationalRecheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Check again'**
+  String get nationalRecheck;
+
+  /// No description provided for @nationalStillCut.
+  ///
+  /// In en, this message translates to:
+  /// **'Still only Iranian sites are reachable.'**
+  String get nationalStillCut;
+
+  /// No description provided for @nationalBack.
+  ///
+  /// In en, this message translates to:
+  /// **'The international internet is reachable again.'**
+  String get nationalBack;
 }
 
 class _AppLocalizationsDelegate

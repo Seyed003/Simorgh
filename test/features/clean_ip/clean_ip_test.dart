@@ -11,6 +11,7 @@ import 'package:aghelan_ghiamat/features/connection/application/vpn_controller.d
 import 'package:aghelan_ghiamat/features/connection/domain/traffic.dart';
 import 'package:aghelan_ghiamat/features/profiles/application/profiles_controller.dart';
 import 'package:aghelan_ghiamat/features/profiles/data/profile_store.dart';
+import 'package:aghelan_ghiamat/features/network/application/internet_reach.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -130,6 +131,7 @@ void main() {
   test('controller keeps the fastest hits and can stop', () async {
     final container = ProviderContainer(
       overrides: [
+        reachProbeProvider.overrideWithValue(const FakeReachProbe()),
         cleanIpScannerFactoryProvider.overrideWithValue(_fakeScanner),
       ],
     );
@@ -150,6 +152,7 @@ void main() {
   test('controller scans ArvanCloud addresses once chosen', () async {
     final container = ProviderContainer(
       overrides: [
+        reachProbeProvider.overrideWithValue(const FakeReachProbe()),
         cleanIpScannerFactoryProvider.overrideWithValue(_fakeScanner),
       ],
     );
@@ -183,6 +186,7 @@ void main() {
     addTearDown(tester.view.reset);
     final container = ProviderContainer(
       overrides: [
+        reachProbeProvider.overrideWithValue(const FakeReachProbe()),
         sharedPreferencesProvider.overrideWithValue(
           await mockPreferences({'settings.language': 'en'}),
         ),
@@ -210,7 +214,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.more_vert_rounded).first);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Find clean Cloudflare IP'));
+    await tester.tap(find.text('Find a clean CDN IP'));
     await tester.pumpAndSettle();
     expect(find.text('Tested with example.com'), findsOneWidget);
 
@@ -235,6 +239,7 @@ void main() {
     final platform = FakeVpnPlatform();
     final container = ProviderContainer(
       overrides: [
+        reachProbeProvider.overrideWithValue(const FakeReachProbe()),
         sharedPreferencesProvider.overrideWithValue(
           await mockPreferences({'settings.language': 'en'}),
         ),
@@ -262,7 +267,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.more_vert_rounded).first);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Find clean Cloudflare IP'));
+    await tester.tap(find.text('Find a clean CDN IP'));
     await tester.pumpAndSettle();
     expect(
       find.text(

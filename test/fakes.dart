@@ -5,6 +5,7 @@ import 'package:aghelan_ghiamat/features/logs/domain/core_log_line.dart';
 import 'package:aghelan_ghiamat/core/singbox/builder/core_options.dart';
 import 'package:aghelan_ghiamat/features/connection/data/vpn_platform.dart';
 import 'package:aghelan_ghiamat/features/connection/domain/vpn_state.dart';
+import 'package:aghelan_ghiamat/features/network/data/reach_probe.dart';
 
 /// In-memory VPN platform that records requests and lets tests drive the
 /// native side's events.
@@ -87,4 +88,26 @@ class FakeSystemBridge extends SystemBridge {
 
   @override
   Stream<SharedText> sharedText() => shared.stream;
+
+  bool shareable = false;
+  int sharedApp = 0;
+
+  @override
+  bool get canShareApp => shareable;
+
+  @override
+  Future<bool> shareApp({required String title}) async {
+    sharedApp++;
+    return shareable;
+  }
+}
+
+/// Answers every check with [result] instead of going online.
+class FakeReachProbe extends ReachProbe {
+  const FakeReachProbe([this.result = InternetReach.open]);
+
+  final InternetReach result;
+
+  @override
+  Future<InternetReach> run() async => result;
 }

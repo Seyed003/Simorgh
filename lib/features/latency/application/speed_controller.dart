@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/storage/preferences.dart';
 import '../../connection/application/vpn_controller.dart';
 import '../../profiles/application/profiles_controller.dart';
-import '../../settings/application/core_options_controller.dart';
+import '../../network/application/internet_reach.dart';
 import '../data/speed_tester.dart';
 import '../domain/speed_result.dart';
 import 'tester_lock.dart';
@@ -20,7 +20,7 @@ final speedTesterFactoryProvider = Provider<SpeedTester Function()>(
   (ref) =>
       () => SpeedTester(
         platform: ref.read(vpnPlatformProvider),
-        options: ref.read(coreOptionsProvider),
+        options: ref.read(effectiveCoreOptionsProvider),
       ),
 );
 

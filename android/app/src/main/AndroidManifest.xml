@@ -114,6 +114,12 @@
                 <action android:name="android.service.quicksettings.action.QS_TILE" />
             </intent-filter>
         </service>
+        <!-- The app's own APK, shared to other phones (see ApkProvider). -->
+        <provider
+            android:name=".system.ApkProvider"
+            android:authorities="${applicationId}.apk"
+            android:exported="false"
+            android:grantUriPermissions="true" />
         <receiver
             android:name=".surfaces.VpnWidgetProvider"
             android:exported="false">

@@ -9,6 +9,7 @@ import 'package:aghelan_ghiamat/features/profiles/domain/profile.dart';
 import 'package:aghelan_ghiamat/features/profiles/domain/profiles_state.dart';
 import 'package:aghelan_ghiamat/features/profiles/domain/subscription.dart';
 import 'package:aghelan_ghiamat/features/updates/data/update_checker.dart';
+import 'package:aghelan_ghiamat/features/network/application/internet_reach.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -49,6 +50,7 @@ void main() {
     );
     final container = ProviderContainer(
       overrides: [
+        reachProbeProvider.overrideWithValue(const FakeReachProbe()),
         sharedPreferencesProvider.overrideWithValue(
           await mockPreferences({'settings.language': 'en', ...prefs}),
         ),
