@@ -231,7 +231,8 @@ flutter build windows --release
 & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" /DAppVersion=0.2.0 windows\installer\aghelan-ghiamat.iss
 ```
 
-Ship the **installer**: it puts the app in Program Files, where only
+Ship the **installer** (CI also offers a portable folder, for flash drives
+and PCs where installing is not possible): it puts the app in Program Files, where only
 administrators can change its files. The app runs as administrator, so run
 from an unzipped folder any program could swap a DLL or the core and have it
 run elevated. Configs stay in the user's profile across updates and
@@ -246,9 +247,9 @@ Closing the window minimises it to the tray; use the tray menu → *Quit* to exi
 
 `.github/workflows/build.yml` runs analysis and tests, builds the core and
 validates every generated config with it (plus XHTTP/mKCP traffic through a
-local Xray server), then builds the Android APKs, the Windows installer
-(installed and uninstalled once on the runner as a check) and the Windows
-folder as downloadable artifacts. Push to `main` (or run the workflow
+local Xray server), then builds the Android APKs and one Windows download
+holding both the installer (installed and uninstalled once on the runner as a
+check) and a portable folder. Push to `main` (or run the workflow
 manually) and grab the files from the run's *Artifacts* section.
 
 **Protecting the release key.** The Android job signs in a `release`
@@ -426,7 +427,8 @@ flutter build windows --release
 & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" /DAppVersion=0.2.0 windows\installer\aghelan-ghiamat.iss
 ```
 
-**فایل نصب** را منتشر کنید: برنامه را در Program Files نصب می‌کند، جایی که
+**فایل نصب** را منتشر کنید (ساخت خودکار یک نسخه‌ی پرتابل هم کنارش می‌گذارد،
+برای فلش و کامپیوترهایی که نصب در آن‌ها ممکن نیست): برنامه را در Program Files نصب می‌کند، جایی که
 فقط مدیر سیستم می‌تواند فایل‌هایش را عوض کند. برنامه با دسترسی مدیر اجرا
 می‌شود؛ اگر از یک پوشه‌ی زیپ اجرا شود، هر برنامه‌ی دیگری می‌تواند فایلی در
 آن بگذارد که با دسترسی مدیر اجرا شود. کانفیگ‌ها در پروفایل کاربر می‌مانند و
