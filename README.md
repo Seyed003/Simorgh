@@ -23,6 +23,13 @@ Open-source VPN client for **Android** and **Windows**, powered by the
   Shadowsocks (SIP002, 2022 ciphers, legacy, obfs/v2ray plugins), Hysteria2
   (incl. port hopping), TUIC, WireGuard, SSH — plus Hysteria v1, AnyTLS and
   SOCKS.
+- **OpenVPN, Cisco AnyConnect and Outline:** `.ovpn` profiles with their
+  certificates inside (UDP/TCP, several servers, tls-auth, tls-crypt,
+  tls-crypt-v2, username/password asked for when the file has none); Cisco
+  AnyConnect / ocserv servers from address + login (a self-signed
+  certificate is shown and pinned once you trust it); Outline dynamic access
+  keys (`ssconf://`), refreshed like subscriptions. These run on sing-box's
+  own OpenVPN/OpenConnect clients and add about 2 MB to the APK.
 - **Transports:** TCP, WebSocket (with early data), gRPC, HTTP/2, HTTPUpgrade,
   QUIC, TCP+HTTP header obfuscation.
 - **XHTTP, mKCP and VLESS Encryption (bundled Xray engine):** the core is
@@ -34,7 +41,8 @@ Open-source VPN client for **Android** and **Windows**, powered by the
   certificate (`pcs` pins a self-signed one).
 - **Import from anywhere:** share links, clipboard, camera QR (Android), QR
   from an image/screenshot (Android + Windows), pasted text, subscription URLs
-  (base64 or plain), and sing-box JSON configs/outbounds.
+  (base64 or plain), sing-box/Xray JSON, and files (`.ovpn` and the rest,
+  also opened or shared from Telegram and file managers on Android).
 - **Subscriptions:** quota/expiry from `subscription-userinfo`, panel titles,
   one-tap update that keeps your selected server.
 - **Full-device tunnel:** Android `VpnService` via libbox; Windows TUN
@@ -252,12 +260,19 @@ are adapted from [sing-box-for-android](https://github.com/SagerNet/sing-box-for
   Shadowsocks (SIP002، رمزهای ۲۰۲۲، قالب قدیمی، پلاگین obfs و v2ray)،
   Hysteria2 (با port hopping)، TUIC، WireGuard، SSH و علاوه بر این‌ها
   Hysteria نسخه ۱، AnyTLS و SOCKS.
-- **ترنسپورت‌ها:** TCP، WebSocket، gRPC، HTTP/2، HTTPUpgrade، QUIC. اگر
-  کانفیگی از ترنسپورت‌های مخصوص Xray (مثل xhttp یا mKCP) استفاده کند، دلیلش
-  به‌روشنی نمایش داده می‌شود.
+- **OpenVPN، سیسکو و Outline:** فایل‌های `.ovpn` که گواهی‌ها داخلشان است
+  (UDP و TCP، چند سرور، tls-auth، tls-crypt، tls-crypt-v2؛ اگر نام کاربری و
+  رمز در فایل نباشد پرسیده می‌شود)، سرورهای Cisco AnyConnect / ocserv با
+  آدرس و نام کاربری و رمز (گواهی خودامضا نشان داده می‌شود و بعد از تأیید شما
+  ثابت می‌ماند) و کلیدهای Outline (`ssconf://`) که مثل سابسکریپشن به‌روز
+  می‌شوند. حدود ۲ مگابایت به برنامه اضافه می‌کنند.
+- **ترنسپورت‌ها:** TCP، WebSocket، gRPC، HTTP/2، HTTPUpgrade، QUIC و با
+  موتور Xray: XHTTP، mKCP و VLESS Encryption.
 - **وارد کردن از همه‌جا:** لینک اشتراک، کلیپ‌بورد، اسکن QR با دوربین
   (اندروید)، QR از روی عکس یا اسکرین‌شات (اندروید و ویندوز)، متن چسبانده‌شده،
-  لینک سابسکریپشن (base64 یا متن ساده) و JSON سینگ‌باکس.
+  لینک سابسکریپشن (base64 یا متن ساده)، JSON سینگ‌باکس و Xray، و فایل
+  (`.ovpn` و بقیه؛ در اندروید با «باز کردن با» یا «اشتراک‌گذاری» از تلگرام و
+  فایل‌منیجر).
 - **سابسکریپشن:** نمایش حجم مصرفی و تاریخ انقضا، به‌روزرسانی با یک لمس بدون
   از دست رفتن سرور انتخاب‌شده.
 - **تونل کامل دستگاه:** در اندروید با VpnService و در ویندوز با حالت TUN
