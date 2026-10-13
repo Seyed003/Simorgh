@@ -83,8 +83,8 @@ class FakeVpnPlatform implements VpnPlatform {
 
 /// System integration with links "shared" by the test.
 class FakeSystemBridge extends SystemBridge {
-  final shared = StreamController<String>();
+  final shared = StreamController<SharedText>();
 
   @override
-  Stream<String> sharedText() => shared.stream;
+  Stream<SharedText> sharedText() => shared.stream;
 }

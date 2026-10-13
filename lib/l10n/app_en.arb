@@ -539,5 +539,37 @@
       }
     }
   },
-  "warpScanNone": "No WARP endpoint answered on this network"
+  "warpScanNone": "No WARP endpoint answered on this network",
+  "importFromFile": "Import a file (.ovpn, JSON…)",
+  "ciscoAdd": "Cisco AnyConnect",
+  "ciscoServer": "Server address",
+  "ciscoGroup": "Group (optional)",
+  "ciscoUnreachableTitle": "Server not reachable",
+  "ciscoUnreachable": "Could not reach {server} to check its certificate. Add it anyway?",
+  "@ciscoUnreachable": {
+    "placeholders": {
+      "server": {
+        "type": "String"
+      }
+    }
+  },
+  "ciscoUntrustedTitle": "Unverified certificate",
+  "ciscoUntrusted": "No known authority vouches for this server's certificate, which is common for Cisco servers you buy. Trust it only if your provider gave you this server.\n\n{subject}\n{pin}",
+  "@ciscoUntrusted": {
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      },
+      "pin": {
+        "type": "String"
+      }
+    }
+  },
+  "ciscoTrust": "Trust",
+  "loginTitle": "Username and password",
+  "loginUsername": "Username",
+  "loginPassword": "Password",
+  "loginUsernameRequired": "Enter the username",
+  "loginNeeded": "Needs username and password",
+  "errorLoginNeeded": "Enter this server's username and password first"
 }

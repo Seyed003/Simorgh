@@ -46,7 +46,7 @@ class AppShell extends ConsumerStatefulWidget {
 class _AppShellState extends ConsumerState<AppShell> {
   /// Tabs are built the first time they are opened, then kept alive.
   final _opened = <AppTab>{AppTab.home};
-  StreamSubscription<String>? _shared;
+  StreamSubscription<SharedText>? _shared;
 
   @override
   void initState() {
@@ -57,9 +57,10 @@ class _AppShellState extends ConsumerState<AppShell> {
         unawaited(ref.read(updateProvider.notifier).checkAutomatically());
       }
     });
-    // Config links tapped in other apps and text shared to this one.
-    _shared = ref.read(systemBridgeProvider).sharedText().listen((text) {
-      final incoming = IncomingImport.parse(text);
+    // Config links tapped in other apps, text and .ovpn files shared to
+    // this one.
+    _shared = ref.read(systemBridgeProvider).sharedText().listen((shared) {
+      final incoming = IncomingImport.parse(shared.text, name: shared.name);
       if (incoming == null || !mounted) return;
       unawaited(ImportActions(context, ref).fromIncoming(incoming));
     });

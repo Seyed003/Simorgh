@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:aghelan_ghiamat/core/singbox/builder/core_options.dart';
 import 'package:aghelan_ghiamat/core/singbox/link_parser.dart';
+import 'package:aghelan_ghiamat/core/singbox/protocols/openvpn.dart';
 import 'package:aghelan_ghiamat/features/connection/data/clash_api_client.dart';
 import 'package:aghelan_ghiamat/features/latency/data/latency_tester.dart';
 import 'package:aghelan_ghiamat/features/latency/domain/latency_result.dart';
@@ -10,6 +11,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
 import '../../core/singbox/fixtures.dart';
+import '../../core/singbox/openvpn_fixtures.dart';
 import '../../fakes.dart';
 
 /// Clash API stub answering /proxies/{tag}/delay from [delays] (tag -> ms,
@@ -115,6 +117,40 @@ void main() {
     }).first;
     expect(first.result.delay, 1);
     expect(platform.stopTesterCalls, 1);
+  });
+
+  test('OpenVPN and Cisco get time to sign in; no login, no test', () async {
+    LatencyTester.retryPause = Duration.zero;
+    addTearDown(() => LatencyTester.retryPause = const Duration(seconds: 1));
+    final attempts = <String, int>{};
+    final tester = LatencyTester(
+      platform: FakeVpnPlatform(),
+      options: const CoreOptions(),
+      clientFactory: (options) => ClashApiClient(
+        options,
+        clientFactory: () => MockClient((request) async {
+          final tag = request.url.pathSegments[1];
+          final n = attempts[tag] = (attempts[tag] ?? 0) + 1;
+          // t0 (OpenVPN) is up on the third try; t1 (VLESS) never answers.
+          return tag == 't0' && n >= 3
+              ? http.Response(jsonEncode({'delay': 210}), 200)
+              : http.Response('{"message":"endpoint is not ready yet"}', 502);
+        }),
+      ),
+    );
+    final updates = await tester.run({
+      'ovpn': parseOpenVpn(ovpnTlsCrypt),
+      'vless': LinkParser.parse(vlessReality),
+      'no-login': parseOpenVpn(ovpnProfile),
+    }).toList();
+    final byId = {for (final u in updates) u.id: u.result};
+    expect(byId['ovpn']!.delay, 210);
+    expect(attempts['t0'], 3);
+    // Other protocols are not retried.
+    expect(byId['vless']!.ok, isFalse);
+    expect(attempts['t1'], 1);
+    expect(byId['no-login']!.failure, LatencyFailure.invalidConfig);
+    expect(attempts, hasLength(2));
   });
 
   test('result JSON round trip', () {

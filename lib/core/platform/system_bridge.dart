@@ -50,13 +50,41 @@ class SystemBridge {
         : NetworkIdentity.fromMap(raw);
   }
 
-  /// Links and text other apps opened or shared the app with: first what
-  /// arrived before anyone listened, then each new one.
-  Stream<String> sharedText() async* {
+  /// Links, text and files (OpenVPN profiles) other apps opened or shared
+  /// the app with: first what arrived before anyone listened, then each
+  /// new one.
+  Stream<SharedText> sharedText() async* {
     if (!_android) return;
-    final pending = await _methods.invokeListMethod<String>('takeShared');
-    yield* Stream.fromIterable(pending ?? const []);
-    yield* _shared.receiveBroadcastStream().cast<String>();
+    final pending = await _methods.invokeListMethod<Object?>('takeShared');
+    yield* Stream.fromIterable(
+      (pending ?? const []).map(SharedText.fromPlatform).nonNulls,
+    );
+    yield* _shared
+        .receiveBroadcastStream()
+        .map(SharedText.fromPlatform)
+        .where((s) => s != null)
+        .cast<SharedText>();
+  }
+}
+
+/// A link or text shared to the app, or the contents of a file opened with
+/// it and the file's [name] without extension.
+class SharedText {
+  const SharedText(this.text, {this.name});
+
+  final String text;
+  final String? name;
+
+  static SharedText? fromPlatform(Object? value) {
+    if (value is String) return SharedText(value);
+    if (value is! Map || value['text'] is! String) return null;
+    final name = value['name'];
+    return SharedText(
+      value['text'] as String,
+      name: name is String && name.isNotEmpty
+          ? name.replaceFirst(RegExp(r'\.[A-Za-z0-9]{1,5}$'), '')
+          : null,
+    );
   }
 }
 

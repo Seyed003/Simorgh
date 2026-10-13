@@ -249,5 +249,20 @@
   "warpFailed": "اتصال به کلودفلر ممکن نشد ({error}). اول به یک سرور وصل شوید و دوباره امتحان کنید.",
   "warpScan": "پیدا کردن آدرس WARP",
   "warpScanDone": "آدرس به {endpoint} تغییر کرد",
-  "warpScanNone": "روی این شبکه هیچ آدرس WARP جواب نداد"
+  "warpScanNone": "روی این شبکه هیچ آدرس WARP جواب نداد",
+  "importFromFile": "وارد کردن فایل (‎.ovpn، JSON و…)",
+  "ciscoAdd": "سیسکو (Cisco AnyConnect)",
+  "ciscoServer": "آدرس سرور",
+  "ciscoGroup": "گروه (اختیاری)",
+  "ciscoUnreachableTitle": "سرور در دسترس نیست",
+  "ciscoUnreachable": "به {server} وصل نشد تا گواهی‌اش بررسی شود. باز هم اضافه شود؟",
+  "ciscoUntrustedTitle": "گواهی تأییدنشده",
+  "ciscoUntrusted": "هیچ مرجع شناخته‌شده‌ای گواهی این سرور را تأیید نکرده است؛ این در سرورهای سیسکوی خریداری‌شده رایج است. فقط اگر این سرور را فروشنده‌ی خودتان داده به آن اعتماد کنید.\n\n{subject}\n{pin}",
+  "ciscoTrust": "اعتماد می‌کنم",
+  "loginTitle": "نام کاربری و رمز",
+  "loginUsername": "نام کاربری",
+  "loginPassword": "رمز عبور",
+  "loginUsernameRequired": "نام کاربری را وارد کنید",
+  "loginNeeded": "نیاز به نام کاربری و رمز",
+  "errorLoginNeeded": "اول نام کاربری و رمز این سرور را وارد کنید"
 }

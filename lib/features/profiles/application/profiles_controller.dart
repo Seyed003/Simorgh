@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/singbox/proxy_config.dart';
 import '../../../core/singbox/subscription_info.dart';
 import '../../../core/singbox/subscription_parser.dart';
+import '../../../core/singbox/subscription_url.dart';
 import '../data/profile_store.dart';
 import '../data/subscription_client.dart';
 import '../domain/profile.dart';
@@ -38,14 +39,15 @@ class ProfilesController extends AsyncNotifier<ProfilesState> {
     await _store.save(next);
   }
 
-  /// Imports share links, base64 blobs or sing-box JSON from free text.
-  /// A lone http(s) URL is treated as a subscription.
-  Future<ImportOutcome> importText(String text) async {
+  /// Imports share links, base64 blobs, sing-box JSON or an OpenVPN
+  /// profile from free text ([name]: the file it came from). A lone
+  /// http(s) URL is treated as a subscription.
+  Future<ImportOutcome> importText(String text, {String? name}) async {
     final trimmed = text.trim();
-    if (_looksLikeSubscriptionUrl(trimmed)) {
-      return addSubscription(trimmed);
+    if (subscriptionUri(trimmed) != null) {
+      return addSubscription(trimmed, name: subscriptionNameOf(trimmed));
     }
-    final result = SubscriptionParser.parse(trimmed);
+    final result = SubscriptionParser.parse(trimmed, name: name);
     final current = await _current();
     final existing = current.manualProfiles().map(_fingerprint).toSet();
     final now = DateTime.now();
@@ -62,13 +64,21 @@ class ProfilesController extends AsyncNotifier<ProfilesState> {
         ),
       );
     }
-    return ImportOutcome(added: added.length, skipped: result.skipped.length);
+    return ImportOutcome(
+      added: added.length,
+      skipped: result.skipped.length,
+      profiles: added,
+      skipReason: result.skipped.firstOrNull?.reason,
+    );
   }
 
+  /// Adds the subscription at [url] (or an Outline `ssconf://` key).
   Future<ImportOutcome> addSubscription(String url, {String? name}) async {
+    name ??= subscriptionNameOf(url);
+    url = subscriptionUri(url)?.toString() ?? url.trim();
     final response = await ref.read(subscriptionClientProvider).fetch(url);
     final info = SubscriptionInfo.fromHeaders(response.headers);
-    final result = SubscriptionParser.parse(response.body);
+    final result = SubscriptionParser.parse(response.body, name: name);
     if (result.proxies.isEmpty) {
       throw const SubscriptionException('no supported configs in subscription');
     }
@@ -92,6 +102,7 @@ class ProfilesController extends AsyncNotifier<ProfilesState> {
       added: profiles.length,
       skipped: result.skipped.length,
       subscription: subscription,
+      profiles: profiles,
     );
   }
 
@@ -103,7 +114,10 @@ class ProfilesController extends AsyncNotifier<ProfilesState> {
     final response = await ref
         .read(subscriptionClientProvider)
         .fetch(subscription.url);
-    final result = SubscriptionParser.parse(response.body);
+    final result = SubscriptionParser.parse(
+      response.body,
+      name: subscription.name,
+    );
     if (result.proxies.isEmpty) {
       throw const SubscriptionException('no supported configs in subscription');
     }
@@ -365,14 +379,6 @@ class ProfilesController extends AsyncNotifier<ProfilesState> {
 
   static String _configFingerprint(ProxyConfig c) =>
       '${c.name}|${jsonEncode(c.outbound)}';
-
-  static bool _looksLikeSubscriptionUrl(String text) {
-    if (text.contains(RegExp(r'\s'))) return false;
-    final uri = Uri.tryParse(text);
-    return uri != null &&
-        (uri.isScheme('http') || uri.isScheme('https')) &&
-        uri.host.isNotEmpty;
-  }
 
   static String _subscriptionName(
     String? name,

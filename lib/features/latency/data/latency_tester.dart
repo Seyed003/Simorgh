@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+
 import '../../../core/singbox/builder/config_builder.dart';
 import '../../../core/singbox/builder/core_options.dart';
 import '../../../core/singbox/builder/test_config_builder.dart';
@@ -38,7 +40,17 @@ class LatencyTester {
 
   /// Tests [proxies] (id -> config) and emits each result as it arrives.
   /// Cancelling the subscription stops the test core.
-  Stream<LatencyUpdate> run(Map<String, ProxyConfig> proxies) async* {
+  Stream<LatencyUpdate> run(Map<String, ProxyConfig> all) async* {
+    // Without its login a server cannot even be tried.
+    final proxies = {
+      for (final MapEntry(:key, :value) in all.entries)
+        if (!value.needsLogin) key: value,
+    };
+    for (final id in all.keys) {
+      if (!proxies.containsKey(id)) {
+        yield _failure(id, LatencyFailure.invalidConfig);
+      }
+    }
     if (proxies.isEmpty) return;
     final api = ClashApiOptions(
       port: await findFreeLocalPort(),
@@ -67,7 +79,12 @@ class LatencyTester {
     Future<void> worker() async {
       while (!cancelled && next < queue.length) {
         final MapEntry(key: tag, value: id) = queue[next++];
-        final delay = await client.delay(tag, url: url, timeout: timeout);
+        final delay = await _delay(
+          client,
+          tag,
+          signsInFirst: proxies[id]!.protocol.connectsFirst,
+          cancelled: () => cancelled,
+        );
         if (cancelled) return;
         results.add((
           id: id,
@@ -91,6 +108,31 @@ class LatencyTester {
       await platform.stopTester();
     }
   }
+
+  /// OpenVPN and Cisco refuse traffic until they have signed in, so their
+  /// test is repeated for up to [handshakeBudget].
+  Future<int?> _delay(
+    ClashApiClient client,
+    String tag, {
+    required bool signsInFirst,
+    required bool Function() cancelled,
+  }) async {
+    final deadline = _clock().add(handshakeBudget);
+    while (true) {
+      final delay = await client.delay(tag, url: url, timeout: timeout);
+      if (delay != null ||
+          !signsInFirst ||
+          cancelled() ||
+          !_clock().isBefore(deadline)) {
+        return delay;
+      }
+      await Future<void>.delayed(retryPause);
+    }
+  }
+
+  /// Pause between attempts while a server signs in.
+  @visibleForTesting
+  static Duration retryPause = const Duration(seconds: 1);
 
   LatencyUpdate _failure(String id, LatencyFailure failure) =>
       (id: id, result: LatencyResult.failure(failure, _clock()));

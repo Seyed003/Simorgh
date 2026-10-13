@@ -51,12 +51,23 @@ class SpeedTester {
   /// Tests [proxies] (id -> config) in order and emits each result.
   /// Cancelling the subscription aborts the current download and stops the
   /// test core; the cancel future completes once the core is down.
-  Stream<SpeedUpdate> run(Map<String, ProxyConfig> proxies) {
+  Stream<SpeedUpdate> run(Map<String, ProxyConfig> all) {
+    // Without its login a server cannot even be tried.
+    final proxies = {
+      for (final MapEntry(:key, :value) in all.entries)
+        if (!value.needsLogin) key: value,
+    };
     HttpClient? active;
     var cancelled = false;
     late final StreamController<SpeedUpdate> results;
 
     Future<void> work() async {
+      for (final id in all.keys) {
+        if (!proxies.containsKey(id)) {
+          results.add(_failure(id, LatencyFailure.invalidConfig));
+        }
+      }
+      if (proxies.isEmpty) return;
       final ports = {
         for (final id in proxies.keys) id: await findFreeLocalPort(),
       };
@@ -87,15 +98,32 @@ class SpeedTester {
         if (config == null) return;
         for (final id in config.tagToId.values) {
           if (cancelled) return;
-          final client = active = _httpClientFactory();
-          // Hard stop per server, whatever the network does.
-          final result = await _measure(client, ports[id]!, auth).timeout(
-            connectTimeout * 2 + duration + stallTimeout,
-            onTimeout: () {
-              client.close(force: true);
-              return SpeedResult.failure(LatencyFailure.unreachable, _clock());
-            },
-          );
+          // OpenVPN and Cisco carry nothing until they have signed in.
+          final deadline = proxies[id]!.protocol.connectsFirst
+              ? _clock().add(handshakeBudget)
+              : null;
+          SpeedResult result;
+          while (true) {
+            final client = active = _httpClientFactory();
+            // Hard stop per server, whatever the network does.
+            result = await _measure(client, ports[id]!, auth).timeout(
+              connectTimeout * 2 + duration + stallTimeout,
+              onTimeout: () {
+                client.close(force: true);
+                return SpeedResult.failure(
+                  LatencyFailure.unreachable,
+                  _clock(),
+                );
+              },
+            );
+            if (result.ok ||
+                cancelled ||
+                deadline == null ||
+                !_clock().isBefore(deadline)) {
+              break;
+            }
+            await Future<void>.delayed(const Duration(seconds: 1));
+          }
           if (cancelled) return;
           results.add((id: id, result: result));
         }

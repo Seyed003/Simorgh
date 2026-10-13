@@ -9,18 +9,20 @@ import '../../../latency/presentation/latency_badge.dart';
 import '../../../latency/presentation/speed_badge.dart';
 import '../../domain/profile.dart';
 
-const _badges = {
-  ProxyProtocol.vmess: 'VM',
-  ProxyProtocol.vless: 'VL',
-  ProxyProtocol.trojan: 'TR',
-  ProxyProtocol.shadowsocks: 'SS',
-  ProxyProtocol.hysteria2: 'H2',
-  ProxyProtocol.hysteria: 'HY',
-  ProxyProtocol.tuic: 'TU',
-  ProxyProtocol.wireguard: 'WG',
-  ProxyProtocol.ssh: 'SH',
-  ProxyProtocol.anytls: 'AT',
-  ProxyProtocol.socks: 'S5',
+String _badge(ProxyProtocol protocol) => switch (protocol) {
+  ProxyProtocol.vmess => 'VM',
+  ProxyProtocol.vless => 'VL',
+  ProxyProtocol.trojan => 'TR',
+  ProxyProtocol.shadowsocks => 'SS',
+  ProxyProtocol.hysteria2 => 'H2',
+  ProxyProtocol.hysteria => 'HY',
+  ProxyProtocol.tuic => 'TU',
+  ProxyProtocol.wireguard => 'WG',
+  ProxyProtocol.ssh => 'SH',
+  ProxyProtocol.anytls => 'AT',
+  ProxyProtocol.socks => 'S5',
+  ProxyProtocol.openvpn => 'OV',
+  ProxyProtocol.openconnect => 'AC',
 };
 
 class ProfileTile extends StatelessWidget {
@@ -83,6 +85,7 @@ class ProfileTile extends StatelessWidget {
                     ),
                   ),
                   if (config.isInsecure) const InsecureBadge(),
+                  if (config.needsLogin) const LoginNeededBadge(),
                   SpeedBadge(profileId: profile.id),
                 ],
               ),
@@ -133,6 +136,34 @@ class InsecureBadge extends StatelessWidget {
   }
 }
 
+/// Marks an OpenVPN or Cisco config still missing its username and
+/// password.
+class LoginNeededBadge extends StatelessWidget {
+  const LoginNeededBadge({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = StatusColors.of(context).connecting;
+    return Padding(
+      padding: const EdgeInsets.only(top: 2),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.key_rounded, size: 13, color: color),
+          const SizedBox(width: 3),
+          Text(
+            context.l10n.loginNeeded,
+            style: context.theme.textTheme.labelSmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Protocol initials on a squircle; [hot] fills it with fire.
 class ProtocolAvatar extends StatelessWidget {
   const ProtocolAvatar({super.key, required this.protocol, this.hot = false});
@@ -143,13 +174,14 @@ class ProtocolAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _Avatar(
     hot: hot,
-    child: protocol == null
-        ? const Icon(Icons.dns_rounded, size: 20)
-        : Text(
-            _badges[protocol]!,
-            textDirection: TextDirection.ltr,
-            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
-          ),
+    child: switch (protocol) {
+      null => const Icon(Icons.dns_rounded, size: 20),
+      final protocol => Text(
+        _badge(protocol),
+        textDirection: TextDirection.ltr,
+        style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+      ),
+    },
   );
 }
 
