@@ -1687,6 +1687,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enter this server\'s username and password first'**
   String get errorLoginNeeded;
+
+  /// No description provided for @chainVia.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect through another server'**
+  String get chainVia;
+
+  /// No description provided for @chainViaHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For example a server in Iran that still reaches abroad'**
+  String get chainViaHint;
+
+  /// No description provided for @chainPickTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'First server'**
+  String get chainPickTitle;
+
+  /// No description provided for @chainPickHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Traffic goes to this server first and from there to {name}.'**
+  String chainPickHint(String name);
+
+  /// No description provided for @chainNoOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Add the other server first'**
+  String get chainNoOther;
+
+  /// No description provided for @chainCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Chained config added and selected'**
+  String get chainCreated;
+
+  /// No description provided for @chainThrough.
+  ///
+  /// In en, this message translates to:
+  /// **'through {name}'**
+  String chainThrough(String name);
 }
 
 class _AppLocalizationsDelegate

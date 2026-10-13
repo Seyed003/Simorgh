@@ -948,4 +948,30 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errorLoginNeeded =>
       'Enter this server\'s username and password first';
+
+  @override
+  String get chainVia => 'Connect through another server';
+
+  @override
+  String get chainViaHint =>
+      'For example a server in Iran that still reaches abroad';
+
+  @override
+  String get chainPickTitle => 'First server';
+
+  @override
+  String chainPickHint(String name) {
+    return 'Traffic goes to this server first and from there to $name.';
+  }
+
+  @override
+  String get chainNoOther => 'Add the other server first';
+
+  @override
+  String get chainCreated => 'Chained config added and selected';
+
+  @override
+  String chainThrough(String name) {
+    return 'through $name';
+  }
 }

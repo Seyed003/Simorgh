@@ -571,5 +571,26 @@
   "loginPassword": "Password",
   "loginUsernameRequired": "Enter the username",
   "loginNeeded": "Needs username and password",
-  "errorLoginNeeded": "Enter this server's username and password first"
+  "errorLoginNeeded": "Enter this server's username and password first",
+  "chainVia": "Connect through another server",
+  "chainViaHint": "For example a server in Iran that still reaches abroad",
+  "chainPickTitle": "First server",
+  "chainPickHint": "Traffic goes to this server first and from there to {name}.",
+  "@chainPickHint": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chainNoOther": "Add the other server first",
+  "chainCreated": "Chained config added and selected",
+  "chainThrough": "through {name}",
+  "@chainThrough": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

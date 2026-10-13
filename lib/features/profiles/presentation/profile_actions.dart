@@ -11,12 +11,14 @@ import '../../warp/data/warp_client.dart';
 import '../../warp/presentation/warp_actions.dart';
 import '../application/profiles_controller.dart';
 import '../domain/profile.dart';
+import 'chain_actions.dart';
 import 'import_actions.dart';
 
 enum _ProfileAction {
   login,
   speedTest,
   cleanIp,
+  chain,
   warpEndpoint,
   showQr,
   copyLink,
@@ -66,6 +68,13 @@ Future<void> showProfileActions(
               leading: const Icon(Icons.radar_rounded),
               title: Text(l10n.cleanIpScan),
               onTap: () => Navigator.pop(context, _ProfileAction.cleanIp),
+            ),
+          if (profile.config.via == null)
+            ListTile(
+              leading: const Icon(Icons.alt_route_rounded),
+              title: Text(l10n.chainVia),
+              subtitle: Text(l10n.chainViaHint),
+              onTap: () => Navigator.pop(context, _ProfileAction.chain),
             ),
           if (isWarp(profile.config))
             ListTile(
@@ -123,6 +132,8 @@ Future<void> showProfileActions(
       await Navigator.of(context).push(
         MaterialPageRoute<void>(builder: (_) => CleanIpPage(profile: profile)),
       );
+    case _ProfileAction.chain:
+      await chainProfile(context, ref, profile);
     case _ProfileAction.warpEndpoint:
       await WarpActions(context, ref).findEndpoint(profile);
     case _ProfileAction.showQr:

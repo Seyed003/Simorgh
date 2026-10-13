@@ -264,5 +264,12 @@
   "loginPassword": "رمز عبور",
   "loginUsernameRequired": "نام کاربری را وارد کنید",
   "loginNeeded": "نیاز به نام کاربری و رمز",
-  "errorLoginNeeded": "اول نام کاربری و رمز این سرور را وارد کنید"
+  "errorLoginNeeded": "اول نام کاربری و رمز این سرور را وارد کنید",
+  "chainVia": "اتصال از طریق سرور دیگر",
+  "chainViaHint": "مثلاً سرور داخل ایران که هنوز به خارج راه دارد",
+  "chainPickTitle": "سرور اول",
+  "chainPickHint": "ترافیک اول به این سرور می‌رود و از آنجا به {name}.",
+  "chainNoOther": "اول سرور دیگر را اضافه کنید",
+  "chainCreated": "کانفیگ زنجیره‌ای اضافه و انتخاب شد",
+  "chainThrough": "از طریق {name}"
 }

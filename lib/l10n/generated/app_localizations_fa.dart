@@ -939,4 +939,29 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get errorLoginNeeded => 'اول نام کاربری و رمز این سرور را وارد کنید';
+
+  @override
+  String get chainVia => 'اتصال از طریق سرور دیگر';
+
+  @override
+  String get chainViaHint => 'مثلاً سرور داخل ایران که هنوز به خارج راه دارد';
+
+  @override
+  String get chainPickTitle => 'سرور اول';
+
+  @override
+  String chainPickHint(String name) {
+    return 'ترافیک اول به این سرور می‌رود و از آنجا به $name.';
+  }
+
+  @override
+  String get chainNoOther => 'اول سرور دیگر را اضافه کنید';
+
+  @override
+  String get chainCreated => 'کانفیگ زنجیره‌ای اضافه و انتخاب شد';
+
+  @override
+  String chainThrough(String name) {
+    return 'از طریق $name';
+  }
 }

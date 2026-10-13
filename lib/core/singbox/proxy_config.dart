@@ -59,6 +59,7 @@ class ProxyConfig {
     required this.port,
     required this.outbound,
     this.link,
+    this.via,
   });
 
   final ProxyProtocol protocol;
@@ -73,6 +74,22 @@ class ProxyConfig {
 
   /// Original share link when the config was imported from one.
   final String? link;
+
+  /// The server this one is reached through (a chain): e.g. a server
+  /// inside Iran that still reaches abroad when the international internet
+  /// is cut.
+  final ProxyConfig? via;
+
+  /// A copy reached through [first] (or directly, when `null`).
+  ProxyConfig chainedVia(ProxyConfig? first) => ProxyConfig(
+    protocol: protocol,
+    name: name,
+    server: server,
+    port: port,
+    outbound: outbound,
+    link: link,
+    via: first,
+  );
 
   /// Short transport/security summary for list tiles, e.g. `ws · tls`.
   String get summary {
@@ -125,6 +142,7 @@ class ProxyConfig {
       link: protocol == ProxyProtocol.openconnect
           ? openConnectLink(updated, name)
           : link,
+      via: via,
     );
   }
 
@@ -202,6 +220,7 @@ class ProxyConfig {
         server: address,
         port: port,
         outbound: copy,
+        via: via,
       );
     }
     copy['server'] = address;
@@ -229,6 +248,7 @@ class ProxyConfig {
       server: address,
       port: port,
       outbound: copy,
+      via: via,
     );
   }
 
@@ -244,6 +264,7 @@ class ProxyConfig {
     link: protocol == ProxyProtocol.openconnect && name != null
         ? openConnectLink(outbound, name)
         : link,
+    via: via,
   );
 
   Map<String, Object?> toJson() => {
@@ -253,6 +274,7 @@ class ProxyConfig {
     'port': port,
     'outbound': outbound,
     if (link != null) 'link': link,
+    if (via != null) 'via': via!.toJson(),
   };
 
   factory ProxyConfig.fromJson(Map<String, Object?> json) => ProxyConfig(
@@ -262,6 +284,9 @@ class ProxyConfig {
     port: json['port']! as int,
     outbound: Map<String, Object?>.from(json['outbound']! as Map),
     link: json['link'] as String?,
+    via: json['via'] is Map
+        ? ProxyConfig.fromJson((json['via']! as Map).cast<String, Object?>())
+        : null,
   );
 
   /// Pretty printed sing-box outbound, handy for "copy as JSON".
