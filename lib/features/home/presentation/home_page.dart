@@ -12,6 +12,7 @@ import '../../profiles/application/profiles_controller.dart';
 import '../../profiles/presentation/add_config_sheet.dart';
 import '../../profiles/presentation/profile_list.dart';
 import '../../updates/presentation/update_banner.dart';
+import '../../warp/presentation/free_config_actions.dart';
 import 'widgets/connection_panel.dart';
 
 /// The home tab: the phoenix orb, the server in use and live speeds. Wide
@@ -140,6 +141,8 @@ class _Brand extends StatelessWidget {
             ],
           ),
         ),
+        const SizedBox(width: 8),
+        const FreeConfigButton(),
       ],
     ),
   );

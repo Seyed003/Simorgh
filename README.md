@@ -119,8 +119,12 @@ Open-source VPN client for **Android** and **Windows**, powered by the
 - **Smart setup per network:** tests TLS fragment modes with your servers on
   the current internet, applies the best and remembers it per mobile
   operator (MCI, Irancell, RighTel, ...) or Wi-Fi; used again on connect.
-- **Free Cloudflare WARP:** one tap registers a WARP device, adds it as a
-  WireGuard config and scans WARP addresses/ports for one that answers.
+- **Free config (one tap):** the button at the top of the home screen uses
+  Cloudflare's free WARP: it registers a WARP device once, tries WARP
+  addresses and ports on the current internet, keeps the fastest and
+  connects. The route is remembered per operator (MCI, Irancell, RighTel,
+  Wi-Fi), so on another SIM the free config switches to the route found
+  there; a route that stopped working is replaced by a new search.
 - **Backup and restore** of all configs, subscriptions and settings as one
   file; **links from other apps** (vless://..., subscription pages'
   sing-box:// / v2rayng:// / hiddify:// import links, "Share" to the app);
@@ -374,8 +378,12 @@ are adapted from [sing-box-for-android](https://github.com/SagerNet/sing-box-for
 - **تنظیم هوشمند برای هر اینترنت:** گزینه‌های فرگمنت را با سرورهای خودتان
   روی همان اینترنت امتحان می‌کند، بهترین را اعمال و برای همان اپراتور
   (همراه اول، ایرانسل، رایتل) یا وای‌فای به خاطر می‌سپارد.
-- **WARP رایگان کلودفلر:** با یک لمس حساب WARP ساخته، به‌عنوان کانفیگ اضافه
-  و آدرسی که روی اینترنت شما جواب می‌دهد پیدا می‌شود.
+- **کانفیگ رایگان (یک لمس):** دکمه‌ی بالای صفحه‌ی اصلی از WARP رایگان
+  کلودفلر استفاده می‌کند: یک بار حساب WARP می‌سازد، آدرس‌ها و پورت‌های آن را
+  روی اینترنت فعلی امتحان می‌کند، سریع‌ترین را نگه می‌دارد و وصل می‌شود. مسیر
+  برای هر اپراتور (همراه اول، ایرانسل، رایتل، وای‌فای) جدا به خاطر سپرده
+  می‌شود؛ با سیم‌کارت دیگر خودکار به مسیر همان اپراتور می‌رود و اگر مسیری از
+  کار افتاد، دوباره جستجو می‌کند.
 - **پشتیبان‌گیری و بازگردانی** همه کانفیگ‌ها و تنظیمات در یک فایل؛ **باز کردن
   لینک‌ها از برنامه‌های دیگر** (لینک کانفیگ، دکمه‌های افزودن سایت‌های
   سابسکریپشن، «اشتراک‌گذاری» به برنامه)؛ صفحه **لاگ** هسته.

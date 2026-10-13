@@ -617,5 +617,51 @@
   "nationalRecheck": "Check again",
   "nationalStillCut": "Still only Iranian sites are reachable.",
   "nationalBack": "The international internet is reachable again.",
-  "subscriptionHttpWarning": "This address is not encrypted (http, not https): your internet provider could read it and swap its configs for its own servers. Use an https link if the seller has one."
+  "subscriptionHttpWarning": "This address is not encrypted (http, not https): your internet provider could read it and swap its configs for its own servers. Use an https link if the seller has one.",
+  "freeConfig": "Free config",
+  "freeConfigTitle": "A free config for {network}",
+  "@freeConfigTitle": {
+    "placeholders": {
+      "network": {
+        "type": "String"
+      }
+    }
+  },
+  "freeConfigExplain": "Uses Cloudflare's free WARP. The app tries WARP's addresses on your internet, picks the fastest and remembers it for this operator; on another SIM or Wi-Fi it finds that network's best too. Takes up to a minute the first time.\n\nGood for blocked sites; it is not anonymous, and some operators slow or block WARP.",
+  "freeConfigStepNetwork": "Checking your internet…",
+  "freeConfigStepAccount": "Getting a free WARP account…",
+  "freeConfigStepChecking": "Checking the route that worked here before…",
+  "freeConfigStepScanning": "Finding the fastest route on {network}…",
+  "@freeConfigStepScanning": {
+    "placeholders": {
+      "network": {
+        "type": "String"
+      }
+    }
+  },
+  "freeConfigName": "Free · {network}",
+  "@freeConfigName": {
+    "placeholders": {
+      "network": {
+        "type": "String"
+      }
+    }
+  },
+  "freeConfigReady": "Free config ready for {network}",
+  "@freeConfigReady": {
+    "placeholders": {
+      "network": {
+        "type": "String"
+      }
+    }
+  },
+  "freeConfigUnreachable": "WARP doesn't answer on {network} right now: the operator may be blocking it. Try another network, or again later.",
+  "@freeConfigUnreachable": {
+    "placeholders": {
+      "network": {
+        "type": "String"
+      }
+    }
+  },
+  "freeConfigGo": "Find and connect"
 }

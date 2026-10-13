@@ -1049,4 +1049,48 @@ class AppLocalizationsFa extends AppLocalizations {
   @override
   String get subscriptionHttpWarning =>
       'این آدرس رمزنگاری نشده است (http به‌جای https): ارائه‌دهنده‌ی اینترنت می‌تواند آن را ببیند و کانفیگ‌هایش را با سرورهای خودش عوض کند. اگر فروشنده لینک https دارد، از آن استفاده کنید.';
+
+  @override
+  String get freeConfig => 'کانفیگ رایگان';
+
+  @override
+  String freeConfigTitle(String network) {
+    return 'کانفیگ رایگان برای $network';
+  }
+
+  @override
+  String get freeConfigExplain =>
+      'از WARP رایگان کلودفلر استفاده می‌کند. برنامه آدرس‌های WARP را روی اینترنت شما امتحان می‌کند، سریع‌ترین را انتخاب و برای همین اپراتور به خاطر می‌سپارد؛ با سیم‌کارت یا وای‌فای دیگر، بهترینِ آن را هم پیدا می‌کند. بار اول تا یک دقیقه طول می‌کشد.\n\nبرای سایت‌های مسدود خوب است؛ ولی ناشناس نیست و بعضی اپراتورها WARP را کند یا مسدود می‌کنند.';
+
+  @override
+  String get freeConfigStepNetwork => 'بررسی اینترنت شما…';
+
+  @override
+  String get freeConfigStepAccount => 'گرفتن حساب رایگان WARP…';
+
+  @override
+  String get freeConfigStepChecking => 'بررسی مسیری که قبلاً اینجا کار می‌کرد…';
+
+  @override
+  String freeConfigStepScanning(String network) {
+    return 'پیدا کردن سریع‌ترین مسیر روی $network…';
+  }
+
+  @override
+  String freeConfigName(String network) {
+    return 'رایگان · $network';
+  }
+
+  @override
+  String freeConfigReady(String network) {
+    return 'کانفیگ رایگان برای $network آماده شد';
+  }
+
+  @override
+  String freeConfigUnreachable(String network) {
+    return 'الان WARP روی $network جواب نمی‌دهد؛ ممکن است اپراتور آن را بسته باشد. با اینترنت دیگری یا کمی بعد امتحان کنید.';
+  }
+
+  @override
+  String get freeConfigGo => 'پیدا کن و وصل شو';
 }

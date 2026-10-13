@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../utils/context_ext.dart';
@@ -144,11 +145,13 @@ class _TextInputDialogState extends State<_TextInputDialog> {
   }
 }
 
-/// Shows a blocking progress dialog while [task] runs.
+/// Shows a blocking progress dialog while [task] runs, with [status] as
+/// its text when given.
 Future<T> withProgress<T>(
   BuildContext context,
-  Future<T> Function() task,
-) async {
+  Future<T> Function() task, {
+  ValueListenable<String>? status,
+}) async {
   final navigator = Navigator.of(context, rootNavigator: true);
   unawaited(
     showDialog<void>(
@@ -165,7 +168,14 @@ Future<T> withProgress<T>(
                 child: CircularProgressIndicator(strokeWidth: 3),
               ),
               const SizedBox(width: 20),
-              Expanded(child: Text(context.l10n.working)),
+              Expanded(
+                child: status == null
+                    ? Text(context.l10n.working)
+                    : ValueListenableBuilder(
+                        valueListenable: status,
+                        builder: (_, text, _) => Text(text),
+                      ),
+              ),
             ],
           ),
         ),

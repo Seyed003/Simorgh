@@ -8,6 +8,7 @@ import '../../../core/utils/context_ext.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/glass_widgets.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../application/network_label.dart';
 import '../application/network_tuning.dart';
 import '../application/smart_setup.dart';
 import '../domain/network_identity.dart';
@@ -19,17 +20,8 @@ String fragmentModeLabel(AppLocalizations l10n, TlsFragmentMode mode) =>
       TlsFragmentMode.tcp => l10n.fragmentStrong,
     };
 
-String networkLabel(BuildContext context, NetworkIdentity network) {
-  final l10n = context.l10n;
-  return network.operatorLabel(context.localeCode) ??
-      switch (network.kind) {
-        NetworkKind.wifi => l10n.networkWifi,
-        NetworkKind.cellular => l10n.networkMobile,
-        NetworkKind.ethernet => l10n.networkEthernet,
-        NetworkKind.desktop => l10n.networkThisComputer,
-        NetworkKind.other => l10n.networkOther,
-      };
-}
+String networkLabel(BuildContext context, NetworkIdentity network) =>
+    networkLabelFor(context.l10n, context.localeCode, network);
 
 IconData networkIcon(NetworkKind kind) => switch (kind) {
   NetworkKind.wifi => Icons.wifi_rounded,

@@ -12,7 +12,9 @@ import '../../../core/storage/preferences.dart';
 import '../../../core/utils/net_utils.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../network/application/internet_reach.dart';
+import '../../network/application/network_label.dart';
 import '../../network/application/network_tuning.dart';
+import '../../network/domain/network_identity.dart';
 import '../../latency/application/auto_candidates.dart';
 import '../../latency/application/latency_controller.dart';
 import '../../latency/application/speed_controller.dart';
@@ -22,6 +24,7 @@ import '../../profiles/domain/profiles_state.dart';
 import '../../settings/application/core_options_controller.dart';
 import '../../settings/application/settings_controller.dart';
 import '../../usage/application/usage_controller.dart';
+import '../../warp/application/free_config.dart';
 import '../data/clash_api_client.dart';
 import '../data/platform_factory.dart';
 import '../data/vpn_platform.dart';
@@ -100,6 +103,13 @@ class VpnController extends Notifier<VpnState> {
   AppLocalizations get _l10n =>
       lookupAppLocalizations(ref.read(settingsProvider).language.locale);
 
+  String _freeConfigName(NetworkIdentity network) {
+    final locale = ref.read(settingsProvider).language.locale;
+    return _l10n.freeConfigName(
+      networkLabelFor(_l10n, locale.languageCode, network),
+    );
+  }
+
   @override
   VpnState build() {
     final platform = ref.watch(vpnPlatformProvider);
@@ -139,6 +149,12 @@ class VpnController extends Notifier<VpnState> {
 
   Future<void> connect() async {
     final attempt = ++_attempt;
+    // The free config follows the operator: on another SIM or Wi-Fi it
+    // switches to the route found there before.
+    await ref
+        .read(freeConfigServiceProvider)
+        .followNetwork(name: _freeConfigName);
+    if (attempt != _attempt) return;
     final ProfilesState profiles;
     try {
       profiles = await ref.read(profilesProvider.future);

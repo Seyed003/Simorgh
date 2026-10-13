@@ -6,46 +6,13 @@ import '../../../core/widgets/dialogs.dart';
 import '../../profiles/application/profiles_controller.dart';
 import '../../profiles/domain/profile.dart';
 import '../application/warp_service.dart';
-import '../data/warp_client.dart';
 
-/// Adding a free WARP config and finding endpoints for it.
+/// Finding a new endpoint for a WARP config.
 class WarpActions {
   const WarpActions(this.context, this.ref);
 
   final BuildContext context;
   final WidgetRef ref;
-
-  Future<void> add() async {
-    final l10n = context.l10n;
-    final ok = await confirmDialog(
-      context,
-      title: l10n.warpAdd,
-      message: l10n.warpExplain,
-      confirmLabel: l10n.add,
-    );
-    if (!ok || !context.mounted) return;
-    final service = ref.read(warpServiceProvider);
-    final WarpAccount account;
-    try {
-      account = await withProgress(context, service.register);
-    } on WarpException catch (e) {
-      if (context.mounted) context.showSnack(l10n.warpFailed(e.message));
-      return;
-    }
-    if (!context.mounted) return;
-    final base = account.config();
-    final best = await withProgress(context, () => service.bestEndpoint(base));
-    final config = best ?? base;
-    await ref
-        .read(profilesProvider.notifier)
-        .importText(account.link(host: config.server, port: config.port));
-    if (!context.mounted) return;
-    context.showSnack(
-      best == null
-          ? l10n.warpAddedNoEndpoint
-          : l10n.warpAdded('${config.server}:${config.port}'),
-    );
-  }
 
   Future<void> findEndpoint(Profile profile) async {
     final l10n = context.l10n;
