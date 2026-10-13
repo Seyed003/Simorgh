@@ -9,7 +9,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/singbox/protocols/openconnect.dart';
 import '../../../core/singbox/proxy_config.dart';
+import '../../../core/singbox/subscription_parser.dart';
 import '../../../core/singbox/subscription_url.dart';
+import '../../../core/theme/status_colors.dart';
 import '../../../core/utils/context_ext.dart';
 import '../../../core/utils/qr_decoder.dart';
 import '../../../core/widgets/dialogs.dart';
@@ -190,10 +192,20 @@ class ImportActions {
       context,
       title: l10n.importLinkTitle,
       message: switch (incoming) {
-        IncomingConfigs(:final count) => l10n.importConfigsQuestion(count),
-        IncomingSubscription(:final host) => l10n.importSubscriptionQuestion(
-          host,
-        ),
+        IncomingConfigs(:final count, :final text, :final name) => [
+          l10n.importConfigsQuestion(count),
+          // What exactly: a page could push a server of its own.
+          for (final p in SubscriptionParser.parse(
+            text,
+            name: name,
+          ).proxies.take(3))
+            '• ${p.protocol.displayName} · ${p.name} · ${p.server}',
+          if (count > 3) '…',
+        ].join('\n'),
+        IncomingSubscription(:final host, :final url) => [
+          l10n.importSubscriptionQuestion(host),
+          if (isPlainHttp(url)) l10n.subscriptionHttpWarning,
+        ].join('\n\n'),
       },
       confirmLabel: l10n.add,
     );
@@ -302,11 +314,17 @@ class _SubscriptionDialogState extends State<_SubscriptionDialog> {
               autofocus: true,
               keyboardType: TextInputType.url,
               textDirection: TextDirection.ltr,
+              onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
                 labelText: l10n.subscriptionUrl,
                 hintText: 'https://example.com/sub/…',
                 hintTextDirection: TextDirection.ltr,
                 errorText: _error,
+                helperText: isPlainHttp(_url.text)
+                    ? l10n.subscriptionHttpWarning
+                    : null,
+                helperMaxLines: 4,
+                helperStyle: TextStyle(color: StatusColors.of(context).error),
               ),
             ),
             const SizedBox(height: 12),

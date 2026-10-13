@@ -709,7 +709,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get insecureHint =>
-      'This config does not check the server\'s certificate: someone on the way could read or change its traffic';
+      'This config does not check who the server is (its certificate or SSH key): someone on the way could read or change its traffic';
 
   @override
   String get autoReconnecting => 'The connection dropped; reconnecting…';
@@ -729,7 +729,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get backupRestoreHint =>
-      'Adds the backup\'s configs to yours and takes over its settings';
+      'Adds the backup\'s configs to yours and takes over its connection tuning. Per-app choices, the local proxy and custom DNS servers stay as they are on this device.';
 
   @override
   String get backupSaved => 'Backup saved';
@@ -1055,4 +1055,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nationalBack => 'The international internet is reachable again.';
+
+  @override
+  String get subscriptionHttpWarning =>
+      'This address is not encrypted (http, not https): your internet provider could read it and swap its configs for its own servers. Use an https link if the seller has one.';
 }

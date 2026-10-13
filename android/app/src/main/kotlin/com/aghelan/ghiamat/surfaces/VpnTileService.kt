@@ -38,7 +38,13 @@ class VpnTileService : TileService() {
         VpnStatusBus.removeListener(listener)
     }
 
+    // On the lock screen the phone is unlocked first: whoever holds a
+    // locked phone must not be able to switch the VPN off.
     override fun onClick() {
+        if (isLocked) unlockAndRun { toggle() } else toggle()
+    }
+
+    private fun toggle() {
         when (VpnStatusBus.status) {
             VpnStatus.STARTED, VpnStatus.STARTING -> AghelanVpnService.stop(this)
             VpnStatus.STOPPING -> Unit
@@ -61,7 +67,8 @@ class VpnTileService : TileService() {
         tile.label = getString(R.string.app_name)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             tile.subtitle = when (status) {
-                VpnStatus.STARTED -> AghelanVpnService.lastProfileName(this)
+                // The server's name is not for the lock screen.
+                VpnStatus.STARTED -> (if (isLocked) "" else AghelanVpnService.lastProfileName(this))
                     .ifEmpty { getString(R.string.vpn_status_connected) }
                 VpnStatus.STARTING -> getString(R.string.vpn_status_connecting)
                 VpnStatus.STOPPING -> getString(R.string.vpn_status_disconnecting)

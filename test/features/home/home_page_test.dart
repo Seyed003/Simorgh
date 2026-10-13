@@ -275,9 +275,19 @@ void main() {
   ) async {
     final system = FakeSystemBridge();
     final (_, container) = await pump(tester, system: system);
-    system.shared.add(const SharedText(trojanBare));
+    system.shared
+      ..add(const SharedText(trojanBare))
+      // A second link while the first is asked about is dropped, not
+      // stacked behind it.
+      ..add(const SharedText(hy2));
     await tester.pumpAndSettle();
-    expect(find.text('1 config found. Add it?'), findsOneWidget);
+    expect(find.textContaining('1 config found. Add it?'), findsOneWidget);
+    expect(find.byType(AlertDialog), findsOneWidget);
+    // It says what is being added.
+    expect(
+      find.textContaining('Trojan · bare · t.example.com'),
+      findsOneWidget,
+    );
     await tester.runAsync(() async {
       await tester.tap(find.text('Add'));
       await Future<void>.delayed(const Duration(milliseconds: 50));
@@ -310,7 +320,7 @@ void main() {
     final (_, container) = await pump(tester, system: system);
     system.shared.add(const SharedText(ovpnProfile, name: 'Germany'));
     await tester.pumpAndSettle();
-    expect(find.text('1 config found. Add it?'), findsOneWidget);
+    expect(find.textContaining('1 config found. Add it?'), findsOneWidget);
     await tester.runAsync(() async {
       await tester.tap(find.text('Add'));
       await Future<void>.delayed(const Duration(milliseconds: 50));

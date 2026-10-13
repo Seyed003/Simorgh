@@ -146,12 +146,39 @@ class ProxyConfig {
     );
   }
 
-  /// Skips the server's certificate check (`insecure` / `allowInsecure`),
-  /// so whoever sits in the middle can read the traffic.
+  /// Does not check who the server is, so whoever sits in the middle can
+  /// read the traffic: TLS without the certificate check (`insecure` /
+  /// `allowInsecure`), or SSH without the server's host key. A chain is as
+  /// weak as its weakest hop.
   bool get isInsecure {
     final tls = outbound['tls'];
-    return tls is Map && tls['insecure'] == true;
+    if (tls is Map && tls['insecure'] == true) return true;
+    if (outbound['type'] == 'ssh') {
+      final hostKey = outbound['host_key'];
+      if (hostKey is! List || hostKey.isEmpty) return true;
+    }
+    return via?.isInsecure ?? false;
   }
+
+  /// The stored outbound really is the protocol the config is shown as,
+  /// down every chain hop. Our parsers always make it so; a hand-made file
+  /// (a backup) could instead hide, say, a `direct` outbound behind a
+  /// "VLESS" name, so traffic would skip the tunnel while the app shows
+  /// it connected.
+  bool get isConsistent {
+    final type = outbound['type'];
+    final matches = type == xrayOutboundType
+        ? _xrayProtocols.contains(protocol)
+        : type is String && ProxyProtocol.fromSingBoxType(type) == protocol;
+    return matches && (via?.isConsistent ?? true);
+  }
+
+  static const _xrayProtocols = {
+    ProxyProtocol.vless,
+    ProxyProtocol.vmess,
+    ProxyProtocol.trojan,
+    ProxyProtocol.shadowsocks,
+  };
 
   /// Host name the server is reached by in TLS (SNI), else the address.
   String get tlsHost {

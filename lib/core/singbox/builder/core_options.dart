@@ -68,6 +68,18 @@ class CoreOptions {
   ];
   static const tunStacks = ['mixed', 'gvisor', 'system'];
 
+  /// uTLS fingerprints offered in the settings.
+  static const fingerprints = [
+    'chrome',
+    'firefox',
+    'safari',
+    'edge',
+    'ios',
+    'android',
+    'random',
+    'randomized',
+  ];
+
   final String logLevel;
 
   /// DNS used for proxied lookups, sent through the tunnel. Accepts

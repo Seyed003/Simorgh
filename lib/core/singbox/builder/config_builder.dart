@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
+
 import '../protocols/xray_outbound.dart';
 import '../proxy_config.dart';
 import '../rules/iran_rules.dart';
@@ -278,9 +280,12 @@ Map<String, Object?> prepareOutbound(
   required String tag,
   required CoreOptions options,
 }) {
-  final outbound = (jsonDecode(jsonEncode(proxy.outbound)) as Map)
-      .cast<String, Object?>();
+  final outbound =
+      withoutLocalFiles(jsonDecode(jsonEncode(proxy.outbound)))!
+          as Map<String, Object?>;
   outbound['tag'] = tag;
+  // Only chains route an outbound through another one (set by the caller).
+  outbound.remove('detour');
   final type = outbound['type'];
   final tls = outbound['tls'];
   if (_tcpTlsTypes.contains(type) && tls is Map && tls['enabled'] == true) {
@@ -351,6 +356,34 @@ void _prepareXray(Map<String, Object?> outbound, CoreOptions options) {
   if (outbound['fragment'] != null || !canFragment(outbound)) return;
   final fragment = xrayFragment(options.tlsFragment);
   if (fragment != null) outbound['fragment'] = fragment;
+}
+
+/// Options that make the core read or write files on the device: TLS key
+/// logs (Xray's `masterKeyLog`), certificate and key files (`*_path` in
+/// sing-box, `certificateFile`/`keyFile` in Xray). Configs come from links
+/// and subscriptions anyone can write, and the Windows core runs as
+/// administrator, so these never reach it; inline certificates and keys
+/// still work.
+const _localFileKeys = {'masterKeyLog', 'certificateFile', 'keyFile'};
+
+/// A copy of [value] (decoded JSON) without [_localFileKeys] and `*_path`
+/// options; list entries that name such files are left out.
+@visibleForTesting
+Object? withoutLocalFiles(Object? value) {
+  bool namesFile(String key) =>
+      _localFileKeys.contains(key) || key.endsWith('_path');
+  return switch (value) {
+    final Map<Object?, Object?> map => <String, Object?>{
+      for (final MapEntry(:key, :value) in map.entries)
+        if (key is String && !namesFile(key)) key: withoutLocalFiles(value),
+    },
+    final List<Object?> list => [
+      for (final item in list)
+        if (item is! Map || !item.keys.any((k) => k is String && namesFile(k)))
+          withoutLocalFiles(item),
+    ],
+    _ => value,
+  };
 }
 
 /// The direct DNS server (plus a `local` resolver when it is a hostname).

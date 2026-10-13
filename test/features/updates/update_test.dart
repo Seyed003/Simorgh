@@ -35,16 +35,14 @@ void main() {
       String tag, {
       int status = 200,
       Map<String, Object> prefs = const {},
+      String host = 'https://github.com/Seyed003/aghelan-ghiamat',
     }) async {
       calls = 0;
       final client = MockClient((request) async {
         calls++;
         expect(request.url.toString(), AppInfo.latestReleaseApi);
         return http.Response(
-          jsonEncode({
-            'tag_name': tag,
-            'html_url': 'https://example.com/releases/$tag',
-          }),
+          jsonEncode({'tag_name': tag, 'html_url': '$host/releases/tag/$tag'}),
           status,
         );
       });
@@ -59,6 +57,12 @@ void main() {
       addTearDown(container.dispose);
       return container;
     }
+
+    test('a release link elsewhere becomes our releases page', () async {
+      final c = await create('v99.0.0', host: 'https://evil.example/x');
+      final release = await c.read(updateProvider.notifier).check();
+      expect(release!.url, AppInfo.releasesPage);
+    });
 
     test('finds a newer release and can hide it', () async {
       final c = await create('v99.0.0');

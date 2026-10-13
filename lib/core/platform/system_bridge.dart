@@ -14,18 +14,31 @@ class SystemBridge {
 
   bool get _android => Platform.isAndroid;
 
+  /// A program under the Windows folder by its full path: the elevated app
+  /// must not run whatever sits next to it under the same name.
+  static String _windowsTool(String path) =>
+      '${Platform.environment['SystemRoot'] ?? r'C:\Windows'}\\$path';
+
   /// Android's VPN settings, where "Always-on VPN" and "Block connections
   /// without VPN" are switched on.
   Future<void> openVpnSettings() async {
     if (_android) await _methods.invokeMethod<void>('openVpnSettings');
   }
 
-  /// Opens [url] in the browser.
+  /// Opens [url] in the browser. Only web addresses: on Windows the same
+  /// call would also run files and network paths.
   Future<void> openUrl(String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri == null || !(uri.isScheme('https') || uri.isScheme('http'))) {
+      return;
+    }
     if (_android) {
       await _methods.invokeMethod<void>('openUrl', {'url': url});
     } else if (Platform.isWindows) {
-      await Process.run('rundll32', ['url.dll,FileProtocolHandler', url]);
+      await Process.run(_windowsTool(r'System32\rundll32.exe'), [
+        'url.dll,FileProtocolHandler',
+        url,
+      ]);
     }
   }
 
@@ -41,7 +54,7 @@ class SystemBridge {
           false;
     }
     if (Platform.isWindows) {
-      await Process.run('explorer', [
+      await Process.run(_windowsTool('explorer.exe'), [
         File(Platform.resolvedExecutable).parent.path,
       ]);
       return true;

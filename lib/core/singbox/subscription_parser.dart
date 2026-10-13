@@ -73,9 +73,17 @@ abstract final class SubscriptionParser {
         if (_outline(json, name) case final outline?) {
           return ParseResult([outline], const []);
         }
-        return _isXrayJson(json)
-            ? _parseXrayJson(json)
-            : _parseSingBoxJson(json);
+        try {
+          return _isXrayJson(json)
+              ? _parseXrayJson(json)
+              : _parseSingBoxJson(json);
+        } on TypeError {
+          // A field of the wrong type somewhere: nothing usable, but no
+          // crash either (one bad subscription must not break the app).
+          return const ParseResult([], [
+            SkippedEntry('JSON', 'unexpected structure'),
+          ]);
+        }
       }
     }
 

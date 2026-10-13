@@ -48,6 +48,7 @@ class _AppShellState extends ConsumerState<AppShell> {
   /// Tabs are built the first time they are opened, then kept alive.
   final _opened = <AppTab>{AppTab.home};
   StreamSubscription<SharedText>? _shared;
+  bool _importing = false;
   late final AppLifecycleListener _lifecycle;
 
   @override
@@ -64,9 +65,18 @@ class _AppShellState extends ConsumerState<AppShell> {
     // Config links tapped in other apps, text and .ovpn files shared to
     // this one.
     _shared = ref.read(systemBridgeProvider).sharedText().listen((shared) {
+      // One question at a time: an app firing links in a loop must not
+      // stack dialogs until one gets tapped by mistake.
+      if (_importing) return;
       final incoming = IncomingImport.parse(shared.text, name: shared.name);
       if (incoming == null || !mounted) return;
-      unawaited(ImportActions(context, ref).fromIncoming(incoming));
+      _importing = true;
+      unawaited(
+        ImportActions(
+          context,
+          ref,
+        ).fromIncoming(incoming).whenComplete(() => _importing = false),
+      );
     });
   }
 

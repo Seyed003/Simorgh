@@ -20,3 +20,8 @@ String? subscriptionNameOf(String text) {
   }
   return Uri.decodeComponent(uri.fragment);
 }
+
+/// A subscription fetched over plain http: anyone on the way (the ISP)
+/// can read it and swap its configs for their own servers.
+bool isPlainHttp(String url) =>
+    Uri.tryParse(url.trim())?.isScheme('http') ?? false;
