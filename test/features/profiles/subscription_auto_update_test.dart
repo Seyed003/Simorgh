@@ -8,6 +8,7 @@ import 'package:aghelan_ghiamat/features/profiles/data/subscription_client.dart'
 import 'package:aghelan_ghiamat/features/profiles/domain/profile.dart';
 import 'package:aghelan_ghiamat/features/profiles/domain/profiles_state.dart';
 import 'package:aghelan_ghiamat/features/profiles/domain/subscription.dart';
+import 'package:aghelan_ghiamat/features/updates/data/update_checker.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -58,6 +59,10 @@ void main() {
             requests.add(request.url);
             return http.Response(hy2, 200);
           }),
+        ),
+        // The app's own update check is not a subscription request.
+        updateCheckerProvider.overrideWithValue(
+          UpdateChecker(MockClient((_) async => http.Response('', 404))),
         ),
       ],
     );

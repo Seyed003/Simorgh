@@ -660,4 +660,234 @@ class AppLocalizationsFa extends AppLocalizations {
   @override
   String get brandStory =>
       'ققنوس از خاکستر خود برمی‌خیزد؛ هیچ فیلتری نمی‌تواند اینترنت را برای همیشه از شما دور نگه دارد.';
+
+  @override
+  String get proxyPassword => 'درخواست رمز عبور';
+
+  @override
+  String get proxyPasswordHint =>
+      'بدون رمز، هر برنامه‌ای روی این دستگاه می‌تواند از پراکسی استفاده کند و آدرس سرور شما را بفهمد';
+
+  @override
+  String proxyCredentials(String user, String password) {
+    return 'نام کاربری: $user · رمز: $password';
+  }
+
+  @override
+  String get killSwitch => 'قطع اینترنت بدون VPN';
+
+  @override
+  String get killSwitchOn =>
+      'روشن: وقتی VPN قطع است، برنامه‌ها به اینترنت وصل نمی‌شوند';
+
+  @override
+  String get killSwitchOff =>
+      'خاموش: اگر VPN قطع شود، برنامه‌ها بدون آن به اینترنت وصل می‌شوند';
+
+  @override
+  String get killSwitchUnknown =>
+      'با «VPN همیشه روشن» اندروید کار می‌کند؛ برای تنظیم لمس کنید';
+
+  @override
+  String killSwitchSteps(String app) {
+    return 'در صفحه بعد، چرخ‌دنده کنار «$app» را بزنید و «VPN همیشه روشن» و «مسدود کردن اتصال‌های بدون VPN» را روشن کنید. اندروید فقط از همان‌جا اجازه این تنظیم را می‌دهد.';
+  }
+
+  @override
+  String get openSettings => 'باز کردن تنظیمات';
+
+  @override
+  String get insecure => 'ناامن';
+
+  @override
+  String get insecureHint =>
+      'این کانفیگ گواهی سرور را بررسی نمی‌کند: ممکن است کسی در مسیر، ترافیک آن را بخواند یا تغییر دهد';
+
+  @override
+  String get autoReconnecting => 'اتصال قطع شد؛ در حال وصل شدن دوباره…';
+
+  @override
+  String get tools => 'ابزارها';
+
+  @override
+  String get backupSave => 'ذخیره نسخه پشتیبان';
+
+  @override
+  String get backupSaveHint =>
+      'کانفیگ‌ها، سابسکریپشن‌ها و تنظیمات در یک فایل. آن را جای امنی نگه دارید؛ رمز سرورهای شما داخل آن است.';
+
+  @override
+  String get backupRestore => 'بازگردانی از نسخه پشتیبان';
+
+  @override
+  String get backupRestoreHint =>
+      'کانفیگ‌های فایل به کانفیگ‌های شما اضافه و تنظیمات آن جایگزین می‌شود';
+
+  @override
+  String get backupSaved => 'نسخه پشتیبان ذخیره شد';
+
+  @override
+  String backupRestored(String count) {
+    return 'بازگردانی شد: $count کانفیگ اضافه شد';
+  }
+
+  @override
+  String get backupInvalid => 'این فایل، نسخه پشتیبان این برنامه نیست';
+
+  @override
+  String get logs => 'گزارش‌ها (لاگ)';
+
+  @override
+  String get logsHint => 'کارهای هسته؛ نشان می‌دهد چرا یک کانفیگ وصل نمی‌شود';
+
+  @override
+  String get logsEmpty =>
+      'هنوز لاگی نیست. لاگ‌ها هنگام اتصال نمایش داده می‌شوند؛ میزان جزئیات در «پیشرفته › سطح لاگ» است.';
+
+  @override
+  String get logsProblemsOnly => 'فقط هشدارها و خطاها';
+
+  @override
+  String get copyAll => 'کپی همه';
+
+  @override
+  String get importLinkTitle => 'افزودن از لینک';
+
+  @override
+  String importConfigsQuestion(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count کانفیگ پیدا شد. اضافه شوند؟',
+      one: '۱ کانفیگ پیدا شد. اضافه شود؟',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String importSubscriptionQuestion(String host) {
+    return 'سابسکریپشن $host اضافه شود؟';
+  }
+
+  @override
+  String updateAvailable(String version) {
+    return 'نسخه $version آماده است';
+  }
+
+  @override
+  String get updateHint =>
+      'روی همین نسخه نصب کنید؛ کانفیگ‌ها سر جایشان می‌مانند.';
+
+  @override
+  String get updateDownload => 'دانلود';
+
+  @override
+  String get updateLater => 'بعداً';
+
+  @override
+  String get updateCheck => 'بررسی نسخه جدید';
+
+  @override
+  String get updateLatest => 'آخرین نسخه را دارید';
+
+  @override
+  String get updateFailed => 'بررسی نسخه جدید ممکن نشد';
+
+  @override
+  String get smartSetup => 'تنظیم هوشمند برای این اینترنت';
+
+  @override
+  String get smartSetupHint =>
+      'گزینه‌های ضدفیلتر را با سرورهای شما امتحان می‌کند و آن را که بهتر عبور می‌کند نگه می‌دارد';
+
+  @override
+  String get networkWifi => 'وای‌فای / اینترنت خانگی';
+
+  @override
+  String get networkMobile => 'اینترنت همراه';
+
+  @override
+  String get networkEthernet => 'اینترنت کابلی';
+
+  @override
+  String get networkThisComputer => 'این کامپیوتر';
+
+  @override
+  String get networkOther => 'این شبکه';
+
+  @override
+  String get smartSetupStart => 'شروع آزمایش';
+
+  @override
+  String smartSetupRunning(String count) {
+    return 'در حال آزمایش $count سرور با هر گزینه…';
+  }
+
+  @override
+  String smartSetupDone(String network, String mode) {
+    return 'بهترین گزینه روی $network: $mode. اعمال شد.';
+  }
+
+  @override
+  String get smartSetupNoServers =>
+      'ابتدا یک کانفیگ دارای TLS اضافه کنید (VLESS، VMess یا Trojan)؛ بقیه به این تنظیم نیاز ندارند.';
+
+  @override
+  String get smartSetupNothingWorks =>
+      'روی این شبکه هیچ سروری با هیچ گزینه‌ای جواب نداد. سرورهای دیگر یا IP تمیز را امتحان کنید.';
+
+  @override
+  String get smartSetupAuto => 'تغییر خودکار روی هر شبکه';
+
+  @override
+  String get smartSetupAutoHint =>
+      'هنگام اتصال، تنظیمی که روی همان اینترنت جواب داده استفاده می‌شود. انتخاب دستی فرگمنت هم برای همان شبکه به خاطر سپرده می‌شود.';
+
+  @override
+  String smartSetupRemembered(String mode) {
+    return 'ذخیره‌شده برای این شبکه: $mode';
+  }
+
+  @override
+  String get smartSetupNotTested => 'هنوز روی این شبکه آزمایش نشده';
+
+  @override
+  String smartSetupScore(String ok, String total) {
+    return '$ok از $total سرور';
+  }
+
+  @override
+  String get fragmentOff => 'بدون فرگمنت';
+
+  @override
+  String get warpAdd => 'WARP رایگان کلودفلر';
+
+  @override
+  String get warpExplain =>
+      'یک حساب رایگان WARP کلودفلر روی همین دستگاه می‌سازد، آن را به‌عنوان کانفیگ اضافه می‌کند و دنبال آدرسی می‌گردد که روی اینترنت شما کار کند. WARP پشتیبان خوبی است: بیشتر سایت‌ها را باز می‌کند، ولی ناشناس نیست و در ایران گاهی کند یا مسدود است.';
+
+  @override
+  String warpAdded(String endpoint) {
+    return 'WARP اضافه شد (آدرس $endpoint)';
+  }
+
+  @override
+  String get warpAddedNoEndpoint =>
+      'WARP اضافه شد، ولی الان هیچ آدرسی جواب نداد. بعداً از منوی آن «پیدا کردن آدرس WARP» را بزنید.';
+
+  @override
+  String warpFailed(String error) {
+    return 'اتصال به کلودفلر ممکن نشد ($error). اول به یک سرور وصل شوید و دوباره امتحان کنید.';
+  }
+
+  @override
+  String get warpScan => 'پیدا کردن آدرس WARP';
+
+  @override
+  String warpScanDone(String endpoint) {
+    return 'آدرس به $endpoint تغییر کرد';
+  }
+
+  @override
+  String get warpScanNone => 'روی این شبکه هیچ آدرس WARP جواب نداد';
 }

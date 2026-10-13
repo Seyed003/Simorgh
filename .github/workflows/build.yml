@@ -31,11 +31,16 @@ jobs:
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test
-      - name: Fetch sing-box for config validation
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: scripts/*_version.txt
+      - name: Build the core (sing-box + Xray) and an Xray test server
         run: |
-          version="$(cat scripts/core_version.txt)"
-          curl -fsSL "https://github.com/SagerNet/sing-box/releases/download/v${version}/sing-box-${version}-linux-amd64.tar.gz" | tar -xz -C "$RUNNER_TEMP"
-          echo "SING_BOX_BIN=$RUNNER_TEMP/sing-box-${version}-linux-amd64/sing-box" >> "$GITHUB_ENV"
+          scripts/build_core.sh linux amd64 "$RUNNER_TEMP/sing-box"
+          GOBIN="$RUNNER_TEMP/xray" go install "github.com/xtls/xray-core/main@$(cat scripts/xray_version.txt)"
+          echo "SING_BOX_BIN=$RUNNER_TEMP/sing-box" >> "$GITHUB_ENV"
+          echo "XRAY_BIN=$RUNNER_TEMP/xray/main" >> "$GITHUB_ENV"
       - name: Validate generated configs with the real core
         run: flutter test --tags singbox
 
@@ -59,6 +64,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
+          cache: false
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
@@ -74,6 +80,25 @@ jobs:
           go clean -cache -modcache
           rm -rf .core-build
           df -h /
+      - name: Release signing key
+        # One key for every build, so a new APK installs over the old one
+        # (and keeps the configs). Without the secrets the APKs are signed
+        # with this runner's throwaway debug key.
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEYSTORE_PASSWORD" ]; then
+            echo "::warning::ANDROID_KEYSTORE_BASE64 / ANDROID_KEYSTORE_PASSWORD are not set; APKs get a throwaway debug signature and will not update each other."
+            exit 0
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          cat > android/key.properties <<EOF
+          storeFile=$RUNNER_TEMP/release.jks
+          storePassword=$KEYSTORE_PASSWORD
+          keyAlias=aghelan
+          keyPassword=$KEYSTORE_PASSWORD
+          EOF
       - name: Build APKs
         run: flutter build apk --release --split-per-abi
       - uses: actions/upload-artifact@v4
@@ -93,9 +118,13 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
-      - name: Fetch sing-box core
-        shell: pwsh
-        run: ./scripts/fetch_core_windows.ps1
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: scripts/*_version.txt
+      - name: Build the core (sing-box + Xray)
+        shell: bash
+        run: scripts/build_core_windows.sh amd64
       - name: Build
         run: flutter build windows --release
       # GitHub zips artifacts itself; uploading the folder avoids a zip
@@ -104,3 +133,27 @@ jobs:
         with:
           name: aghelan-ghiamat-windows-x64
           path: build/windows/x64/runner/Release/
+
+  release:
+    name: GitHub release
+    # A pushed tag such as v0.2.0 publishes the APKs and the Windows zip;
+    # the app's update check reads the latest release.
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [android, windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Package
+        run: |
+          mkdir dist
+          cp artifacts/aghelan-ghiamat-android/*.apk dist/
+          (cd artifacts/aghelan-ghiamat-windows-x64 && zip -qr "$GITHUB_WORKSPACE/dist/aghelan-ghiamat-windows-x64.zip" .)
+          ls -la dist
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true

@@ -85,8 +85,8 @@ final _earlyDataPattern = RegExp(r'[?&]ed=(\d+)');
 
 /// Builds the sing-box V2Ray `transport` object.
 ///
-/// Returns `null` for raw TCP. Throws [UnsupportedLinkException] for
-/// transports that only exist in Xray (xhttp/splithttp, mKCP).
+/// Returns `null` for raw TCP. Xray-only transports (xhttp/splithttp, mKCP)
+/// never get here: the parsers hand those links to the Xray engine.
 Map<String, Object?>? buildTransport({
   required String? network,
   String? host,
@@ -148,16 +148,6 @@ Map<String, Object?>? buildTransport({
       };
     case 'quic':
       return {'type': 'quic'};
-    case 'xhttp':
-    case 'splithttp':
-      throw const UnsupportedLinkException(
-        'xhttp transport is Xray-only and not supported by sing-box',
-      );
-    case 'kcp':
-    case 'mkcp':
-      throw const UnsupportedLinkException(
-        'mKCP transport is not supported by sing-box',
-      );
     default:
       throw UnsupportedLinkException('unknown transport "$network"');
   }

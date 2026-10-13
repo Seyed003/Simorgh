@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../../core/singbox/builder/core_options.dart';
 import '../domain/vpn_state.dart';
+import '../../logs/domain/core_log_line.dart';
 import 'clash_api_client.dart';
 import 'vpn_platform.dart';
 
@@ -23,12 +24,16 @@ class WindowsVpnPlatform implements VpnPlatform {
 
   static const _startupTimeout = Duration(seconds: 20);
   static const _logTail = 30;
+  static const _historySize = 500;
 
   final String? _coreExecutableOverride;
   final Future<Directory> Function() _dataDirectory;
   final Future<bool> Function() _elevationCheck;
   final _events = StreamController<VpnPlatformEvent>.broadcast();
   final _recentLines = <String>[];
+
+  /// Log of the core for the logs page, kept across restarts.
+  final _history = <String>[];
 
   Process? _process;
   bool _stopRequested = false;
@@ -90,6 +95,8 @@ class WindowsVpnPlatform implements VpnPlatform {
           .listen((line) {
             _recentLines.add(line);
             if (_recentLines.length > _logTail) _recentLines.removeAt(0);
+            _history.add(line);
+            if (_history.length > _historySize) _history.removeAt(0);
             _events.add(VpnLogLine(line));
           });
     }
@@ -222,6 +229,16 @@ class WindowsVpnPlatform implements VpnPlatform {
       VpnErrorCode.coreExited,
       output.isEmpty ? 'tester did not start' : output.join('\n'),
     );
+  }
+
+  @override
+  Stream<CoreLogLine> coreLogs() async* {
+    for (final line in List.of(_history)) {
+      yield CoreLogLine.parse(line);
+    }
+    yield* _events.stream
+        .where((e) => e is VpnLogLine)
+        .map((e) => CoreLogLine.parse((e as VpnLogLine).line));
   }
 
   @override

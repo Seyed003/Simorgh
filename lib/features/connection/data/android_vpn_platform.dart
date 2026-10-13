@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 
 import '../../../core/singbox/builder/core_options.dart';
 import '../domain/vpn_state.dart';
+import '../../logs/domain/core_log_line.dart';
 import 'clash_api_client.dart';
 import 'vpn_platform.dart';
 
@@ -98,4 +99,16 @@ class AndroidVpnPlatform implements VpnPlatform {
 
   @override
   Future<void> stopTester() => _methods.invokeMethod<void>('stopTester');
+
+  @override
+  Stream<CoreLogLine> coreLogs() =>
+      const EventChannel('com.aghelan.ghiamat/logs')
+          .receiveBroadcastStream()
+          .map((raw) {
+            final entry = raw as Map;
+            return CoreLogLine.leveled(
+              entry['level'] as int? ?? LogLevel.info.index,
+              entry['message'] as String? ?? '',
+            );
+          });
 }

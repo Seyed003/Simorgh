@@ -1,4 +1,5 @@
 import '../../../core/singbox/builder/core_options.dart';
+import '../../logs/domain/core_log_line.dart';
 import '../domain/vpn_state.dart';
 
 /// Events pushed by the native VPN service (Android) or the core process
@@ -64,6 +65,9 @@ abstract class VpnPlatform {
   Future<void> startTester(String configJson);
 
   Future<void> stopTester();
+
+  /// The running core's log: recent lines first, then new ones.
+  Stream<CoreLogLine> coreLogs();
 }
 
 /// Used on platforms without a VPN implementation and in tests.
@@ -101,4 +105,7 @@ class UnsupportedVpnPlatform implements VpnPlatform {
 
   @override
   Future<void> stopTester() async {}
+
+  @override
+  Stream<CoreLogLine> coreLogs() => const Stream.empty();
 }

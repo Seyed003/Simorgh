@@ -669,4 +669,233 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get brandStory =>
       'The phoenix rises from its ashes: no filter can keep the internet from you for long.';
+
+  @override
+  String get proxyPassword => 'Require a password';
+
+  @override
+  String get proxyPasswordHint =>
+      'Without it, any app on this device can use the proxy and find out your server';
+
+  @override
+  String proxyCredentials(String user, String password) {
+    return 'User: $user · Password: $password';
+  }
+
+  @override
+  String get killSwitch => 'Block internet without VPN';
+
+  @override
+  String get killSwitchOn => 'On: apps cannot go online while the VPN is off';
+
+  @override
+  String get killSwitchOff =>
+      'Off: if the VPN stops, apps go online without it';
+
+  @override
+  String get killSwitchUnknown =>
+      'Uses Android\'s Always-on VPN; tap to set up';
+
+  @override
+  String killSwitchSteps(String app) {
+    return 'On the next screen, tap the gear next to \"$app\", then turn on \"Always-on VPN\" and \"Block connections without VPN\". Android only lets you change this there.';
+  }
+
+  @override
+  String get openSettings => 'Open settings';
+
+  @override
+  String get insecure => 'Insecure';
+
+  @override
+  String get insecureHint =>
+      'This config does not check the server\'s certificate: someone on the way could read or change its traffic';
+
+  @override
+  String get autoReconnecting => 'The connection dropped; reconnecting…';
+
+  @override
+  String get tools => 'Tools';
+
+  @override
+  String get backupSave => 'Save a backup';
+
+  @override
+  String get backupSaveHint =>
+      'Configs, subscriptions and settings in one file. Keep it private: it holds your server passwords.';
+
+  @override
+  String get backupRestore => 'Restore from a backup';
+
+  @override
+  String get backupRestoreHint =>
+      'Adds the backup\'s configs to yours and takes over its settings';
+
+  @override
+  String get backupSaved => 'Backup saved';
+
+  @override
+  String backupRestored(String count) {
+    return 'Restored: $count configs added';
+  }
+
+  @override
+  String get backupInvalid => 'This file is not a backup of this app';
+
+  @override
+  String get logs => 'Logs';
+
+  @override
+  String get logsHint =>
+      'What the core is doing; shows why a config does not connect';
+
+  @override
+  String get logsEmpty =>
+      'No logs yet. They appear while connected; Advanced › Log level sets how detailed they are.';
+
+  @override
+  String get logsProblemsOnly => 'Warnings and errors only';
+
+  @override
+  String get copyAll => 'Copy all';
+
+  @override
+  String get importLinkTitle => 'Add from link';
+
+  @override
+  String importConfigsQuestion(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count configs found. Add them?',
+      one: '1 config found. Add it?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String importSubscriptionQuestion(String host) {
+    return 'Add the subscription from $host?';
+  }
+
+  @override
+  String updateAvailable(String version) {
+    return 'Version $version is available';
+  }
+
+  @override
+  String get updateHint => 'Install it over this one; your configs stay.';
+
+  @override
+  String get updateDownload => 'Download';
+
+  @override
+  String get updateLater => 'Later';
+
+  @override
+  String get updateCheck => 'Check for updates';
+
+  @override
+  String get updateLatest => 'You have the latest version';
+
+  @override
+  String get updateFailed => 'Could not check for updates';
+
+  @override
+  String get smartSetup => 'Smart setup for this internet';
+
+  @override
+  String get smartSetupHint =>
+      'Tries the anti-filtering options with your servers and keeps what gets through best';
+
+  @override
+  String get networkWifi => 'Wi-Fi / home internet';
+
+  @override
+  String get networkMobile => 'Mobile data';
+
+  @override
+  String get networkEthernet => 'Wired internet';
+
+  @override
+  String get networkThisComputer => 'This computer';
+
+  @override
+  String get networkOther => 'This network';
+
+  @override
+  String get smartSetupStart => 'Start test';
+
+  @override
+  String smartSetupRunning(String count) {
+    return 'Testing $count servers with each option…';
+  }
+
+  @override
+  String smartSetupDone(String network, String mode) {
+    return 'Best on $network: $mode. Applied.';
+  }
+
+  @override
+  String get smartSetupNoServers =>
+      'Add a config that uses TLS first (VLESS, VMess or Trojan); others do not need this.';
+
+  @override
+  String get smartSetupNothingWorks =>
+      'No server answered on this network with any option. Try other servers or a clean IP.';
+
+  @override
+  String get smartSetupAuto => 'Switch automatically on each network';
+
+  @override
+  String get smartSetupAutoHint =>
+      'When you connect, the setting that worked on that internet is used. Choosing a fragment mode by hand is remembered too.';
+
+  @override
+  String smartSetupRemembered(String mode) {
+    return 'Remembered here: $mode';
+  }
+
+  @override
+  String get smartSetupNotTested => 'Not tested on this network yet';
+
+  @override
+  String smartSetupScore(String ok, String total) {
+    return '$ok of $total servers';
+  }
+
+  @override
+  String get fragmentOff => 'No fragment';
+
+  @override
+  String get warpAdd => 'Free Cloudflare WARP';
+
+  @override
+  String get warpExplain =>
+      'Creates a free Cloudflare WARP account on this device, adds it as a config and looks for an endpoint that works on your internet. WARP makes a good backup: it opens most sites, but it is not anonymous and is sometimes slow or blocked in Iran.';
+
+  @override
+  String warpAdded(String endpoint) {
+    return 'WARP added (endpoint $endpoint)';
+  }
+
+  @override
+  String get warpAddedNoEndpoint =>
+      'WARP added, but no endpoint answered right now. Try \"Find a WARP endpoint\" from its menu later.';
+
+  @override
+  String warpFailed(String error) {
+    return 'Could not reach Cloudflare ($error). Connect to a server first and try again.';
+  }
+
+  @override
+  String get warpScan => 'Find a WARP endpoint';
+
+  @override
+  String warpScanDone(String endpoint) {
+    return 'Endpoint changed to $endpoint';
+  }
+
+  @override
+  String get warpScanNone => 'No WARP endpoint answered on this network';
 }

@@ -87,6 +87,51 @@ void main() {
       },
     );
 
+    test('the local proxy asks for a password when one is set', () {
+      final config = const SingBoxConfigBuilder(
+        options: CoreOptions(mixedPort: 2080, mixedPassword: 'pw'),
+        platform: CorePlatform.windows,
+      ).build(LinkParser.parse(trojanTls));
+      expect(_list(config['inbounds']).last['users'], [
+        {'username': 'aghelan', 'password': 'pw'},
+      ]);
+      final open = const SingBoxConfigBuilder(
+        options: CoreOptions(
+          mixedPort: 2080,
+          mixedPassword: 'pw',
+          mixedAuth: false,
+        ),
+        platform: CorePlatform.windows,
+      ).build(LinkParser.parse(trojanTls));
+      expect(_list(open['inbounds']).last.containsKey('users'), isFalse);
+    });
+
+    test('Xray configs get Xray fragmentation over TLS only', () {
+      Map<String, Object?> outbound(String link, TlsFragmentMode mode) => _map(
+        _list(
+          SingBoxConfigBuilder(
+            options: CoreOptions(tlsFragment: mode),
+            platform: CorePlatform.android,
+          ).build(LinkParser.parse(link))['outbounds'],
+        ).first,
+      );
+      expect(outbound(vlessXhttp, TlsFragmentMode.record)['fragment'], {
+        'packets': 'tlshello',
+        'length': '100-200',
+        'interval': '0',
+      });
+      expect(
+        _map(outbound(vlessXhttp, TlsFragmentMode.tcp)['fragment'])['interval'],
+        '10-20',
+      );
+      expect(outbound(vlessXhttp, TlsFragmentMode.off)['fragment'], isNull);
+      expect(outbound(vlessKcp, TlsFragmentMode.tcp)['fragment'], isNull);
+      expect(
+        outbound(vlessXhttpReality, TlsFragmentMode.tcp)['fragment'],
+        isNull,
+      );
+    });
+
     test('WireGuard goes to endpoints', () {
       final config = const SingBoxConfigBuilder(
         options: CoreOptions(),
@@ -413,6 +458,10 @@ void main() {
     );
     // Settings saved before the option existed keep the default.
     expect(CoreOptions.fromJson(const {}).bypassIran, isTrue);
+    expect(CoreOptions.fromJson(const {}).mixedAuth, isTrue);
+    const locked = CoreOptions(mixedPort: 2080, mixedPassword: 'pw');
+    expect(CoreOptions.fromJson(locked.toJson()), locked);
+    expect(locked.mixedCredentials, (username: 'aghelan', password: 'pw'));
     expect(restored.copyWith(mixedPort: () => null).mixedPort, isNull);
   });
 }

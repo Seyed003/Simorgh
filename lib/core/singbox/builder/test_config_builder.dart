@@ -43,10 +43,13 @@ class TestConfigBuilder {
   /// [proxies] maps caller ids to the configs to test, in order.
   ///
   /// [localPorts] (by caller id) additionally exposes a server as an
-  /// HTTP/SOCKS proxy on 127.0.0.1, e.g. for download speed tests.
+  /// HTTP/SOCKS proxy on 127.0.0.1, e.g. for download speed tests. Other
+  /// apps on the device can reach 127.0.0.1 too, so those proxies require
+  /// [localAuth] when given.
   TestConfig build(
     Map<String, ProxyConfig> proxies, {
     Map<String, int> localPorts = const {},
+    ({String username, String password})? localAuth,
   }) {
     final outbounds = <Map<String, Object?>>[];
     final endpoints = <Map<String, Object?>>[];
@@ -68,6 +71,10 @@ class TestConfigBuilder {
           'tag': 'in-$tag',
           'listen': '127.0.0.1',
           'listen_port': port,
+          if (localAuth != null)
+            'users': [
+              {'username': localAuth.username, 'password': localAuth.password},
+            ],
         });
         rules.add({
           'inbound': ['in-$tag'],

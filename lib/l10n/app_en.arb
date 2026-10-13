@@ -378,5 +378,166 @@
   "advanced": "Advanced",
   "server": "Server",
   "tagline": "Freedom to reach the whole internet",
-  "brandStory": "The phoenix rises from its ashes: no filter can keep the internet from you for long."
+  "brandStory": "The phoenix rises from its ashes: no filter can keep the internet from you for long.",
+  "proxyPassword": "Require a password",
+  "proxyPasswordHint": "Without it, any app on this device can use the proxy and find out your server",
+  "proxyCredentials": "User: {user} · Password: {password}",
+  "@proxyCredentials": {
+    "placeholders": {
+      "user": {
+        "type": "String"
+      },
+      "password": {
+        "type": "String"
+      }
+    }
+  },
+  "killSwitch": "Block internet without VPN",
+  "killSwitchOn": "On: apps cannot go online while the VPN is off",
+  "killSwitchOff": "Off: if the VPN stops, apps go online without it",
+  "killSwitchUnknown": "Uses Android's Always-on VPN; tap to set up",
+  "killSwitchSteps": "On the next screen, tap the gear next to \"{app}\", then turn on \"Always-on VPN\" and \"Block connections without VPN\". Android only lets you change this there.",
+  "@killSwitchSteps": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "openSettings": "Open settings",
+  "insecure": "Insecure",
+  "insecureHint": "This config does not check the server's certificate: someone on the way could read or change its traffic",
+  "autoReconnecting": "The connection dropped; reconnecting…",
+  "tools": "Tools",
+  "backupSave": "Save a backup",
+  "backupSaveHint": "Configs, subscriptions and settings in one file. Keep it private: it holds your server passwords.",
+  "backupRestore": "Restore from a backup",
+  "backupRestoreHint": "Adds the backup's configs to yours and takes over its settings",
+  "backupSaved": "Backup saved",
+  "backupRestored": "Restored: {count} configs added",
+  "@backupRestored": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "backupInvalid": "This file is not a backup of this app",
+  "logs": "Logs",
+  "logsHint": "What the core is doing; shows why a config does not connect",
+  "logsEmpty": "No logs yet. They appear while connected; Advanced › Log level sets how detailed they are.",
+  "logsProblemsOnly": "Warnings and errors only",
+  "copyAll": "Copy all",
+  "importLinkTitle": "Add from link",
+  "importConfigsQuestion": "{count, plural, =1{1 config found. Add it?} other{{count} configs found. Add them?}}",
+  "@importConfigsQuestion": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importSubscriptionQuestion": "Add the subscription from {host}?",
+  "@importSubscriptionQuestion": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "updateAvailable": "Version {version} is available",
+  "@updateAvailable": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateHint": "Install it over this one; your configs stay.",
+  "updateDownload": "Download",
+  "updateLater": "Later",
+  "updateCheck": "Check for updates",
+  "updateLatest": "You have the latest version",
+  "updateFailed": "Could not check for updates",
+  "smartSetup": "Smart setup for this internet",
+  "smartSetupHint": "Tries the anti-filtering options with your servers and keeps what gets through best",
+  "networkWifi": "Wi-Fi / home internet",
+  "networkMobile": "Mobile data",
+  "networkEthernet": "Wired internet",
+  "networkThisComputer": "This computer",
+  "networkOther": "This network",
+  "smartSetupStart": "Start test",
+  "smartSetupRunning": "Testing {count} servers with each option…",
+  "@smartSetupRunning": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "smartSetupDone": "Best on {network}: {mode}. Applied.",
+  "@smartSetupDone": {
+    "placeholders": {
+      "network": {
+        "type": "String"
+      },
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "smartSetupNoServers": "Add a config that uses TLS first (VLESS, VMess or Trojan); others do not need this.",
+  "smartSetupNothingWorks": "No server answered on this network with any option. Try other servers or a clean IP.",
+  "smartSetupAuto": "Switch automatically on each network",
+  "smartSetupAutoHint": "When you connect, the setting that worked on that internet is used. Choosing a fragment mode by hand is remembered too.",
+  "smartSetupRemembered": "Remembered here: {mode}",
+  "@smartSetupRemembered": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "smartSetupNotTested": "Not tested on this network yet",
+  "smartSetupScore": "{ok} of {total} servers",
+  "@smartSetupScore": {
+    "placeholders": {
+      "ok": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "fragmentOff": "No fragment",
+  "warpAdd": "Free Cloudflare WARP",
+  "warpExplain": "Creates a free Cloudflare WARP account on this device, adds it as a config and looks for an endpoint that works on your internet. WARP makes a good backup: it opens most sites, but it is not anonymous and is sometimes slow or blocked in Iran.",
+  "warpAdded": "WARP added (endpoint {endpoint})",
+  "@warpAdded": {
+    "placeholders": {
+      "endpoint": {
+        "type": "String"
+      }
+    }
+  },
+  "warpAddedNoEndpoint": "WARP added, but no endpoint answered right now. Try \"Find a WARP endpoint\" from its menu later.",
+  "warpFailed": "Could not reach Cloudflare ({error}). Connect to a server first and try again.",
+  "@warpFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "warpScan": "Find a WARP endpoint",
+  "warpScanDone": "Endpoint changed to {endpoint}",
+  "@warpScanDone": {
+    "placeholders": {
+      "endpoint": {
+        "type": "String"
+      }
+    }
+  },
+  "warpScanNone": "No WARP endpoint answered on this network"
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/platform/system_bridge.dart';
 import '../../../core/singbox/builder/core_options.dart';
 import '../../../core/singbox/builder/dns_server.dart';
 import '../../../core/singbox/proxy_config.dart';
@@ -8,9 +10,13 @@ import '../../../core/utils/context_ext.dart';
 import '../../../core/widgets/dialogs.dart';
 import '../../../core/widgets/glass_widgets.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/utils/net_utils.dart';
 import '../../connection/application/vpn_controller.dart';
 import '../application/core_options_controller.dart';
 import '../domain/dns_presets.dart';
+import '../../network/application/network_tuning.dart';
+import '../../network/presentation/smart_setup_tile.dart';
+import 'kill_switch_tile.dart';
 import 'split_tunnel_page.dart';
 
 const _fingerprints = [
@@ -134,16 +140,27 @@ class ConnectionSettingsSection extends ConsumerWidget {
       );
       if (value == null) return;
       final port = int.tryParse(value.trim());
-      await controller.update((o) => o.copyWith(mixedPort: () => port));
+      await controller.update(
+        (o) => o.copyWith(
+          mixedPort: () => port,
+          mixedPassword: port != null && o.mixedPassword == null
+              ? randomHexSecret(8)
+              : null,
+        ),
+      );
     }
+
+    final android =
+        ref.watch(vpnPlatformProvider).corePlatform == CorePlatform.android;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         GlassGroup(
           children: [
-            if (ref.watch(vpnPlatformProvider).corePlatform ==
-                CorePlatform.android)
+            const SmartSetupTile(),
+            if (android) const KillSwitchTile(),
+            if (android)
               ListTile(
                 leading: const TileIcon(Icons.apps_rounded, TileIcon.blue),
                 title: Text(l10n.splitTunnel),
@@ -213,6 +230,43 @@ class ConnectionSettingsSection extends ConsumerWidget {
               ),
               onTap: editPort,
             ),
+            if (options.mixedPort != null) ...[
+              SwitchListTile(
+                contentPadding: const EdgeInsetsDirectional.only(
+                  start: 64,
+                  end: 24,
+                ),
+                title: Text(l10n.proxyPassword),
+                subtitle: Text(l10n.proxyPasswordHint),
+                value: options.mixedAuth,
+                onChanged: (v) => controller.update(
+                  (o) => o.copyWith(
+                    mixedAuth: v,
+                    mixedPassword: o.mixedPassword ?? randomHexSecret(8),
+                  ),
+                ),
+              ),
+              if (options.mixedCredentials case final auth?)
+                ListTile(
+                  contentPadding: const EdgeInsetsDirectional.only(
+                    start: 64,
+                    end: 16,
+                  ),
+                  title: Text(
+                    l10n.proxyCredentials(auth.username, auth.password),
+                    style: const TextStyle(
+                      fontFeatures: [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                  trailing: const Icon(Icons.copy_rounded, size: 20),
+                  onTap: () async {
+                    await Clipboard.setData(
+                      ClipboardData(text: '${auth.username}:${auth.password}'),
+                    );
+                    if (context.mounted) context.showSnack(l10n.copied);
+                  },
+                ),
+            ],
             ListTile(
               leading: const TileIcon(Icons.fingerprint_rounded, TileIcon.pink),
               title: Text(l10n.fingerprint),
@@ -265,8 +319,17 @@ class ConnectionSettingsSection extends ConsumerWidget {
                     child: Text(l10n.fragmentStrong),
                   ),
                 ],
-                onChanged: (v) =>
-                    controller.update((o) => o.copyWith(tlsFragment: v)),
+                onChanged: (v) async {
+                  if (v == null) return;
+                  await controller.update((o) => o.copyWith(tlsFragment: v));
+                  // A choice made on this network is remembered for it.
+                  final network = await ref
+                      .read(systemBridgeProvider)
+                      .network();
+                  await ref
+                      .read(networkTuningProvider.notifier)
+                      .remember(network, v);
+                },
               ),
             ),
             SwitchListTile(

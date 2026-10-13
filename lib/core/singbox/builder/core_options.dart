@@ -50,7 +50,12 @@ class CoreOptions {
     this.perAppMode = PerAppMode.off,
     this.perAppPackages = const [],
     this.blockQuic = true,
+    this.mixedAuth = true,
+    this.mixedPassword,
   });
+
+  /// User name of the local proxy when [mixedAuth] is on.
+  static const mixedUsername = 'aghelan';
 
   static const logLevels = [
     'trace',
@@ -105,6 +110,17 @@ class CoreOptions {
   /// is much faster through TCP-based proxies.
   final bool blockQuic;
 
+  /// The local proxy asks for [mixedUsername] and [mixedPassword], so other
+  /// apps on the device cannot use it (or learn the server) on their own.
+  final bool mixedAuth;
+  final String? mixedPassword;
+
+  /// Credentials the local proxy requires, `null` when it is open.
+  ({String username, String password})? get mixedCredentials =>
+      mixedAuth && mixedPassword != null && mixedPassword!.isNotEmpty
+      ? (username: mixedUsername, password: mixedPassword!)
+      : null;
+
   CoreOptions copyWith({
     String? logLevel,
     String? remoteDns,
@@ -123,6 +139,8 @@ class CoreOptions {
     PerAppMode? perAppMode,
     List<String>? perAppPackages,
     bool? blockQuic,
+    bool? mixedAuth,
+    String? mixedPassword,
   }) {
     return CoreOptions(
       logLevel: logLevel ?? this.logLevel,
@@ -144,6 +162,8 @@ class CoreOptions {
       perAppMode: perAppMode ?? this.perAppMode,
       perAppPackages: perAppPackages ?? this.perAppPackages,
       blockQuic: blockQuic ?? this.blockQuic,
+      mixedAuth: mixedAuth ?? this.mixedAuth,
+      mixedPassword: mixedPassword ?? this.mixedPassword,
     );
   }
 
@@ -165,6 +185,8 @@ class CoreOptions {
     'perAppMode': perAppMode.name,
     'perAppPackages': perAppPackages,
     'blockQuic': blockQuic,
+    'mixedAuth': mixedAuth,
+    'mixedPassword': mixedPassword,
   };
 
   factory CoreOptions.fromJson(
@@ -201,6 +223,8 @@ class CoreOptions {
           ? (json['perAppPackages']! as List).whereType<String>().toList()
           : d.perAppPackages,
       blockQuic: json['blockQuic'] as bool? ?? d.blockQuic,
+      mixedAuth: json['mixedAuth'] as bool? ?? d.mixedAuth,
+      mixedPassword: json['mixedPassword'] as String? ?? d.mixedPassword,
     );
   }
 

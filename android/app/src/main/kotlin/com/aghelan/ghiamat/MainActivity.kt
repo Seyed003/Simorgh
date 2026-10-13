@@ -1,23 +1,39 @@
 package com.aghelan.ghiamat
 
 import android.content.Intent
+import android.os.Bundle
 import com.aghelan.ghiamat.apps.AppsBridge
+import com.aghelan.ghiamat.system.SystemBridge
 import com.aghelan.ghiamat.vpn.VpnBridge
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 
 class MainActivity : FlutterActivity() {
     private var vpnBridge: VpnBridge? = null
+    private var systemBridge: SystemBridge? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         vpnBridge = VpnBridge(this).also { it.attach(flutterEngine) }
+        systemBridge = SystemBridge(this).also { it.attach(flutterEngine) }
         AppsBridge(applicationContext).attach(flutterEngine)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        systemBridge?.handleIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        systemBridge?.handleIntent(intent)
     }
 
     override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
         vpnBridge?.detach()
         vpnBridge = null
+        systemBridge = null
         super.cleanUpFlutterEngine(flutterEngine)
     }
 

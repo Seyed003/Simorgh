@@ -54,6 +54,23 @@ void main() {
     ]);
   });
 
+  test('local proxies can require a password', () {
+    final config = builder.build(
+      {'a': LinkParser.parse(vlessReality)},
+      localPorts: {'a': 20002},
+      localAuth: (username: 'u', password: 'p'),
+    );
+    expect((config.json['inbounds']! as List).single, {
+      'type': 'mixed',
+      'tag': 'in-t0',
+      'listen': '127.0.0.1',
+      'listen_port': 20002,
+      'users': [
+        {'username': 'u', 'password': 'p'},
+      ],
+    });
+  });
+
   test('maps sing-box errors back to the blamed server', () {
     final config = builder.build({
       'a': LinkParser.parse(vlessReality),

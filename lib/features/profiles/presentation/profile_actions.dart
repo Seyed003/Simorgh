@@ -7,12 +7,15 @@ import '../../../core/utils/context_ext.dart';
 import '../../../core/widgets/dialogs.dart';
 import '../../clean_ip/presentation/clean_ip_page.dart';
 import '../../latency/application/speed_controller.dart';
+import '../../warp/data/warp_client.dart';
+import '../../warp/presentation/warp_actions.dart';
 import '../application/profiles_controller.dart';
 import '../domain/profile.dart';
 
 enum _ProfileAction {
   speedTest,
   cleanIp,
+  warpEndpoint,
   showQr,
   copyLink,
   copyJson,
@@ -52,6 +55,12 @@ Future<void> showProfileActions(
               leading: const Icon(Icons.radar_rounded),
               title: Text(l10n.cleanIpScan),
               onTap: () => Navigator.pop(context, _ProfileAction.cleanIp),
+            ),
+          if (isWarp(profile.config))
+            ListTile(
+              leading: const Icon(Icons.cloud_sync_rounded),
+              title: Text(l10n.warpScan),
+              onTap: () => Navigator.pop(context, _ProfileAction.warpEndpoint),
             ),
           ListTile(
             leading: const Icon(Icons.qr_code_2_rounded),
@@ -100,6 +109,8 @@ Future<void> showProfileActions(
       await Navigator.of(context).push(
         MaterialPageRoute<void>(builder: (_) => CleanIpPage(profile: profile)),
       );
+    case _ProfileAction.warpEndpoint:
+      await WarpActions(context, ref).findEndpoint(profile);
     case _ProfileAction.showQr:
       await _showQr(
         context,

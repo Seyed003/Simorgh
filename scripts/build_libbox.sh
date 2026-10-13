@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Builds android/app/libs/libbox.aar (sing-box for Android, via gomobile).
+# Builds android/app/libs/libbox.aar (sing-box for Android, via gomobile),
+# with the Xray outbound (see scripts/prepare_core_source.sh).
 #
 # Requirements: Go >= 1.25, JDK 17+, Android SDK with an NDK installed
 # (ANDROID_HOME or ANDROID_SDK_ROOT set; ANDROID_NDK_HOME optional).
@@ -12,7 +13,7 @@ version="$(tr -d '[:space:]' < "$root/scripts/core_version.txt")"
 src="$root/.core-build/sing-box"
 gomobile_version="v0.1.13"
 # Only what the app uses; tailscale/naive/openvpn would add ~40 MB.
-tags="with_gvisor,with_quic,with_wireguard,with_utls,with_clash_api,badlinkname,tfogo_checklinkname0"
+tags="with_gvisor,with_quic,with_wireguard,with_utls,with_clash_api,with_xray,badlinkname,tfogo_checklinkname0"
 
 export ANDROID_HOME="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}}"
 if [ -z "${ANDROID_NDK_HOME:-}" ]; then
@@ -24,9 +25,7 @@ if [ ! -f "${ANDROID_NDK_HOME:-}/source.properties" ]; then
   exit 1
 fi
 
-if [ ! -d "$src/.git" ]; then
-  git clone --depth 1 --branch "v$version" https://github.com/SagerNet/sing-box.git "$src"
-fi
+"$root/scripts/prepare_core_source.sh"
 
 gobin="$(go env GOPATH)/bin"
 if [ ! -x "$gobin/gomobile" ] || [ ! -x "$gobin/gobind" ]; then

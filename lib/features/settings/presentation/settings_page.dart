@@ -3,10 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/branding/phoenix.dart';
 import '../../../core/constants/app_info.dart';
+import '../../../core/platform/system_bridge.dart';
 import '../../../core/theme/glass.dart';
 import '../../../core/utils/context_ext.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/dialogs.dart';
 import '../../../core/widgets/glass_widgets.dart';
+import '../../backup/presentation/backup_actions.dart';
+import '../../logs/presentation/logs_page.dart';
+import '../../updates/application/update_controller.dart';
 import '../application/settings_controller.dart';
 import '../domain/app_settings.dart';
 import 'connection_settings.dart';
@@ -108,6 +113,35 @@ class SettingsPage extends ConsumerWidget {
         ),
         SectionLabel(l10n.connectionSettings),
         const ConnectionSettingsSection(),
+        SectionLabel(l10n.tools),
+        GlassGroup(
+          children: [
+            ListTile(
+              leading: const TileIcon(Icons.save_alt_rounded, TileIcon.blue),
+              title: Text(l10n.backupSave),
+              subtitle: Text(l10n.backupSaveHint),
+              onTap: () => BackupActions(context, ref).save(),
+            ),
+            ListTile(
+              leading: const TileIcon(Icons.restore_rounded, TileIcon.teal),
+              title: Text(l10n.backupRestore),
+              subtitle: Text(l10n.backupRestoreHint),
+              onTap: () => BackupActions(context, ref).restore(),
+            ),
+            ListTile(
+              leading: const TileIcon(
+                Icons.receipt_long_rounded,
+                TileIcon.gray,
+              ),
+              title: Text(l10n.logs),
+              subtitle: Text(l10n.logsHint),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () => Navigator.of(
+                context,
+              ).push(MaterialPageRoute<void>(builder: (_) => const LogsPage())),
+            ),
+          ],
+        ),
         SectionLabel(l10n.about),
         const _AboutCard(),
         const SizedBox(height: 12),
@@ -116,7 +150,9 @@ class SettingsPage extends ConsumerWidget {
             ListTile(
               leading: const TileIcon(Icons.tag_rounded, TileIcon.gray),
               title: Text(l10n.version),
+              subtitle: Text(l10n.updateCheck),
               trailing: const Text(AppInfo.version),
+              onTap: () => _checkForUpdates(context, ref),
             ),
             ListTile(
               leading: const TileIcon(Icons.memory_rounded, TileIcon.indigo),
@@ -142,6 +178,35 @@ class SettingsPage extends ConsumerWidget {
         const SizedBox(height: 24),
       ],
     );
+  }
+}
+
+Future<void> _checkForUpdates(BuildContext context, WidgetRef ref) async {
+  final l10n = context.l10n;
+  try {
+    final release = await withProgress(
+      context,
+      () => ref.read(updateProvider.notifier).check(),
+    );
+    if (!context.mounted) return;
+    if (release == null) {
+      context.showSnack(l10n.updateLatest);
+      return;
+    }
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(l10n.updateAvailable(release.version)),
+          action: SnackBarAction(
+            label: l10n.updateDownload,
+            onPressed: () =>
+                ref.read(systemBridgeProvider).openUrl(release.url),
+          ),
+        ),
+      );
+  } on Object {
+    if (context.mounted) context.showSnack(l10n.updateFailed);
   }
 }
 

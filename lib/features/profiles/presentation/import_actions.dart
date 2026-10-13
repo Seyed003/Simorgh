@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/utils/context_ext.dart';
 import '../../../core/utils/qr_decoder.dart';
 import '../../../core/widgets/dialogs.dart';
+import '../application/incoming_import.dart';
 import '../application/profiles_controller.dart';
 import '../data/subscription_client.dart';
 import '../domain/profiles_state.dart';
@@ -83,6 +84,31 @@ class ImportActions {
     if (result == null || !context.mounted) return;
     final (url, name) = result;
     await _run(() => _controller.addSubscription(url, name: name));
+  }
+
+  /// A link tapped in another app, or text shared to this one: asks first,
+  /// so a web page cannot add configs behind the user's back.
+  Future<void> fromIncoming(IncomingImport incoming) async {
+    final l10n = context.l10n;
+    final ok = await confirmDialog(
+      context,
+      title: l10n.importLinkTitle,
+      message: switch (incoming) {
+        IncomingConfigs(:final count) => l10n.importConfigsQuestion(count),
+        IncomingSubscription(:final host) => l10n.importSubscriptionQuestion(
+          host,
+        ),
+      },
+      confirmLabel: l10n.add,
+    );
+    if (!ok || !context.mounted) return;
+    await _run(
+      () => switch (incoming) {
+        IncomingConfigs(:final text) => _controller.importText(text),
+        IncomingSubscription(:final url, :final name) =>
+          _controller.addSubscription(url, name: name),
+      },
+    );
   }
 
   Future<void> updateSubscription(String id) async {

@@ -24,8 +24,14 @@ Open-source VPN client for **Android** and **Windows**, powered by the
   (incl. port hopping), TUIC, WireGuard, SSH — plus Hysteria v1, AnyTLS and
   SOCKS.
 - **Transports:** TCP, WebSocket (with early data), gRPC, HTTP/2, HTTPUpgrade,
-  QUIC, TCP+HTTP header obfuscation. Xray-only transports (xhttp, mKCP) are
-  reported clearly instead of failing silently.
+  QUIC, TCP+HTTP header obfuscation.
+- **XHTTP, mKCP and VLESS Encryption (bundled Xray engine):** the core is
+  sing-box plus an `xray` outbound (`core/xray`) built on Xray-core. Configs
+  only Xray can run (xhttp/splithttp, mKCP incl. old header/seed configs,
+  VLESS Encryption, Xray JSON configs) go through it; sing-box still does
+  TUN, routing, DNS, tests and auto mode, and dials every socket Xray opens.
+  Xray no longer accepts `allowInsecure`, so those configs verify the server
+  certificate (`pcs` pins a self-signed one).
 - **Import from anywhere:** share links, clipboard, camera QR (Android), QR
   from an image/screenshot (Android + Windows), pasted text, subscription URLs
   (base64 or plain), and sing-box JSON configs/outbounds.
@@ -80,6 +86,23 @@ Open-source VPN client for **Android** and **Windows**, powered by the
   away. QUIC tunnelled over a TCP-based proxy (and REALITY/Vision servers that
   drop it) is the usual reason a VPN feels slow on video. VLESS/VMess UDP uses
   XUDP by default, like Xray clients.
+- **Security:** speed-test proxies and the optional local proxy port need a
+  password (other apps on the device cannot use them or learn your server);
+  configs that skip certificate checks carry an "Insecure" badge; Android's
+  Always-on + "block connections without VPN" (kill switch) can be checked
+  and opened from the settings; a core that dies mid-connection is
+  restarted once.
+- **Smart setup per network:** tests TLS fragment modes with your servers on
+  the current internet, applies the best and remembers it per mobile
+  operator (MCI, Irancell, RighTel, ...) or Wi-Fi; used again on connect.
+- **Free Cloudflare WARP:** one tap registers a WARP device, adds it as a
+  WireGuard config and scans WARP addresses/ports for one that answers.
+- **Backup and restore** of all configs, subscriptions and settings as one
+  file; **links from other apps** (vless://..., subscription pages'
+  sing-box:// / v2rayng:// / hiddify:// import links, "Share" to the app);
+  a **logs page** for the core.
+- **Updates:** one release key for every build (so updates install over
+  the old app), GitHub releases on tags and an in-app update check.
 - **Liquid Glass design:** frosted glass panels with lit rims over an aurora
   backdrop that warms up while connected, a floating glass tab bar (a side
   rail on wide windows) and the phoenix as the connect button: ash grey when
@@ -108,7 +131,8 @@ lib/
 android/app/src/main/kotlin/com/aghelan/ghiamat/vpn/
                       VpnService + libbox PlatformInterface, Flutter bridge
 windows/              runner (admin manifest, single instance), core/sing-box.exe
-scripts/              build/fetch the sing-box core, brand generator (phoenix + all icons)
+core/xray/            the "xray" sing-box outbound (Go), patched into the core build
+scripts/              build the core (sing-box + Xray), brand generator (phoenix + icons)
 test/                 unit, widget and real-core integration tests
 ```
 
@@ -120,7 +144,7 @@ is pinned in `scripts/core_version.txt` (currently **1.14.3**).
 | Tool | Version |
 |------|---------|
 | Flutter | 3.47.x (stable) |
-| Go | 1.25+ (Android core only) |
+| Go | 1.25+ (the core is built from source) |
 | JDK | 17+ |
 | Android SDK + NDK | platform 36, NDK 28.2.13676358 |
 | Windows | Windows 10/11 x64, Visual Studio 2022 with "Desktop development with C++" |
@@ -131,7 +155,8 @@ is pinned in `scripts/core_version.txt` (currently **1.14.3**).
 WSL or Git Bash (or let CI build it, see below).
 
 ```bash
-# 1. Build the sing-box core for Android (libbox.aar, ~5–10 min the first time)
+# 1. Build the core for Android (libbox.aar: sing-box + the Xray engine,
+#    ~10–20 min the first time)
 export ANDROID_HOME=$HOME/Android/Sdk          # your SDK path
 sdkmanager "ndk;28.2.13676358"
 scripts/build_libbox.sh                         # -> android/app/libs/libbox.aar
@@ -143,7 +168,12 @@ flutter build apk --release --split-per-abi     # -> build/app/outputs/flutter-a
 #   or run on a device:  flutter run
 ```
 
-**Release signing:** create `android/key.properties`
+**Release signing:** CI signs with the key in the repository secrets
+`ANDROID_KEYSTORE_BASE64` (the `.jks` file, base64) and
+`ANDROID_KEYSTORE_PASSWORD` (store and key password, alias `aghelan`); keep
+the same key forever, or users have to uninstall to update. Pushing a tag
+such as `v0.2.0` publishes a GitHub release. Locally, create
+`android/key.properties`
 
 ```properties
 storeFile=/absolute/path/to/release.jks
@@ -159,12 +189,12 @@ A release APK for one ABI is about 30 MB (the sing-box core is ~20 MB of it).
 ### Build for Windows
 
 Enable **Developer Mode** in Windows settings first (Flutter needs symlinks
-for plugins), then run these in PowerShell:
+for plugins). The core is built from source (the official sing-box release
+has no Xray engine), with Go and Git Bash:
 
 ```powershell
-# 1. Download sing-box.exe into windows\core\
-powershell -ExecutionPolicy Bypass -File scripts\fetch_core_windows.ps1
-#    (if GitHub is blocked: bash scripts/build_core_windows.sh builds it from source)
+# 1. Build sing-box.exe (sing-box + Xray) into windows\core\
+bash scripts/build_core_windows.sh
 
 # 2. Build
 flutter pub get
@@ -179,8 +209,9 @@ Closing the window minimises it to the tray; use the tray menu → *Quit* to exi
 
 ### CI builds
 
-`.github/workflows/build.yml` runs analysis and tests, validates every
-generated config with the real sing-box binary, then builds the Android APKs
+`.github/workflows/build.yml` runs analysis and tests, builds the core and
+validates every generated config with it (plus XHTTP/mKCP traffic through a
+local Xray server), then builds the Android APKs
 and a Windows zip as downloadable artifacts. Push to `main` (or run the
 workflow manually) and grab the files from the run's *Artifacts* section.
 
@@ -188,7 +219,9 @@ workflow manually) and grab the files from the run's *Artifacts* section.
 
 ```bash
 flutter test                                              # unit + widget tests
-SING_BOX_BIN=/path/to/sing-box flutter test --tags singbox  # validate configs with the real core
+scripts/build_core.sh linux amd64 build/core/sing-box   # the core with Xray
+SING_BOX_BIN=build/core/sing-box flutter test --tags singbox  # validate configs with the real core
+#   XRAY_BIN=/path/to/xray adds XHTTP/mKCP traffic through a local Xray server
 SCREENSHOTS=1 flutter test test/screenshots               # render UI screenshots to build/screenshots
 ```
 
@@ -197,7 +230,8 @@ SCREENSHOTS=1 flutter test test/screenshots               # render UI screenshot
 Phase 2 is complete: latency and speed tests, auto mode with failover, Iran
 routing, TLS fragment and Mux, per-app proxy, clean IP finder, usage
 statistics, quick settings tile and widget, subscription auto-update, DNS
-presets.
+presets. Phase 3 added the Xray engine, smart per-network setup, WARP,
+backup/restore, link import, logs, security hardening and release signing.
 
 ### License
 
@@ -258,6 +292,27 @@ are adapted from [sing-box-for-android](https://github.com/SagerNet/sing-box-for
   کنند؛ عبور QUIC از داخل سرورهای TCP (و سرورهای REALITY/Vision که آن را رد
   می‌کنند) دلیل اصلی کندی ویدیو در VPN است. UDP در VLESS/VMess هم مثل
   کلاینت‌های Xray با XUDP فرستاده می‌شود.
+- **کانفیگ‌های xhttp و mKCP و VLESS Encryption (موتور Xray داخلی):** هسته
+  برنامه sing-box به‌همراه موتور Xray است؛ کانفیگ‌هایی که فقط Xray اجرا
+  می‌کند (xhttp، mKCP حتی با header/seed قدیمی، رمزنگاری VLESS و فایل‌های
+  JSON ایکس‌ری) با آن کار می‌کنند و بقیه کارها (TUN، مسیریابی، DNS، تست‌ها و
+  حالت خودکار) مثل قبل با sing-box است. Xray دیگر `allowInsecure` را قبول
+  نمی‌کند؛ این کانفیگ‌ها گواهی سرور را بررسی می‌کنند.
+- **امنیت:** پراکسی‌های محلی (تست سرعت و پورت محلی) رمز دارند تا برنامه‌های
+  دیگر گوشی نتوانند از آن‌ها استفاده کنند یا آدرس سرور را بفهمند؛ کانفیگ‌های
+  بدون بررسی گواهی برچسب «ناامن» دارند؛ وضعیت «قطع اینترنت بدون VPN»
+  (Always-on اندروید) در تنظیمات نمایش داده می‌شود؛ اگر هسته وسط اتصال از
+  کار بیفتد یک بار خودکار وصل می‌شود.
+- **تنظیم هوشمند برای هر اینترنت:** گزینه‌های فرگمنت را با سرورهای خودتان
+  روی همان اینترنت امتحان می‌کند، بهترین را اعمال و برای همان اپراتور
+  (همراه اول، ایرانسل، رایتل) یا وای‌فای به خاطر می‌سپارد.
+- **WARP رایگان کلودفلر:** با یک لمس حساب WARP ساخته، به‌عنوان کانفیگ اضافه
+  و آدرسی که روی اینترنت شما جواب می‌دهد پیدا می‌شود.
+- **پشتیبان‌گیری و بازگردانی** همه کانفیگ‌ها و تنظیمات در یک فایل؛ **باز کردن
+  لینک‌ها از برنامه‌های دیگر** (لینک کانفیگ، دکمه‌های افزودن سایت‌های
+  سابسکریپشن، «اشتراک‌گذاری» به برنامه)؛ صفحه **لاگ** هسته.
+- **آپدیت:** همه نسخه‌ها با یک کلید امضا می‌شوند (نصب روی نسخه قبلی بدون پاک
+  شدن کانفیگ‌ها)، انتشار خودکار در GitHub و بررسی نسخه جدید داخل برنامه.
 - **طراحی شیشه‌ای (Liquid Glass):** پنل‌های شیشه‌ای مات با لبه‌های نورانی
   روی پس‌زمینه‌ی شفقی که هنگام اتصال گرم و آتشین می‌شود، نوار تب شناور
   شیشه‌ای و دکمه‌ی اتصال به شکل ققنوس: خاکستری وقتی قطع است و شعله‌ور وقتی
@@ -289,9 +344,12 @@ WSL یا Git Bash اجرا کنید. برای امضای نسخه نهایی، �
 
 ابتدا **Developer Mode** را در تنظیمات ویندوز روشن کنید، سپس در PowerShell:
 
+هسته از سورس ساخته می‌شود (نسخه رسمی sing-box موتور Xray را ندارد)؛ به Go و
+Git Bash نیاز دارید:
+
 ```powershell
-# ۱. دانلود sing-box.exe در پوشه windows\core
-powershell -ExecutionPolicy Bypass -File scripts\fetch_core_windows.ps1
+# ۱. ساخت sing-box.exe (همراه Xray) در پوشه windows\core
+bash scripts/build_core_windows.sh
 
 # ۲. ساخت برنامه
 flutter pub get
@@ -306,7 +364,10 @@ flutter build windows --release
 ### ساخت خودکار با GitHub Actions
 
 با هر push به شاخه `main`، فایل‌های APK اندروید و فایل zip ویندوز به‌صورت
-خودکار ساخته می‌شوند و در بخش *Artifacts* همان اجرا قابل دانلودند.
+خودکار ساخته می‌شوند و در بخش *Artifacts* همان اجرا قابل دانلودند. برای
+امضای ثابت، فایل کلید را در Secrets مخزن با نام‌های `ANDROID_KEYSTORE_BASE64`
+و `ANDROID_KEYSTORE_PASSWORD` بگذارید؛ با push یک تگ مثل `v0.2.0` نسخه در
+بخش Releases منتشر می‌شود.
 
 ### مجوز
 

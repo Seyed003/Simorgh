@@ -2,13 +2,16 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/singbox/builder/config_builder.dart';
 import '../../../core/singbox/builder/core_options.dart';
+import '../../../core/platform/system_bridge.dart';
 import '../../../core/storage/preferences.dart';
 import '../../../core/utils/net_utils.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../network/application/network_tuning.dart';
 import '../../latency/application/auto_candidates.dart';
 import '../../latency/application/latency_controller.dart';
 import '../../latency/application/speed_controller.dart';
@@ -210,6 +213,8 @@ class VpnController extends Notifier<VpnState> {
     List<String> autoProfileIds = const [],
   }) async {
     final platform = _platform;
+    await _applyNetworkTuning();
+    if (attempt != _attempt) return;
     final clashApi = ClashApiOptions(
       port: await findFreeLocalPort(),
       secret: randomHexSecret(),
@@ -257,6 +262,26 @@ class VpnController extends Notifier<VpnState> {
       state = VpnState(error: e);
     } on Exception catch (e) {
       state = VpnState(error: VpnError(VpnErrorCode.unknown, e.toString()));
+    }
+  }
+
+  /// On a network with remembered settings (smart setup or a manual choice
+  /// made there), connect with those.
+  Future<void> _applyNetworkTuning() async {
+    try {
+      final network = await ref.read(systemBridgeProvider).network();
+      final tuning = ref
+          .read(networkTuningProvider.notifier)
+          .forNetwork(network);
+      if (tuning == null) return;
+      if (ref.read(coreOptionsProvider).tlsFragment == tuning.tlsFragment) {
+        return;
+      }
+      await ref
+          .read(coreOptionsProvider.notifier)
+          .update((o) => o.copyWith(tlsFragment: tuning.tlsFragment));
+    } on Object {
+      // Unknown network: keep the current settings.
     }
   }
 
@@ -312,12 +337,36 @@ class VpnController extends Notifier<VpnState> {
       case VpnStopped(:final error):
         // A stale stop from the platform must not end a server search.
         if (state.findingServer) return;
+        final dropped = error != null && state.isConnected && !_restartPending;
         state = VpnState(error: error);
         _connectIfRestartPending(error);
+        if (dropped) unawaited(_reconnectAfterDrop());
       case VpnLogLine():
         break;
     }
   }
+
+  /// When the core dies under a live connection, apps would carry on
+  /// without the tunnel: reconnect once, unless that just happened.
+  Future<void> _reconnectAfterDrop() async {
+    final now = DateTime.now();
+    final last = _lastDropReconnect;
+    if (last != null && now.difference(last) < reconnectCooldown) return;
+    _lastDropReconnect = now;
+    final attempt = _attempt;
+    await Future<void>.delayed(reconnectDelay);
+    if (!ref.mounted ||
+        attempt != _attempt ||
+        state.status != VpnStatus.disconnected) {
+      return;
+    }
+    await connect();
+  }
+
+  @visibleForTesting
+  static Duration reconnectDelay = const Duration(seconds: 2);
+  static const reconnectCooldown = Duration(minutes: 2);
+  DateTime? _lastDropReconnect;
 
   void _connectIfRestartPending(VpnError? error) {
     if (!_restartPending) return;

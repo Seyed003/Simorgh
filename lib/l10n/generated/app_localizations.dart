@@ -1231,6 +1231,372 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The phoenix rises from its ashes: no filter can keep the internet from you for long.'**
   String get brandStory;
+
+  /// No description provided for @proxyPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Require a password'**
+  String get proxyPassword;
+
+  /// No description provided for @proxyPasswordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Without it, any app on this device can use the proxy and find out your server'**
+  String get proxyPasswordHint;
+
+  /// No description provided for @proxyCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'User: {user} · Password: {password}'**
+  String proxyCredentials(String user, String password);
+
+  /// No description provided for @killSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Block internet without VPN'**
+  String get killSwitch;
+
+  /// No description provided for @killSwitchOn.
+  ///
+  /// In en, this message translates to:
+  /// **'On: apps cannot go online while the VPN is off'**
+  String get killSwitchOn;
+
+  /// No description provided for @killSwitchOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off: if the VPN stops, apps go online without it'**
+  String get killSwitchOff;
+
+  /// No description provided for @killSwitchUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Uses Android\'s Always-on VPN; tap to set up'**
+  String get killSwitchUnknown;
+
+  /// No description provided for @killSwitchSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'On the next screen, tap the gear next to \"{app}\", then turn on \"Always-on VPN\" and \"Block connections without VPN\". Android only lets you change this there.'**
+  String killSwitchSteps(String app);
+
+  /// No description provided for @openSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get openSettings;
+
+  /// No description provided for @insecure.
+  ///
+  /// In en, this message translates to:
+  /// **'Insecure'**
+  String get insecure;
+
+  /// No description provided for @insecureHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This config does not check the server\'s certificate: someone on the way could read or change its traffic'**
+  String get insecureHint;
+
+  /// No description provided for @autoReconnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'The connection dropped; reconnecting…'**
+  String get autoReconnecting;
+
+  /// No description provided for @tools.
+  ///
+  /// In en, this message translates to:
+  /// **'Tools'**
+  String get tools;
+
+  /// No description provided for @backupSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save a backup'**
+  String get backupSave;
+
+  /// No description provided for @backupSaveHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Configs, subscriptions and settings in one file. Keep it private: it holds your server passwords.'**
+  String get backupSaveHint;
+
+  /// No description provided for @backupRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore from a backup'**
+  String get backupRestore;
+
+  /// No description provided for @backupRestoreHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Adds the backup\'s configs to yours and takes over its settings'**
+  String get backupRestoreHint;
+
+  /// No description provided for @backupSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup saved'**
+  String get backupSaved;
+
+  /// No description provided for @backupRestored.
+  ///
+  /// In en, this message translates to:
+  /// **'Restored: {count} configs added'**
+  String backupRestored(String count);
+
+  /// No description provided for @backupInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'This file is not a backup of this app'**
+  String get backupInvalid;
+
+  /// No description provided for @logs.
+  ///
+  /// In en, this message translates to:
+  /// **'Logs'**
+  String get logs;
+
+  /// No description provided for @logsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What the core is doing; shows why a config does not connect'**
+  String get logsHint;
+
+  /// No description provided for @logsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No logs yet. They appear while connected; Advanced › Log level sets how detailed they are.'**
+  String get logsEmpty;
+
+  /// No description provided for @logsProblemsOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Warnings and errors only'**
+  String get logsProblemsOnly;
+
+  /// No description provided for @copyAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy all'**
+  String get copyAll;
+
+  /// No description provided for @importLinkTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add from link'**
+  String get importLinkTitle;
+
+  /// No description provided for @importConfigsQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 config found. Add it?} other{{count} configs found. Add them?}}'**
+  String importConfigsQuestion(int count);
+
+  /// No description provided for @importSubscriptionQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Add the subscription from {host}?'**
+  String importSubscriptionQuestion(String host);
+
+  /// No description provided for @updateAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version} is available'**
+  String updateAvailable(String version);
+
+  /// No description provided for @updateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Install it over this one; your configs stay.'**
+  String get updateHint;
+
+  /// No description provided for @updateDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get updateDownload;
+
+  /// No description provided for @updateLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get updateLater;
+
+  /// No description provided for @updateCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for updates'**
+  String get updateCheck;
+
+  /// No description provided for @updateLatest.
+  ///
+  /// In en, this message translates to:
+  /// **'You have the latest version'**
+  String get updateLatest;
+
+  /// No description provided for @updateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not check for updates'**
+  String get updateFailed;
+
+  /// No description provided for @smartSetup.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart setup for this internet'**
+  String get smartSetup;
+
+  /// No description provided for @smartSetupHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tries the anti-filtering options with your servers and keeps what gets through best'**
+  String get smartSetupHint;
+
+  /// No description provided for @networkWifi.
+  ///
+  /// In en, this message translates to:
+  /// **'Wi-Fi / home internet'**
+  String get networkWifi;
+
+  /// No description provided for @networkMobile.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile data'**
+  String get networkMobile;
+
+  /// No description provided for @networkEthernet.
+  ///
+  /// In en, this message translates to:
+  /// **'Wired internet'**
+  String get networkEthernet;
+
+  /// No description provided for @networkThisComputer.
+  ///
+  /// In en, this message translates to:
+  /// **'This computer'**
+  String get networkThisComputer;
+
+  /// No description provided for @networkOther.
+  ///
+  /// In en, this message translates to:
+  /// **'This network'**
+  String get networkOther;
+
+  /// No description provided for @smartSetupStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start test'**
+  String get smartSetupStart;
+
+  /// No description provided for @smartSetupRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'Testing {count} servers with each option…'**
+  String smartSetupRunning(String count);
+
+  /// No description provided for @smartSetupDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Best on {network}: {mode}. Applied.'**
+  String smartSetupDone(String network, String mode);
+
+  /// No description provided for @smartSetupNoServers.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a config that uses TLS first (VLESS, VMess or Trojan); others do not need this.'**
+  String get smartSetupNoServers;
+
+  /// No description provided for @smartSetupNothingWorks.
+  ///
+  /// In en, this message translates to:
+  /// **'No server answered on this network with any option. Try other servers or a clean IP.'**
+  String get smartSetupNothingWorks;
+
+  /// No description provided for @smartSetupAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch automatically on each network'**
+  String get smartSetupAuto;
+
+  /// No description provided for @smartSetupAutoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'When you connect, the setting that worked on that internet is used. Choosing a fragment mode by hand is remembered too.'**
+  String get smartSetupAutoHint;
+
+  /// No description provided for @smartSetupRemembered.
+  ///
+  /// In en, this message translates to:
+  /// **'Remembered here: {mode}'**
+  String smartSetupRemembered(String mode);
+
+  /// No description provided for @smartSetupNotTested.
+  ///
+  /// In en, this message translates to:
+  /// **'Not tested on this network yet'**
+  String get smartSetupNotTested;
+
+  /// No description provided for @smartSetupScore.
+  ///
+  /// In en, this message translates to:
+  /// **'{ok} of {total} servers'**
+  String smartSetupScore(String ok, String total);
+
+  /// No description provided for @fragmentOff.
+  ///
+  /// In en, this message translates to:
+  /// **'No fragment'**
+  String get fragmentOff;
+
+  /// No description provided for @warpAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Free Cloudflare WARP'**
+  String get warpAdd;
+
+  /// No description provided for @warpExplain.
+  ///
+  /// In en, this message translates to:
+  /// **'Creates a free Cloudflare WARP account on this device, adds it as a config and looks for an endpoint that works on your internet. WARP makes a good backup: it opens most sites, but it is not anonymous and is sometimes slow or blocked in Iran.'**
+  String get warpExplain;
+
+  /// No description provided for @warpAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'WARP added (endpoint {endpoint})'**
+  String warpAdded(String endpoint);
+
+  /// No description provided for @warpAddedNoEndpoint.
+  ///
+  /// In en, this message translates to:
+  /// **'WARP added, but no endpoint answered right now. Try \"Find a WARP endpoint\" from its menu later.'**
+  String get warpAddedNoEndpoint;
+
+  /// No description provided for @warpFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach Cloudflare ({error}). Connect to a server first and try again.'**
+  String warpFailed(String error);
+
+  /// No description provided for @warpScan.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a WARP endpoint'**
+  String get warpScan;
+
+  /// No description provided for @warpScanDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Endpoint changed to {endpoint}'**
+  String warpScanDone(String endpoint);
+
+  /// No description provided for @warpScanNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No WARP endpoint answered on this network'**
+  String get warpScanNone;
 }
 
 class _AppLocalizationsDelegate

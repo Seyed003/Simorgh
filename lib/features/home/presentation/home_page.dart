@@ -10,6 +10,7 @@ import '../../../core/widgets/glass_widgets.dart';
 import '../../profiles/application/profiles_controller.dart';
 import '../../profiles/presentation/add_config_sheet.dart';
 import '../../profiles/presentation/profile_list.dart';
+import '../../updates/presentation/update_banner.dart';
 import 'widgets/connection_panel.dart';
 
 /// The home tab: the phoenix orb, the server in use and live speeds. Wide
@@ -38,6 +39,7 @@ class HomePage extends ConsumerWidget {
                         SizedBox(height: 16),
                         ConnectionPanel(orbSize: 230),
                         SizedBox(height: 24),
+                        UpdateBanner(),
                         ActiveServerCard(),
                         SizedBox(height: 12),
                         SpeedPanel(),
@@ -80,6 +82,7 @@ class HomePage extends ConsumerWidget {
                       const Spacer(),
                       ConnectionPanel(orbSize: orb),
                       const Spacer(),
+                      const UpdateBanner(),
                       if (empty)
                         const _EmptyCard()
                       else
