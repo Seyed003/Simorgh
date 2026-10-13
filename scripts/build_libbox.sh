@@ -12,8 +12,9 @@ root="$(cd "$(dirname "$0")/.." && pwd)"
 version="$(tr -d '[:space:]' < "$root/scripts/core_version.txt")"
 src="$root/.core-build/sing-box"
 gomobile_version="v0.1.13"
-# Only what the app uses; tailscale/naive/openvpn would add ~40 MB.
-tags="with_gvisor,with_quic,with_wireguard,with_utls,with_clash_api,with_xray,badlinkname,tfogo_checklinkname0"
+# Only what the app uses; OpenVPN + OpenConnect add ~2 MB to the APK,
+# tailscale/naive would add ~40 MB.
+tags="with_gvisor,with_quic,with_wireguard,with_utls,with_clash_api,with_openvpn,with_openconnect,with_xray,badlinkname,tfogo_checklinkname0"
 
 export ANDROID_HOME="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}}"
 if [ -z "${ANDROID_NDK_HOME:-}" ]; then
