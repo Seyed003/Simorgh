@@ -160,7 +160,9 @@ test/                 unit, widget and real-core integration tests
 ```
 
 State management is [Riverpod 3](https://riverpod.dev). The sing-box version
-is pinned in `scripts/core_version.txt` (currently **1.14.3**).
+is pinned in `scripts/core_version.txt` (currently **1.14.3**), and the build
+refuses a source tree whose commit differs from `scripts/core_commit.txt`
+(update both together).
 
 ### Requirements
 
