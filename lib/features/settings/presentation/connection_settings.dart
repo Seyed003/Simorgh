@@ -19,17 +19,6 @@ import '../../network/presentation/smart_setup_tile.dart';
 import 'kill_switch_tile.dart';
 import 'split_tunnel_page.dart';
 
-const _fingerprints = [
-  'chrome',
-  'firefox',
-  'safari',
-  'edge',
-  'ios',
-  'android',
-  'random',
-  'randomized',
-];
-
 /// Core tunables. Changes restart a running connection automatically.
 class ConnectionSettingsSection extends ConsumerWidget {
   const ConnectionSettingsSection({super.key});
@@ -276,7 +265,7 @@ class ConnectionSettingsSection extends ConsumerWidget {
                 underline: const SizedBox.shrink(),
                 items: [
                   DropdownMenuItem(value: null, child: Text(l10n.disabled)),
-                  for (final fp in _fingerprints)
+                  for (final fp in CoreOptions.fingerprints)
                     DropdownMenuItem(value: fp, child: Text(fp)),
                 ],
                 onChanged: (v) => controller.update(

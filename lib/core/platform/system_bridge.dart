@@ -25,8 +25,13 @@ class SystemBridge {
     if (_android) await _methods.invokeMethod<void>('openVpnSettings');
   }
 
-  /// Opens [url] in the browser.
+  /// Opens [url] in the browser. Only web addresses: on Windows the same
+  /// call would also run files and network paths.
   Future<void> openUrl(String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri == null || !(uri.isScheme('https') || uri.isScheme('http'))) {
+      return;
+    }
     if (_android) {
       await _methods.invokeMethod<void>('openUrl', {'url': url});
     } else if (Platform.isWindows) {

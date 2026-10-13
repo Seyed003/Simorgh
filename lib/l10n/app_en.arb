@@ -412,7 +412,7 @@
   "backupSave": "Save a backup",
   "backupSaveHint": "Configs, subscriptions and settings in one file. Keep it private: it holds your server passwords.",
   "backupRestore": "Restore from a backup",
-  "backupRestoreHint": "Adds the backup's configs to yours and takes over its settings",
+  "backupRestoreHint": "Adds the backup's configs to yours and takes over its connection tuning. Per-app choices, the local proxy and custom DNS servers stay as they are on this device.",
   "backupSaved": "Backup saved",
   "backupRestored": "Restored: {count} configs added",
   "@backupRestored": {

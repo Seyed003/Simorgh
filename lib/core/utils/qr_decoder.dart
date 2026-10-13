@@ -31,9 +31,22 @@ abstract final class QrDecoder {
     return _decode(_GreyLuminanceSource(data, width, height));
   }
 
+  /// Larger images are refused before decoding: a small crafted file can
+  /// claim a size that needs gigabytes of memory.
+  static const maxImageBytes = 30 * 1024 * 1024;
+  static const maxPixels = 50 * 1000 * 1000;
+
   /// Decodes a QR code from an encoded image file (PNG, JPEG, WebP, ...).
   static String? decodeImageBytes(Uint8List bytes) {
-    final decoded = img.decodeImage(bytes);
+    if (bytes.length > maxImageBytes) return null;
+    final img.Image? decoded;
+    try {
+      final info = img.findDecoderForData(bytes)?.startDecode(bytes);
+      if (info == null || info.width * info.height > maxPixels) return null;
+      decoded = img.decodeImage(bytes);
+    } on Exception {
+      return null;
+    }
     if (decoded == null) return null;
     var image = decoded;
     // Huge photos are slow and gain nothing; QR modules stay several pixels

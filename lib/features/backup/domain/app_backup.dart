@@ -51,6 +51,15 @@ class AppBackup {
     if (json['version'] is! int || (json['version'] as int) > version) {
       throw const FormatException('backup from a newer version of the app');
     }
+    try {
+      return _fromJson(json);
+    } on TypeError {
+      // A field of the wrong type: a damaged or hand-made file.
+      throw const FormatException('not a backup file');
+    }
+  }
+
+  static AppBackup _fromJson(Map<Object?, Object?> json) {
     final settings = (json['settings'] as Map?) ?? const {};
     const defaults = AppSettings();
     return AppBackup(

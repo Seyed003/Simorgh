@@ -1,17 +1,21 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:aghelan_ghiamat/core/singbox/builder/config_builder.dart';
 import 'package:aghelan_ghiamat/core/singbox/builder/core_options.dart';
 import 'package:aghelan_ghiamat/core/singbox/link_parser.dart';
+import 'package:aghelan_ghiamat/core/singbox/subscription_info.dart';
 import 'package:aghelan_ghiamat/core/singbox/subscription_parser.dart';
 import 'package:aghelan_ghiamat/core/singbox/subscription_url.dart';
 import 'package:aghelan_ghiamat/features/profiles/data/subscription_client.dart';
 import 'package:aghelan_ghiamat/core/storage/preferences.dart';
+import 'package:aghelan_ghiamat/core/utils/qr_decoder.dart';
 import 'package:aghelan_ghiamat/features/settings/application/core_options_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:image/image.dart' as img;
 
 import '../../helpers.dart';
 import 'fixtures.dart';
@@ -233,9 +237,88 @@ void main() {
       expect((await client.fetch('https://example.com/sub')).body, vlessWs);
     });
 
+    test('redirects: followed, but never from https down to http', () async {
+      final seen = <Uri>[];
+      final client = SubscriptionClient(
+        MockClient((request) async {
+          seen.add(request.url);
+          return switch (request.url.path) {
+            '/a' => http.Response('', 302, headers: {'location': '/b'}),
+            '/b' => http.Response(vlessWs, 200),
+            '/down' => http.Response(
+              '',
+              301,
+              headers: {'location': 'http://example.com/b'},
+            ),
+            _ => http.Response('', 302, headers: {'location': '/loop'}),
+          };
+        }),
+      );
+      expect((await client.fetch('https://example.com/a')).body, vlessWs);
+      expect(seen.last.toString(), 'https://example.com/b');
+      await expectLater(
+        client.fetch('https://example.com/down'),
+        throwsA(
+          isA<SubscriptionException>().having(
+            (e) => e.message,
+            'message',
+            'unsafe redirect',
+          ),
+        ),
+      );
+      seen.clear();
+      await expectLater(
+        client.fetch('https://example.com/loop'),
+        throwsA(isA<SubscriptionException>()),
+      );
+      expect(seen, hasLength(SubscriptionClient.maxRedirects + 1));
+    });
+
+    test('errors do not repeat the URL and its token', () async {
+      final client = SubscriptionClient(
+        MockClient(
+          (request) async =>
+              throw http.ClientException('Connection reset', request.url),
+        ),
+      );
+      await expectLater(
+        client.fetch('https://example.com/sub/SECRET-TOKEN'),
+        throwsA(
+          isA<SubscriptionException>().having(
+            (e) => e.message,
+            'message',
+            isNot(contains('SECRET-TOKEN')),
+          ),
+        ),
+      );
+    });
+
+    test('odd usage headers do not throw', () {
+      for (final header in [
+        'upload=NaN; download=1e999; total=-5',
+        'upload=1; expire=99999999999999999',
+        'expire=Infinity',
+      ]) {
+        final info = SubscriptionInfo.fromHeaders({
+          'subscription-userinfo': header,
+        });
+        expect(info.total, greaterThanOrEqualTo(0));
+      }
+    });
+
     test('plain http is told apart', () {
       expect(isPlainHttp('http://1.2.3.4:2096/sub/x'), isTrue);
       expect(isPlainHttp('https://example.com/sub'), isFalse);
     });
+  });
+
+  test('an image claiming a gigantic size is not decoded', () {
+    final png = img.encodePng(img.Image(width: 4, height: 4));
+    // IHDR: width and height right after the signature and chunk header.
+    final huge = Uint8List.fromList(png)
+      ..buffer.asByteData().setUint32(16, 60000)
+      ..buffer.asByteData().setUint32(20, 60000);
+    expect(QrDecoder.decodeImageBytes(huge), isNull);
+    expect(QrDecoder.decodeImageBytes(Uint8List.fromList([1, 2, 3])), isNull);
   });
 }

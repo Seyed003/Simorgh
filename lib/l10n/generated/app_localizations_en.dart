@@ -729,7 +729,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get backupRestoreHint =>
-      'Adds the backup\'s configs to yours and takes over its settings';
+      'Adds the backup\'s configs to yours and takes over its connection tuning. Per-app choices, the local proxy and custom DNS servers stay as they are on this device.';
 
   @override
   String get backupSaved => 'Backup saved';

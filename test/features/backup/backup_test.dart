@@ -12,6 +12,7 @@ import 'package:aghelan_ghiamat/features/settings/application/core_options_contr
 import 'package:aghelan_ghiamat/features/settings/application/settings_controller.dart';
 import 'package:aghelan_ghiamat/features/settings/domain/app_settings.dart';
 import 'package:aghelan_ghiamat/core/singbox/link_parser.dart';
+import 'package:aghelan_ghiamat/core/singbox/proxy_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -107,6 +108,80 @@ void main() {
     // Restoring the same backup again adds nothing.
     expect(await service.restore(backup), 0);
     expect(c.read(profilesProvider).value!.profiles, hasLength(2));
+  });
+
+  test('a backup cannot open leaks or hide a direct connection', () async {
+    final c = await create();
+    await c.read(profilesProvider.future);
+    await c
+        .read(coreOptionsProvider.notifier)
+        .update(
+          (o) => o.copyWith(
+            perAppMode: PerAppMode.exclude,
+            perAppPackages: const ['org.mine'],
+            remoteDns: 'https://8.8.8.8/dns-query',
+          ),
+        );
+    final mine = c.read(coreOptionsProvider);
+    final fake = LinkParser.parse(vlessWs);
+    final disguised = Profile(
+      id: 'x',
+      // Shown as VLESS, actually no proxy at all.
+      config: ProxyConfig.fromJson({
+        ...fake.toJson(),
+        'outbound': {'type': 'direct'},
+      }),
+      createdAt: when,
+    );
+    final backup = AppBackup(
+      profiles: ProfilesState(
+        profiles: [...backupState.profiles, disguised],
+        subscriptions: backupState.subscriptions,
+      ),
+      coreOptions: const CoreOptions(
+        perAppMode: PerAppMode.exclude,
+        perAppPackages: ['org.telegram.messenger', 'com.android.chrome'],
+        mixedPort: 2080,
+        mixedAuth: false,
+        strictRoute: false,
+        remoteDns: 'https://dns.attacker.example/q',
+        directDns: '178.22.122.100',
+        tlsFragment: TlsFragmentMode.record,
+        logLevel: 'nonsense',
+      ),
+      settings: const AppSettings(),
+      createdAt: when,
+    );
+
+    await c.read(backupServiceProvider).restore(backup);
+    final options = c.read(coreOptionsProvider);
+    // Kept from this device.
+    expect(options.perAppPackages, ['org.mine']);
+    expect(options.mixedPort, mine.mixedPort);
+    expect(options.mixedAuth, isTrue);
+    expect(options.strictRoute, isTrue);
+    expect(options.remoteDns, 'https://8.8.8.8/dns-query');
+    expect(options.logLevel, mine.logLevel);
+    // Taken over: presets and tuning.
+    expect(options.directDns, '178.22.122.100');
+    expect(options.tlsFragment, TlsFragmentMode.record);
+    // The disguised config is left out.
+    final types = [
+      for (final p in c.read(profilesProvider).value!.profiles)
+        p.config.outbound['type'],
+    ];
+    expect(types, isNot(contains('direct')));
+    expect(types, hasLength(2));
+  });
+
+  test('a backup with fields of the wrong type is refused', () {
+    expect(
+      () => AppBackup.decode(
+        '{"format":"aghelan-ghiamat-backup","version":1,'
+        '"coreOptions":{"mtu":"big"}}',
+      ),
+      throwsFormatException,
+    );
   });
 
   test('restore on an empty device keeps the backup selection', () async {

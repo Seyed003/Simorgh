@@ -721,7 +721,7 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get backupRestoreHint =>
-      'کانفیگ‌های فایل به کانفیگ‌های شما اضافه و تنظیمات آن جایگزین می‌شود';
+      'کانفیگ‌های پشتیبان به کانفیگ‌های شما اضافه و تنظیمات اتصالش اعمال می‌شود. انتخاب برنامه‌ها، پروکسی محلی و DNSهای دلخواه همان‌طور که روی این دستگاه هستند می‌مانند.';
 
   @override
   String get backupSaved => 'نسخه پشتیبان ذخیره شد';

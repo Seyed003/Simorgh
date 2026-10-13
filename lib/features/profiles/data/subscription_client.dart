@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
@@ -55,38 +57,71 @@ class SubscriptionClient {
         uri.host.isEmpty) {
       throw const SubscriptionException('invalid URL');
     }
-    final request = http.Request('GET', uri)
-      ..headers.addAll({'User-Agent': userAgent, 'Accept': '*/*'});
     final List<int> bytes;
     final http.StreamedResponse response;
     try {
-      (response, bytes) = await _download(request).timeout(timeout);
+      (response, bytes) = await _download(uri).timeout(timeout);
     } on SubscriptionException {
       rethrow;
-    } on Exception catch (e) {
-      throw SubscriptionException(e.toString());
+    } on TimeoutException {
+      throw const SubscriptionException('timed out');
+    } on SocketException catch (e) {
+      throw SubscriptionException(e.osError?.message ?? e.message);
+    } on HandshakeException {
+      throw const SubscriptionException('secure connection failed');
+    } on http.ClientException catch (e) {
+      // Its toString() carries the full URL, token included, which would
+      // end up in screenshots of the error.
+      throw SubscriptionException(e.message);
+    } on Exception {
+      throw const SubscriptionException('network error');
     }
     final body = utf8.decode(bytes, allowMalformed: true);
     return SubscriptionResponse(body, response.headers);
   }
 
-  Future<(http.StreamedResponse, List<int>)> _download(
-    http.Request request,
-  ) async {
-    final response = await _client.send(request);
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw SubscriptionException('HTTP ${response.statusCode}');
-    }
-    if ((response.contentLength ?? 0) > maxBytes) {
-      throw const SubscriptionException('response too large');
-    }
-    final bytes = <int>[];
-    await for (final chunk in response.stream) {
-      bytes.addAll(chunk);
-      if (bytes.length > maxBytes) {
+  /// Follows at most [maxRedirects] redirects itself: never from https to
+  /// plain http, where anyone on the way could swap the configs.
+  static const maxRedirects = 3;
+
+  Future<(http.StreamedResponse, List<int>)> _download(Uri start) async {
+    var uri = start;
+    for (var hop = 0; ; hop++) {
+      final request = http.Request('GET', uri)
+        ..followRedirects = false
+        ..headers.addAll({'User-Agent': userAgent, 'Accept': '*/*'});
+      final response = await _client.send(request);
+      if (response.isRedirect || _redirectCodes.contains(response.statusCode)) {
+        unawaited(response.stream.drain<void>().catchError((Object _) {}));
+        final location = response.headers['location'];
+        if (location == null || hop >= maxRedirects) {
+          throw SubscriptionException('HTTP ${response.statusCode}');
+        }
+        final next = uri.resolve(location);
+        if (!(next.isScheme('https') ||
+                (next.isScheme('http') && uri.isScheme('http'))) ||
+            next.host.isEmpty) {
+          throw const SubscriptionException('unsafe redirect');
+        }
+        uri = next;
+        continue;
+      }
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw SubscriptionException('HTTP ${response.statusCode}');
+      }
+      if ((response.contentLength ?? 0) > maxBytes) {
         throw const SubscriptionException('response too large');
       }
+      final bytes = <int>[];
+      await for (final chunk in response.stream) {
+        bytes.addAll(chunk);
+        if (bytes.length > maxBytes) {
+          throw const SubscriptionException('response too large');
+        }
+      }
+      return (response, bytes);
     }
-    return (response, bytes);
   }
+
+  static const _redirectCodes = {301, 302, 303, 307, 308};
 }

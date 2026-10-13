@@ -29,6 +29,12 @@ class SubscriptionInfo {
 
   bool get hasUsage => total > 0 || used > 0;
 
+  /// 2^53: exact as a double, and about 9 PB.
+  static const _maxValue = 9007199254740992;
+
+  /// The last second of the year 9999.
+  static const _maxExpireSeconds = 253402300799;
+
   /// Parses response headers (keys must be lower-case, as `package:http`
   /// provides them).
   factory SubscriptionInfo.fromHeaders(Map<String, String> headers) {
@@ -39,7 +45,10 @@ class SubscriptionInfo {
         final kv = part.split('=');
         if (kv.length != 2) continue;
         final number = num.tryParse(kv[1].trim());
-        if (number != null) values[kv[0].trim().toLowerCase()] = number.toInt();
+        // NaN, infinity or a number beyond any real quota would throw in
+        // toInt() / DateTime and stop every other subscription's update.
+        if (number == null || !number.isFinite || number < 0) continue;
+        values[kv[0].trim().toLowerCase()] = number.clamp(0, _maxValue).toInt();
       }
     }
     final expire = values['expire'];
@@ -51,7 +60,10 @@ class SubscriptionInfo {
       download: values['download'] ?? 0,
       total: values['total'] ?? 0,
       expire: expire != null && expire > 0
-          ? DateTime.fromMillisecondsSinceEpoch(expire * 1000, isUtc: true)
+          ? DateTime.fromMillisecondsSinceEpoch(
+              expire.clamp(0, _maxExpireSeconds) * 1000,
+              isUtc: true,
+            )
           : null,
       title:
           _decodeTitle(headers['profile-title']) ??

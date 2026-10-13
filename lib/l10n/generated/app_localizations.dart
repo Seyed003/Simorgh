@@ -1331,7 +1331,7 @@ abstract class AppLocalizations {
   /// No description provided for @backupRestoreHint.
   ///
   /// In en, this message translates to:
-  /// **'Adds the backup\'s configs to yours and takes over its settings'**
+  /// **'Adds the backup\'s configs to yours and takes over its connection tuning. Per-app choices, the local proxy and custom DNS servers stay as they are on this device.'**
   String get backupRestoreHint;
 
   /// No description provided for @backupSaved.

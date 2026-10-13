@@ -7,9 +7,12 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.provider.OpenableColumns
 import android.provider.Settings
 import android.telephony.TelephonyManager
+import android.util.Log
 import com.aghelan.ghiamat.vpn.AghelanVpnService
 import com.aghelan.ghiamat.vpn.DefaultNetworkMonitor
 import io.flutter.embedding.engine.FlutterEngine
@@ -43,23 +46,54 @@ class SystemBridge(private val activity: Activity) : MethodChannel.MethodCallHan
         EventChannel(messenger, "com.aghelan.ghiamat/shared").setStreamHandler(this)
     }
 
-    /** A config link tapped elsewhere, text or a file shared to the app. */
+    /**
+     * A config link tapped elsewhere, text or a file shared to the app.
+     * Any app can send these, so nothing here may crash or block the UI
+     * thread (that would take the VPN down with the app): files are read
+     * on a background thread, and only content:// files of other apps.
+     */
     fun handleIntent(intent: Intent?) {
-        val shared: Map<String, String?>? = when (intent?.action) {
-            Intent.ACTION_VIEW -> intent.data?.let { uri ->
-                if (uri.scheme == "content" || uri.scheme == "file") readFile(uri)
-                else mapOf("text" to intent.dataString, "name" to null)
+        try {
+            when (intent?.action) {
+                Intent.ACTION_VIEW -> {
+                    val uri = intent.data ?: return
+                    if (uri.scheme == "content") {
+                        readInBackground(uri)
+                    } else if (uri.scheme != "file") {
+                        deliver(mapOf("text" to intent.dataString, "name" to null))
+                    }
+                }
+                Intent.ACTION_SEND -> {
+                    val text = intent.getStringExtra(Intent.EXTRA_TEXT)
+                    if (text != null) {
+                        deliver(mapOf("text" to text, "name" to null))
+                    } else {
+                        streamExtra(intent)?.takeIf { it.scheme == "content" }?.let(::readInBackground)
+                    }
+                }
+                else -> return
             }
-            Intent.ACTION_SEND -> intent.getStringExtra(Intent.EXTRA_TEXT)
-                ?.let { mapOf("text" to it, "name" to null) }
-                ?: streamExtra(intent)?.let(::readFile)
-            else -> null
+            // Handled once, even if the activity is recreated with this intent.
+            intent?.action = Intent.ACTION_MAIN
+        } catch (e: Throwable) {
+            Log.w(TAG, "ignoring a malformed intent", e)
         }
-        if (shared == null || shared["text"].isNullOrBlank()) return
-        // Handled once, even if the activity is recreated with this intent.
-        intent?.action = Intent.ACTION_MAIN
+    }
+
+    private fun deliver(shared: Map<String, String?>) {
+        if (shared["text"].isNullOrBlank()) return
         val events = sink
         if (events != null) events.success(shared) else pending.add(shared)
+    }
+
+    private fun readInBackground(uri: Uri) {
+        // Our own providers (the shared APK) are nothing to import.
+        if (uri.authority?.startsWith(activity.packageName) == true) return
+        val main = Handler(Looper.getMainLooper())
+        Thread {
+            val shared = readFile(uri)
+            if (shared != null) main.post { deliver(shared) }
+        }.apply { isDaemon = true }.start()
     }
 
     @Suppress("DEPRECATION")
@@ -167,6 +201,8 @@ class SystemBridge(private val activity: Activity) : MethodChannel.MethodCallHan
     }
 
     private companion object {
+        const val TAG = "SystemBridge"
+
         /** Profiles are a few KB; anything bigger is not one. */
         const val MAX_FILE_BYTES = 512 * 1024
     }

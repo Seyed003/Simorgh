@@ -284,6 +284,8 @@ Map<String, Object?> prepareOutbound(
       withoutLocalFiles(jsonDecode(jsonEncode(proxy.outbound)))!
           as Map<String, Object?>;
   outbound['tag'] = tag;
+  // Only chains route an outbound through another one (set by the caller).
+  outbound.remove('detour');
   final type = outbound['type'];
   final tls = outbound['tls'];
   if (_tcpTlsTypes.contains(type) && tls is Map && tls['enabled'] == true) {

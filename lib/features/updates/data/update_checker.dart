@@ -39,9 +39,19 @@ class UpdateChecker {
     }
     final tag = json['tag_name'];
     if (tag is! String || tag.isEmpty) return null;
+    // Only ever send the user to this repository's releases.
+    final url = json['html_url'];
     return AppRelease(
       version: tag.startsWith('v') ? tag.substring(1) : tag,
-      url: json['html_url'] as String? ?? AppInfo.releasesPage,
+      // GitHub spells the owner as registered (Seyed003): compare without
+      // case.
+      url:
+          url is String &&
+              url.toLowerCase().startsWith(
+                '${AppInfo.repositoryUrl.toLowerCase()}/releases/',
+              )
+          ? url
+          : AppInfo.releasesPage,
     );
   }
 }

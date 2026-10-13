@@ -301,6 +301,7 @@ class ProfilesController extends AsyncNotifier<ProfilesState> {
     final profileIds = <String, String>{};
     final added = <Profile>[];
     for (final p in backup.profiles) {
+      if (!p.config.isConsistent) continue;
       final String? subscriptionId;
       if (p.subscriptionId == null) {
         if (!existing.add(_fingerprint(p))) continue;

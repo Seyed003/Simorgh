@@ -297,13 +297,18 @@ class AghelanVpnService : VpnService(), CommonPlatform, CommandServerHandler {
             }
 
             val include = options.includePackage
+            var including = false
             while (include.hasNext()) {
+                including = true
                 try {
                     builder.addAllowedApplication(include.next())
                 } catch (e: PackageManager.NameNotFoundException) {
                     Log.w(TAG, "addAllowedApplication", e)
                 }
             }
+            // The app's own requests (subscription updates) use the tunnel
+            // too, as in the other modes; the core's sockets are protected.
+            if (including) builder.addAllowedApplication(packageName)
             val exclude = options.excludePackage
             while (exclude.hasNext()) {
                 try {
@@ -324,6 +329,9 @@ class AghelanVpnService : VpnService(), CommonPlatform, CommandServerHandler {
         }
 
         val pfd = builder.establish() ?: error("android: the application is not prepared or is revoked")
+        // On a reload the core already works on its own copy of the old
+        // descriptor; ours would otherwise stay open.
+        runCatching { tunFd?.close() }
         tunFd = pfd
         return pfd.fd
     }
