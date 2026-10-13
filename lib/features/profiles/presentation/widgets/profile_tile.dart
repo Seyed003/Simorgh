@@ -23,6 +23,7 @@ String _badge(ProxyProtocol protocol) => switch (protocol) {
   ProxyProtocol.socks => 'S5',
   ProxyProtocol.openvpn => 'OV',
   ProxyProtocol.openconnect => 'AC',
+  ProxyProtocol.http => 'HP',
 };
 
 class ProfileTile extends StatelessWidget {

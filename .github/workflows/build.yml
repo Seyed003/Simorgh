@@ -53,6 +53,10 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    # The signing key can live in the "release" environment, which GitHub
+    # only opens to main and v* tags: then not even a workflow edited in a
+    # pull request can read it. Pull requests run without the environment.
+    environment: ${{ github.event_name != 'pull_request' && 'release' || '' }}
     steps:
       # Private-repo runners have little free disk; the Go + Gradle builds
       # need ~10 GB. Drop preinstalled toolchains this job never uses.
@@ -145,16 +149,44 @@ jobs:
         run: |
           flutter pub get --enforce-lockfile
           flutter build windows --release
+      - name: Installer
+        # Inno Setup comes with the runner image. The setup installs into
+        # Program Files, where only administrators can change the files the
+        # (elevated) app loads.
+        shell: pwsh
+        run: |
+          $version = (Select-String -Path pubspec.yaml -Pattern '^version:\s*([^+\s]+)').Matches[0].Groups[1].Value
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" /Q "/DAppVersion=$version" windows\installer\aghelan-ghiamat.iss
+          if ($LASTEXITCODE -ne 0) { throw "ISCC failed: $LASTEXITCODE" }
+      - name: Install and uninstall it once
+        shell: pwsh
+        run: |
+          $setup = Start-Process build\installer\aghelan-ghiamat-windows-x64-setup.exe -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -Wait -PassThru
+          if ($setup.ExitCode -ne 0) { throw "setup exited with $($setup.ExitCode)" }
+          $dir = Join-Path $env:ProgramFiles 'Aghelan Ghiamat'
+          foreach ($file in 'aghelan_ghiamat.exe', 'core\sing-box.exe', 'unins000.exe') {
+            if (-not (Test-Path (Join-Path $dir $file))) { throw "not installed: $file" }
+          }
+          & (Join-Path $dir 'core\sing-box.exe') version
+          Start-Process (Join-Path $dir 'unins000.exe') -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -Wait
+          # The uninstaller finishes from a copy of itself; give it time.
+          for ($i = 0; $i -lt 60 -and (Test-Path (Join-Path $dir 'aghelan_ghiamat.exe')); $i++) { Start-Sleep -Seconds 1 }
+          if (Test-Path (Join-Path $dir 'aghelan_ghiamat.exe')) { throw 'uninstall left the app behind' }
       # GitHub zips artifacts itself; uploading the folder avoids a zip
       # inside a zip with the same name.
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: aghelan-ghiamat-windows-x64
           path: build/windows/x64/runner/Release/
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: aghelan-ghiamat-windows-x64-setup
+          path: build/installer/aghelan-ghiamat-windows-x64-setup.exe
 
   release:
     name: GitHub release
-    # A pushed tag such as v0.2.0 publishes the APKs and the Windows zip;
+    # A pushed tag such as v0.2.0 publishes the APKs, the Windows setup and
+    # zip;
     # the app's update check reads the latest release.
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [android, windows]
@@ -169,6 +201,7 @@ jobs:
         run: |
           mkdir dist
           cp artifacts/aghelan-ghiamat-android/*.apk dist/
+          cp artifacts/aghelan-ghiamat-windows-x64-setup/*.exe dist/
           (cd artifacts/aghelan-ghiamat-windows-x64 && zip -qr "$GITHUB_WORKSPACE/dist/aghelan-ghiamat-windows-x64.zip" .)
           ls -la dist
       - uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
