@@ -21,7 +21,7 @@ void main() {
       options: CoreOptions(),
       platform: CorePlatform.android,
     ).build(chained);
-    final outbounds = (json['outbounds']! as List).cast<Map>();
+    final outbounds = (json['outbounds']! as List).cast<Map<String, Object?>>();
     final proxy = outbounds.firstWhere((o) => o['tag'] == 'proxy');
     final first = outbounds.firstWhere((o) => o['tag'] == 'proxy-via');
     expect(proxy['type'], 'vless');
@@ -36,10 +36,10 @@ void main() {
       options: CoreOptions(),
       platform: CorePlatform.android,
     ).build(ovpn.chainedVia(target.chainedVia(relay.chainedVia(target))));
-    final endpoints = (json['endpoints']! as List).cast<Map>();
+    final endpoints = (json['endpoints']! as List).cast<Map<String, Object?>>();
     expect(endpoints.single['tag'], 'proxy');
     expect(endpoints.single['detour'], 'proxy-via');
-    final outbounds = (json['outbounds']! as List).cast<Map>();
+    final outbounds = (json['outbounds']! as List).cast<Map<String, Object?>>();
     expect(outbounds.map((o) => o['tag']), [
       'proxy-via',
       'proxy-via-via',
@@ -72,9 +72,9 @@ void main() {
       'auto-1',
     ]);
 
-    final test = TestConfigBuilder(
-      options: const CoreOptions(),
-      clashApi: const ClashApiOptions(port: 1, secret: 's'),
+    final test = const TestConfigBuilder(
+      options: CoreOptions(),
+      clashApi: ClashApiOptions(port: 1, secret: 's'),
     ).build({'a': chained, 'b': relay});
     // Only the servers themselves are measured...
     expect(test.tagToId, {'t0': 'a', 't1': 'b'});

@@ -3,7 +3,25 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'arvan_ranges.dart';
 import 'cloudflare_ranges.dart';
+
+/// The CDNs whose edge addresses can be scanned.
+enum CdnProvider {
+  cloudflare(cloudflareIpv4Ranges),
+
+  /// ArvanCloud: Iranian edges, for configs behind its CDN.
+  arvan(arvanCdnIpv4Ranges);
+
+  const CdnProvider(this.ranges);
+
+  final List<String> ranges;
+
+  CleanIpProbe get probe => switch (this) {
+    CdnProvider.cloudflare => traceProbe,
+    CdnProvider.arvan => httpProbe,
+  };
+}
 
 /// A CDN address that answered, with the full round trip and the data
 /// centre that served it.
@@ -31,6 +49,42 @@ Future<CleanIpHit?> traceProbe(
   int port = 443,
   Duration timeout = const Duration(seconds: 3),
   bool allowBadCertificate = false,
+}) => _httpsProbe(
+  ip,
+  host,
+  path: '/cdn-cgi/trace',
+  anyStatus: false,
+  port: port,
+  timeout: timeout,
+  allowBadCertificate: allowBadCertificate,
+);
+
+/// The same check for CDNs without Cloudflare's trace page (ArvanCloud):
+/// `GET /`, and any HTTP answer from the edge counts.
+Future<CleanIpHit?> httpProbe(
+  String ip,
+  String host, {
+  int port = 443,
+  Duration timeout = const Duration(seconds: 3),
+  bool allowBadCertificate = false,
+}) => _httpsProbe(
+  ip,
+  host,
+  path: '/',
+  anyStatus: true,
+  port: port,
+  timeout: timeout,
+  allowBadCertificate: allowBadCertificate,
+);
+
+Future<CleanIpHit?> _httpsProbe(
+  String ip,
+  String host, {
+  required String path,
+  required bool anyStatus,
+  required int port,
+  required Duration timeout,
+  required bool allowBadCertificate,
 }) async {
   final watch = Stopwatch()..start();
   Socket? tcp;
@@ -43,7 +97,7 @@ Future<CleanIpHit?> traceProbe(
       onBadCertificate: allowBadCertificate ? (_) => true : null,
     ).timeout(timeout);
     tls.write(
-      'GET /cdn-cgi/trace HTTP/1.1\r\n'
+      'GET $path HTTP/1.1\r\n'
       'Host: $host\r\n'
       'User-Agent: AghelanGhiamat\r\n'
       'Connection: close\r\n\r\n',
@@ -53,7 +107,10 @@ Future<CleanIpHit?> traceProbe(
         .bind(tls)
         .join()
         .timeout(timeout - watch.elapsed);
-    if (!response.startsWith('HTTP/1.1 200')) return null;
+    final answered = anyStatus
+        ? RegExp(r'^HTTP/1\.[01] \d{3}').hasMatch(response)
+        : response.startsWith('HTTP/1.1 200');
+    if (!answered) return null;
     final colo = RegExp(
       r'^colo=(\w+)',
       multiLine: true,
@@ -67,24 +124,29 @@ Future<CleanIpHit?> traceProbe(
   }
 }
 
-/// Probes a random sample of Cloudflare addresses in parallel.
+/// Probes a random sample of a CDN's addresses in parallel.
 class CleanIpScanner {
   CleanIpScanner({
     this.sampleSize = 300,
     this.concurrency = 24,
-    CleanIpProbe? probe,
+    this.probe,
     Random? random,
-  }) : _probe = probe ?? traceProbe,
-       _random = random ?? Random();
+  }) : _random = random ?? Random();
 
   final int sampleSize;
   final int concurrency;
-  final CleanIpProbe _probe;
+
+  /// Replaces the CDN's own check (tests).
+  final CleanIpProbe? probe;
   final Random _random;
 
   /// Emits one update per tested address; cancel to stop early.
-  Stream<CleanIpUpdate> scan(String host) {
-    final targets = sample(sampleSize, _random);
+  Stream<CleanIpUpdate> scan(
+    String host, {
+    CdnProvider provider = CdnProvider.cloudflare,
+  }) {
+    final check = probe ?? provider.probe;
+    final targets = sample(sampleSize, _random, ranges: provider.ranges);
     var next = 0;
     var cancelled = false;
     late final StreamController<CleanIpUpdate> updates;
@@ -92,7 +154,7 @@ class CleanIpScanner {
     Future<void> worker() async {
       while (!cancelled && next < targets.length) {
         final ip = targets[next++];
-        final hit = await _probe(ip, host);
+        final hit = await check(ip, host);
         if (cancelled) return;
         updates.add((ip: ip, hit: hit));
       }
@@ -112,14 +174,21 @@ class CleanIpScanner {
   }
 
   /// [count] distinct addresses spread over the ranges by their size,
-  /// skipping network and broadcast-looking ones.
-  static List<String> sample(int count, Random random) {
-    final ranges = [for (final cidr in cloudflareIpv4Ranges) _parse(cidr)];
-    final total = ranges.fold<int>(0, (sum, r) => sum + r.size);
+  /// skipping network and broadcast-looking ones (fewer when the ranges
+  /// hold fewer).
+  static List<String> sample(
+    int count,
+    Random random, {
+    List<String> ranges = cloudflareIpv4Ranges,
+  }) {
+    final parsed = [for (final cidr in ranges) _parse(cidr)];
+    final total = parsed.fold<int>(0, (sum, r) => sum + r.size);
+    // Each /24 has 254 usable-looking addresses.
+    count = min(count, total * 254 ~/ 256);
     final picked = <String>{};
     while (picked.length < count) {
       var offset = random.nextInt(total);
-      for (final range in ranges) {
+      for (final range in parsed) {
         if (offset < range.size) {
           final value = range.base + offset;
           final last = value & 0xFF;

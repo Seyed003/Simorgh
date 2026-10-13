@@ -964,4 +964,14 @@ class AppLocalizationsFa extends AppLocalizations {
   String chainThrough(String name) {
     return 'از طریق $name';
   }
+
+  @override
+  String get cdnCloudflare => 'کلودفلر';
+
+  @override
+  String get cdnArvan => 'ابرآروان';
+
+  @override
+  String get cdnArvanHint =>
+      'برای کانفیگ‌هایی که پشت CDN ابرآروان هستند. آدرس‌هایش داخل ایران است و برای همین در اینترنت ملی هم اغلب کار می‌کند.';
 }

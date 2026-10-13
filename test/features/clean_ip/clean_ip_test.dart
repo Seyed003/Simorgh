@@ -78,6 +78,29 @@ void main() {
     });
   });
 
+  test('ArvanCloud: every usable address of its small ranges, no more', () {
+    final ips = CleanIpScanner.sample(
+      5000,
+      Random(2),
+      ranges: CdnProvider.arvan.ranges,
+    );
+    // 1536 addresses, minus what looks like network/broadcast.
+    expect(ips.length, lessThanOrEqualTo(1536));
+    expect(ips.length, greaterThan(1400));
+    expect(ips.toSet(), hasLength(ips.length));
+    expect(
+      ips.every(
+        (ip) =>
+            ip.startsWith('185.143.23') ||
+            ip.startsWith('185.220.226.') ||
+            ip.startsWith('193.176.240.'),
+      ),
+      isTrue,
+    );
+    expect(CdnProvider.arvan.probe, httpProbe);
+    expect(CdnProvider.cloudflare.probe, traceProbe);
+  });
+
   test('samples distinct addresses inside the Cloudflare ranges', () {
     final ips = CleanIpScanner.sample(500, Random(1));
     expect(ips.toSet(), hasLength(500));
@@ -122,6 +145,36 @@ void main() {
     expect(state.hits, isNotEmpty);
     final latencies = state.hits.map((h) => h.latencyMs).toList();
     expect(latencies, orderedEquals([...latencies]..sort()));
+  });
+
+  test('controller scans ArvanCloud addresses once chosen', () async {
+    final container = ProviderContainer(
+      overrides: [
+        cleanIpScannerFactoryProvider.overrideWithValue(_fakeScanner),
+      ],
+    );
+    addTearDown(container.dispose);
+    final sub = container.listen(cleanIpProvider, (_, _) {});
+    addTearDown(sub.close);
+    final notifier = container.read(cleanIpProvider.notifier)
+      ..choose(CdnProvider.arvan);
+    expect(container.read(cleanIpProvider).provider, CdnProvider.arvan);
+    notifier.start('example.ir');
+    while (container.read(cleanIpProvider).running) {
+      await Future<void>.delayed(const Duration(milliseconds: 5));
+    }
+    final state = container.read(cleanIpProvider);
+    expect(state.provider, CdnProvider.arvan);
+    expect(state.hits, isNotEmpty);
+    expect(
+      state.hits.every(
+        (h) =>
+            h.ip.startsWith('185.143.23') ||
+            h.ip.startsWith('185.220.226.') ||
+            h.ip.startsWith('193.176.240.'),
+      ),
+      isTrue,
+    );
   });
 
   testWidgets('scan and make a config from a result', (tester) async {
@@ -268,6 +321,16 @@ void main() {
         expect(hit, isNotNull);
         expect(hit!.colo, 'TST');
         expect(hosts.single, 'cdn.example.org');
+
+        // ArvanCloud has no trace page: any answer of the edge counts.
+        final arvan = await httpProbe(
+          '127.0.0.1',
+          'cdn.example.org',
+          port: server.port,
+          allowBadCertificate: true,
+        );
+        expect(arvan, isNotNull);
+        expect(arvan!.colo, isNull);
 
         // A closed port fails quietly.
         final closed = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);

@@ -592,5 +592,8 @@
         "type": "String"
       }
     }
-  }
+  },
+  "cdnCloudflare": "Cloudflare",
+  "cdnArvan": "ArvanCloud",
+  "cdnArvanHint": "For configs behind ArvanCloud's CDN. Its addresses are inside Iran, so they often keep working on the national internet."
 }

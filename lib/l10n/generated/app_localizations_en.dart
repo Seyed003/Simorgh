@@ -974,4 +974,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String chainThrough(String name) {
     return 'through $name';
   }
+
+  @override
+  String get cdnCloudflare => 'Cloudflare';
+
+  @override
+  String get cdnArvan => 'ArvanCloud';
+
+  @override
+  String get cdnArvanHint =>
+      'For configs behind ArvanCloud\'s CDN. Its addresses are inside Iran, so they often keep working on the national internet.';
 }

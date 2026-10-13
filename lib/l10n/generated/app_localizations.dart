@@ -1729,6 +1729,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'through {name}'**
   String chainThrough(String name);
+
+  /// No description provided for @cdnCloudflare.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloudflare'**
+  String get cdnCloudflare;
+
+  /// No description provided for @cdnArvan.
+  ///
+  /// In en, this message translates to:
+  /// **'ArvanCloud'**
+  String get cdnArvan;
+
+  /// No description provided for @cdnArvanHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For configs behind ArvanCloud\'s CDN. Its addresses are inside Iran, so they often keep working on the national internet.'**
+  String get cdnArvanHint;
 }
 
 class _AppLocalizationsDelegate
