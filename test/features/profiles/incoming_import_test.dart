@@ -1,7 +1,9 @@
 import 'package:aghelan_ghiamat/features/profiles/application/incoming_import.dart';
+import 'package:aghelan_ghiamat/core/platform/system_bridge.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../core/singbox/fixtures.dart';
+import '../../core/singbox/openvpn_fixtures.dart';
 
 void main() {
   test('config links and shared text', () {
@@ -30,6 +32,11 @@ void main() {
     sub('sing-box://import-remote-profile?url=$encoded#Panel', url, 'Panel');
     sub('v2rayng://install-sub?url=$encoded&name=P', url, 'P');
     sub('hiddify://import/$url#H', url, 'H');
+    sub(
+      'ssconf://keys.example/k/1#Outline%201',
+      'https://keys.example/k/1',
+      'Outline 1',
+    );
     expect(
       (IncomingImport.parse(url)! as IncomingSubscription).host,
       'panel.example',
@@ -47,5 +54,22 @@ void main() {
     );
     expect(IncomingImport.parse('aghelan://import?url=ftp://x'), isNull);
     expect(IncomingImport.parse('sing-box://other?url=https://a.b'), isNull);
+  });
+
+  test('opened .ovpn files keep their file name', () {
+    final incoming = IncomingImport.parse(ovpnTlsCrypt, name: 'Office');
+    expect(incoming, isA<IncomingConfigs>());
+    expect((incoming! as IncomingConfigs).name, 'Office');
+    expect((incoming as IncomingConfigs).count, 1);
+  });
+
+  test('platform payloads: links, and files with their extension cut', () {
+    expect(SharedText.fromPlatform('vless://x')!.text, 'vless://x');
+    final file = SharedText.fromPlatform({
+      'text': ovpnTlsCrypt,
+      'name': 'germany.ovpn',
+    })!;
+    expect(file.name, 'germany');
+    expect(SharedText.fromPlatform({'name': 'x'}), isNull);
   });
 }

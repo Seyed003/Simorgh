@@ -18,6 +18,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../core/singbox/fixtures.dart';
+import '../../core/singbox/openvpn_fixtures.dart';
 import '../../fakes.dart';
 import '../../helpers.dart';
 
@@ -211,6 +212,8 @@ void main() {
     expect(find.text('Import from clipboard'), findsOneWidget);
     expect(find.text('Add subscription'), findsOneWidget);
     expect(find.text('Import QR from image'), findsOneWidget);
+    expect(find.text('Import a file (.ovpn, JSON…)'), findsOneWidget);
+    expect(find.text('Cisco AnyConnect'), findsOneWidget);
   });
 
   testWidgets('the configs tab adds configs too', (tester) async {
@@ -226,7 +229,7 @@ void main() {
   ) async {
     final system = FakeSystemBridge();
     final (_, container) = await pump(tester, system: system);
-    system.shared.add(trojanBare);
+    system.shared.add(const SharedText(trojanBare));
     await tester.pumpAndSettle();
     expect(find.text('1 config found. Add it?'), findsOneWidget);
     await tester.runAsync(() async {
@@ -236,7 +239,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(container.read(profilesProvider).value!.profiles, hasLength(1));
 
-    system.shared.add('not a config');
+    system.shared.add(const SharedText('not a config'));
     await tester.pumpAndSettle();
     expect(find.byType(AlertDialog), findsNothing);
   });
@@ -254,5 +257,34 @@ void main() {
     });
     await tester.pumpAndSettle();
     expect(find.text('Version 99.0.0 is available'), findsNothing);
+  });
+
+  testWidgets('an opened .ovpn file asks for its login', (tester) async {
+    final system = FakeSystemBridge();
+    final (_, container) = await pump(tester, system: system);
+    system.shared.add(const SharedText(ovpnProfile, name: 'Germany'));
+    await tester.pumpAndSettle();
+    expect(find.text('1 config found. Add it?'), findsOneWidget);
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Add'));
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    });
+    await tester.pumpAndSettle();
+
+    // auth-user-pass without the login: asked right away.
+    expect(find.text('Username and password'), findsOneWidget);
+    await tester.enterText(find.byType(TextField).at(0), 'bob');
+    await tester.enterText(find.byType(TextField).at(1), 'pw');
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Save'));
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    });
+    await tester.pumpAndSettle();
+
+    final config = container.read(profilesProvider).value!.profiles.single;
+    expect(config.name, 'Germany 1');
+    expect(config.config.needsLogin, isFalse);
+    expect(config.config.outbound['username'], 'bob');
+    expect(config.config.outbound['password'], 'pw');
   });
 }

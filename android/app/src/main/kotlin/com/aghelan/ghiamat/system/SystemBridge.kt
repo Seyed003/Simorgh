@@ -6,6 +6,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
+import android.provider.OpenableColumns
 import android.provider.Settings
 import android.telephony.TelephonyManager
 import com.aghelan.ghiamat.vpn.AghelanVpnService
@@ -24,11 +25,13 @@ import io.flutter.plugin.common.MethodChannel
  * - networkInfo: {kind: wifi|cellular|ethernet|other, operator, mccMnc} of
  *   the network under the VPN.
  * - vpnLockdown: {alwaysOn, lockdown} of the running VPN, null when unknown.
- * - takeShared: links/text that opened the app before Flutter listened.
- * Events (`com.aghelan.ghiamat/shared`): text from later VIEW/SEND intents.
+ * - takeShared: what opened the app before Flutter listened.
+ * Events (`com.aghelan.ghiamat/shared`): what later VIEW/SEND intents carry.
+ * Both as {text, name}: a link or shared text, or the contents of an opened
+ * file (an OpenVPN profile) with its file name.
  */
 class SystemBridge(private val activity: Activity) : MethodChannel.MethodCallHandler, EventChannel.StreamHandler {
-    private val pending = mutableListOf<String>()
+    private val pending = mutableListOf<Map<String, String?>>()
     private var sink: EventChannel.EventSink? = null
 
     fun attach(engine: FlutterEngine) {
@@ -37,19 +40,51 @@ class SystemBridge(private val activity: Activity) : MethodChannel.MethodCallHan
         EventChannel(messenger, "com.aghelan.ghiamat/shared").setStreamHandler(this)
     }
 
-    /** A config link tapped elsewhere, or text shared to the app. */
+    /** A config link tapped elsewhere, text or a file shared to the app. */
     fun handleIntent(intent: Intent?) {
-        val text = when (intent?.action) {
-            Intent.ACTION_VIEW -> intent.dataString
+        val shared: Map<String, String?>? = when (intent?.action) {
+            Intent.ACTION_VIEW -> intent.data?.let { uri ->
+                if (uri.scheme == "content" || uri.scheme == "file") readFile(uri)
+                else mapOf("text" to intent.dataString, "name" to null)
+            }
             Intent.ACTION_SEND -> intent.getStringExtra(Intent.EXTRA_TEXT)
+                ?.let { mapOf("text" to it, "name" to null) }
+                ?: streamExtra(intent)?.let(::readFile)
             else -> null
-        }?.trim()
-        if (text.isNullOrEmpty()) return
+        }
+        if (shared == null || shared["text"].isNullOrBlank()) return
         // Handled once, even if the activity is recreated with this intent.
         intent?.action = Intent.ACTION_MAIN
         val events = sink
-        if (events != null) events.success(text) else pending.add(text)
+        if (events != null) events.success(shared) else pending.add(shared)
     }
+
+    @Suppress("DEPRECATION")
+    private fun streamExtra(intent: Intent): Uri? =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
+        } else {
+            intent.getParcelableExtra(Intent.EXTRA_STREAM)
+        }
+
+    /** A small text file (an .ovpn profile): its contents and name. */
+    private fun readFile(uri: Uri): Map<String, String?>? = runCatching {
+        val resolver = activity.contentResolver
+        val bytes = resolver.openInputStream(uri)?.use { input ->
+            val buffer = ByteArray(MAX_FILE_BYTES + 1)
+            var total = 0
+            while (total < buffer.size) {
+                val read = input.read(buffer, total, buffer.size - total)
+                if (read < 0) break
+                total += read
+            }
+            if (total > MAX_FILE_BYTES) null else buffer.copyOf(total)
+        } ?: return@runCatching null
+        val name = resolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
+            ?.use { cursor -> if (cursor.moveToFirst()) cursor.getString(0) else null }
+            ?: uri.lastPathSegment
+        mapOf("text" to String(bytes, Charsets.UTF_8), "name" to name)
+    }.getOrNull()
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
@@ -107,6 +142,11 @@ class SystemBridge(private val activity: Activity) : MethodChannel.MethodCallHan
             "operator" to telephony?.networkOperatorName,
             "mccMnc" to telephony?.networkOperator,
         )
+    }
+
+    private companion object {
+        /** Profiles are a few KB; anything bigger is not one. */
+        const val MAX_FILE_BYTES = 512 * 1024
     }
 
     override fun onListen(arguments: Any?, events: EventChannel.EventSink) {

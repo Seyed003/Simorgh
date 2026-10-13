@@ -155,6 +155,12 @@ class VpnController extends Notifier<VpnState> {
       );
       return;
     }
+    if (profile.config.needsLogin) {
+      state = state.copyWith(
+        error: () => const VpnError(VpnErrorCode.loginNeeded),
+      );
+      return;
+    }
     await _start(
       attempt,
       profileId: profile.id,

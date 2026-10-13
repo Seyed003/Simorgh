@@ -141,6 +141,8 @@ const anytls = 'anytls://pw@1.2.3.4:443?sni=a.example.com&insecure=1#AnyTLS';
 
 const socks = 'socks://dXNlcjpwYXNz@1.2.3.4:1080#SOCKS';
 
+const cisco = 'openconnect://bob:pw@vpn.example.com:4443?group=Fast#Cisco';
+
 /// One valid link per supported protocol/variant, used by the sing-box
 /// validation test.
 final allValidLinks = <String>[
@@ -172,4 +174,5 @@ final allValidLinks = <String>[
   trojanXhttp,
   vlessEncryption,
   warpLink,
+  cisco,
 ];

@@ -10,7 +10,7 @@ root="$(cd "$(dirname "$0")/.." && pwd)"
 output="$(cd "$(dirname "$3")" 2>/dev/null && pwd || (mkdir -p "$(dirname "$3")" && cd "$(dirname "$3")" && pwd))/$(basename "$3")"
 version="$(tr -d '[:space:]' < "$root/scripts/core_version.txt")"
 src="$root/.core-build/sing-box"
-tags="with_gvisor,with_quic,with_wireguard,with_utls,with_clash_api,with_xray,badlinkname,tfogo_checklinkname0"
+tags="with_gvisor,with_quic,with_wireguard,with_utls,with_clash_api,with_openvpn,with_openconnect,with_xray,badlinkname,tfogo_checklinkname0"
 if [ "$goos" = windows ]; then
   tags="$tags,with_dhcp"
 fi

@@ -54,6 +54,9 @@
                 <data android:scheme="hysteria" />
                 <data android:scheme="tuic" />
                 <data android:scheme="anytls" />
+                <data android:scheme="ssconf" />
+                <data android:scheme="openconnect" />
+                <data android:scheme="anyconnect" />
                 <data android:scheme="wireguard" />
                 <data android:scheme="aghelan" />
                 <data android:scheme="sing-box" />
@@ -65,6 +68,28 @@
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
+            </intent-filter>
+            <!-- OpenVPN profiles opened or shared from Telegram and file
+                 managers, which label them in different ways. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/x-openvpn-profile" />
+                <data android:mimeType="application/ovpn" />
+                <!-- Telegram sends .ovpn files from Windows PCs this way. -->
+                <data android:mimeType="application/octet-stream" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="content" />
+                <data android:scheme="file" />
+                <data android:host="*" />
+                <data android:mimeType="*/*" />
+                <data android:pathPattern=".*\\.ovpn" />
+                <data android:pathPattern=".*\\..*\\.ovpn" />
+                <data android:pathPattern=".*\\..*\\..*\\.ovpn" />
             </intent-filter>
         </activity>
         <service

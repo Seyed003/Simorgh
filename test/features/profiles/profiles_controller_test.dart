@@ -10,7 +10,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
+import 'package:aghelan_ghiamat/core/singbox/proxy_config.dart';
+
 import '../../core/singbox/fixtures.dart';
+import '../../core/singbox/openvpn_fixtures.dart';
 import '../../helpers.dart';
 
 void main() {
@@ -91,6 +94,59 @@ void main() {
     );
     final state = c.read(profilesProvider).value!;
     expect(state.profilesOf(outcome.subscription!.id), hasLength(2));
+  });
+
+  test('an Outline ssconf:// key becomes a subscription', () async {
+    served['https://keys.example.com/k/1'] = jsonEncode({
+      'server': '1.2.3.4',
+      'server_port': 8388,
+      'password': 'pw',
+      'method': 'chacha20-ietf-poly1305',
+      'prefix': '\u0016\u0003\u0001',
+    });
+    final c = await create();
+    final outcome = await c
+        .read(profilesProvider.notifier)
+        .importText('ssconf://keys.example.com/k/1#My%20Outline');
+    expect(outcome.added, 1);
+    expect(outcome.subscription!.url, 'https://keys.example.com/k/1');
+    expect(outcome.subscription!.name, 'My Outline');
+    final config = outcome.profiles.single.config;
+    expect(config.protocol, ProxyProtocol.shadowsocks);
+    expect(config.name, 'My Outline');
+    expect(config.outbound, {
+      'type': 'shadowsocks',
+      'server': '1.2.3.4',
+      'server_port': 8388,
+      'method': 'chacha20-ietf-poly1305',
+      'password': 'pw',
+    });
+
+    // Refreshing re-reads the key and keeps the name.
+    await c
+        .read(profilesProvider.notifier)
+        .updateSubscription(outcome.subscription!.id);
+    final state = c.read(profilesProvider).value!;
+    expect(state.profiles.single.name, 'My Outline');
+  });
+
+  test('an OpenVPN file is named after it and reports its login', () async {
+    final c = await create();
+    final controller = c.read(profilesProvider.notifier);
+    final outcome = await controller.importText(ovpnTlsCrypt, name: 'Office');
+    expect(outcome.profiles.single.name, 'Office');
+    expect(outcome.profiles.single.config.needsLogin, isFalse);
+
+    final seller = await controller.importText(ovpnProfile, name: 'de');
+    final profile = seller.profiles.single;
+    expect(profile.config.needsLogin, isTrue);
+    await controller.replaceConfig(
+      profile.id,
+      profile.config.withLogin('bob', 'pw'),
+    );
+    final saved = store.state.profiles.firstWhere((p) => p.id == profile.id);
+    expect(saved.config.needsLogin, isFalse);
+    expect(saved.config.outbound['username'], 'bob');
   });
 
   test('update keeps ids of unchanged servers and the selection', () async {

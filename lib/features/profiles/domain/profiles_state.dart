@@ -78,9 +78,18 @@ class ImportOutcome {
     required this.added,
     required this.skipped,
     this.subscription,
+    this.profiles = const [],
+    this.skipReason,
   });
 
   final int added;
   final int skipped;
   final Subscription? subscription;
+
+  /// Why the first skipped entry was left out, e.g. what an OpenVPN file
+  /// lacks.
+  final String? skipReason;
+
+  /// The profiles added, e.g. to ask for the logins they still need.
+  final List<Profile> profiles;
 }

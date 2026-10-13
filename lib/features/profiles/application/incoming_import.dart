@@ -1,4 +1,5 @@
 import '../../../core/singbox/subscription_parser.dart';
+import '../../../core/singbox/subscription_url.dart';
 
 /// What a tapped link or shared text asks the app to add.
 sealed class IncomingImport {
@@ -12,8 +13,9 @@ sealed class IncomingImport {
   /// - `v2rayng://install-sub?url=` / `v2rayng://install-config?url=`
   /// - `hiddify://import/<subscription>#name`
   ///
+  /// [name] is the name of the file the text came from, if any.
   /// Returns `null` when there is nothing to add.
-  static IncomingImport? parse(String raw) {
+  static IncomingImport? parse(String raw, {String? name}) {
     final text = raw.trim();
     if (text.isEmpty) return null;
     final single = !text.contains(RegExp(r'\s'));
@@ -30,6 +32,12 @@ sealed class IncomingImport {
       switch (uri.scheme.toLowerCase()) {
         case 'http' || 'https' when uri.host.isNotEmpty:
           return IncomingSubscription(text);
+        // Outline's dynamic access keys.
+        case 'ssconf' when uri.host.isNotEmpty:
+          return IncomingSubscription(
+            subscriptionUri(text).toString(),
+            name: subscriptionNameOf(text),
+          );
         case 'aghelan':
           if (param('url') case final url?) {
             return IncomingSubscription.orNull(url, name: param('name'));
@@ -62,17 +70,19 @@ sealed class IncomingImport {
           );
       }
     }
-    final count = SubscriptionParser.parse(text).proxies.length;
-    return count == 0 ? null : IncomingConfigs(text, count);
+    final count = SubscriptionParser.parse(text, name: name).proxies.length;
+    return count == 0 ? null : IncomingConfigs(text, count, name: name);
   }
 }
 
-/// Config links (or a sing-box / Xray JSON) to import as they are.
+/// Config links (or a sing-box / Xray JSON, or an OpenVPN profile) to
+/// import as they are.
 class IncomingConfigs extends IncomingImport {
-  const IncomingConfigs(this.text, this.count);
+  const IncomingConfigs(this.text, this.count, {this.name});
 
   final String text;
   final int count;
+  final String? name;
 }
 
 class IncomingSubscription extends IncomingImport {

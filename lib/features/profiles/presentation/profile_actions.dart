@@ -11,8 +11,10 @@ import '../../warp/data/warp_client.dart';
 import '../../warp/presentation/warp_actions.dart';
 import '../application/profiles_controller.dart';
 import '../domain/profile.dart';
+import 'import_actions.dart';
 
 enum _ProfileAction {
+  login,
   speedTest,
   cleanIp,
   warpEndpoint,
@@ -30,6 +32,9 @@ Future<void> showProfileActions(
 ) async {
   final l10n = context.l10n;
   final hasLink = profile.config.link != null;
+  // OpenVPN profiles carry their certificates: far too long for a QR code.
+  final qrData = profile.config.link ?? profile.config.toPrettyJson();
+  final fitsQr = qrData.length <= 2000;
   final action = await showModalBottomSheet<_ProfileAction>(
     context: context,
     builder: (context) => SafeArea(
@@ -45,6 +50,12 @@ Future<void> showProfileActions(
               style: context.theme.textTheme.titleMedium,
             ),
           ),
+          if (profile.config.protocol.hasLogin)
+            ListTile(
+              leading: const Icon(Icons.key_rounded),
+              title: Text(l10n.loginTitle),
+              onTap: () => Navigator.pop(context, _ProfileAction.login),
+            ),
           ListTile(
             leading: const Icon(Icons.download_rounded),
             title: Text(l10n.speedTest),
@@ -62,11 +73,12 @@ Future<void> showProfileActions(
               title: Text(l10n.warpScan),
               onTap: () => Navigator.pop(context, _ProfileAction.warpEndpoint),
             ),
-          ListTile(
-            leading: const Icon(Icons.qr_code_2_rounded),
-            title: Text(l10n.showQrCode),
-            onTap: () => Navigator.pop(context, _ProfileAction.showQr),
-          ),
+          if (fitsQr)
+            ListTile(
+              leading: const Icon(Icons.qr_code_2_rounded),
+              title: Text(l10n.showQrCode),
+              onTap: () => Navigator.pop(context, _ProfileAction.showQr),
+            ),
           if (hasLink)
             ListTile(
               leading: const Icon(Icons.link_rounded),
@@ -103,6 +115,8 @@ Future<void> showProfileActions(
 
   final controller = ref.read(profilesProvider.notifier);
   switch (action) {
+    case _ProfileAction.login:
+      await ImportActions(context, ref).login(profile);
     case _ProfileAction.speedTest:
       await ref.read(speedProvider.notifier).test([profile.id]);
     case _ProfileAction.cleanIp:
@@ -112,10 +126,7 @@ Future<void> showProfileActions(
     case _ProfileAction.warpEndpoint:
       await WarpActions(context, ref).findEndpoint(profile);
     case _ProfileAction.showQr:
-      await _showQr(
-        context,
-        profile.config.link ?? profile.config.toPrettyJson(),
-      );
+      await _showQr(context, qrData);
     case _ProfileAction.copyLink:
       await Clipboard.setData(ClipboardData(text: profile.config.link!));
       if (context.mounted) context.showSnack(l10n.copied);

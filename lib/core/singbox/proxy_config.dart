@@ -1,9 +1,10 @@
 import 'dart:convert';
 
+import 'protocols/openconnect.dart';
 import 'protocols/xray_outbound.dart';
 
-/// Protocols the parser understands. `wireguard` is emitted as a sing-box
-/// endpoint, every other protocol as an outbound.
+/// Protocols the parser understands. WireGuard, OpenVPN and Cisco
+/// AnyConnect are sing-box endpoints, every other protocol an outbound.
 enum ProxyProtocol {
   vmess('VMess', 'vmess'),
   vless('VLESS', 'vless'),
@@ -15,7 +16,9 @@ enum ProxyProtocol {
   wireguard('WireGuard', 'wireguard'),
   ssh('SSH', 'ssh'),
   anytls('AnyTLS', 'anytls'),
-  socks('SOCKS', 'socks');
+  socks('SOCKS', 'socks'),
+  openvpn('OpenVPN', 'openvpn-client'),
+  openconnect('Cisco AnyConnect', 'openconnect');
 
   const ProxyProtocol(this.displayName, this.singBoxType);
 
@@ -24,7 +27,20 @@ enum ProxyProtocol {
   /// The `type` value sing-box uses for this protocol.
   final String singBoxType;
 
-  bool get isEndpoint => this == ProxyProtocol.wireguard;
+  bool get isEndpoint => const {
+    ProxyProtocol.wireguard,
+    ProxyProtocol.openvpn,
+    ProxyProtocol.openconnect,
+  }.contains(this);
+
+  /// Has to sign in to the server before it carries any traffic, which
+  /// takes a few seconds after the core starts.
+  bool get connectsFirst =>
+      this == ProxyProtocol.openvpn || this == ProxyProtocol.openconnect;
+
+  /// Signs in with a username and password ([ProxyConfig.needsLogin]).
+  bool get hasLogin =>
+      this == ProxyProtocol.openvpn || this == ProxyProtocol.openconnect;
 
   static ProxyProtocol? fromSingBoxType(String? type) {
     for (final p in values) {
@@ -60,6 +76,13 @@ class ProxyConfig {
 
   /// Short transport/security summary for list tiles, e.g. `ws · tls`.
   String get summary {
+    if (protocol == ProxyProtocol.openvpn) {
+      final wrap = (outbound['tls'] as Map?)?['control_wrap'] as Map?;
+      return [
+        ?(outbound['network'] as String?),
+        ?(wrap?['type'] as String?)?.replaceAll('_', '-'),
+      ].join(' · ');
+    }
     if (outbound.isXray) {
       return [?outbound.xrayNetwork, ?outbound.xraySecurity].join(' · ');
     }
@@ -78,6 +101,31 @@ class ProxyConfig {
     final flow = outbound['flow'];
     if (flow is String && flow.isNotEmpty) parts.add('vision');
     return parts.join(' · ');
+  }
+
+  /// An OpenVPN or Cisco config still waiting for its username and
+  /// password: the profile asks for them but did not carry them.
+  bool get needsLogin {
+    if (!protocol.hasLogin || !outbound.containsKey('username')) return false;
+    final username = outbound['username'];
+    return username is! String || username.isEmpty;
+  }
+
+  String get username => (outbound['username'] as String?) ?? '';
+
+  /// A copy that signs in as [username].
+  ProxyConfig withLogin(String username, String password) {
+    final updated = {...outbound, 'username': username, 'password': password};
+    return ProxyConfig(
+      protocol: protocol,
+      name: name,
+      server: server,
+      port: port,
+      outbound: updated,
+      link: protocol == ProxyProtocol.openconnect
+          ? openConnectLink(updated, name)
+          : link,
+    );
   }
 
   /// Skips the server's certificate check (`insecure` / `allowInsecure`),
@@ -193,7 +241,9 @@ class ProxyConfig {
     server: server,
     port: port,
     outbound: outbound,
-    link: link,
+    link: protocol == ProxyProtocol.openconnect && name != null
+        ? openConnectLink(outbound, name)
+        : link,
   );
 
   Map<String, Object?> toJson() => {

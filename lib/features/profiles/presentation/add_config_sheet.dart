@@ -36,9 +36,19 @@ Future<void> showAddConfigSheet(BuildContext context, WidgetRef ref) async {
                 action: (a) => a.pasteManually(),
               ),
               _Option(
+                icon: Icons.file_open_rounded,
+                label: l10n.importFromFile,
+                action: (a) => a.fromFile(),
+              ),
+              _Option(
                 icon: Icons.rss_feed_rounded,
                 label: l10n.addSubscription,
                 action: (a) => a.addSubscription(),
+              ),
+              _Option(
+                icon: Icons.vpn_lock_rounded,
+                label: l10n.ciscoAdd,
+                action: (a) => a.addCisco(),
               ),
               _Option(
                 icon: Icons.cloud_rounded,

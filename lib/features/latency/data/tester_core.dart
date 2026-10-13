@@ -3,6 +3,10 @@ import '../../../core/singbox/proxy_config.dart';
 import '../../connection/data/vpn_platform.dart';
 import '../../connection/domain/vpn_state.dart';
 
+/// How long a server that signs in first ([ProxyProtocol.connectsFirst])
+/// gets to come up before its test counts as failed.
+const handshakeBudget = Duration(seconds: 15);
+
 /// Why a server could not be tested at all.
 enum CoreRejection {
   /// The core rejected this server's config.

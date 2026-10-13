@@ -1,6 +1,7 @@
 import 'protocols/anytls.dart';
 import 'protocols/hysteria.dart';
 import 'protocols/hysteria2.dart';
+import 'protocols/openconnect.dart';
 import 'protocols/shadowsocks.dart';
 import 'protocols/socks.dart';
 import 'protocols/ssh.dart';
@@ -30,6 +31,9 @@ const Map<String, _Parser> _parsers = {
   'socks5': parseSocks,
   'socks4': parseSocks,
   'socks4a': parseSocks,
+  'openconnect': parseOpenConnect,
+  'anyconnect': parseOpenConnect,
+  'cisco': parseOpenConnect,
 };
 
 /// Converts a single share link into a [ProxyConfig].

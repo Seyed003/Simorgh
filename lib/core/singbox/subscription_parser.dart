@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'encoding.dart';
 import 'link_parser.dart';
+import 'protocols/openvpn.dart';
 import 'protocols/xray_outbound.dart';
 import 'proxy_config.dart';
 
@@ -37,24 +38,41 @@ const _proxyOutboundTypes = {
   'anytls',
   'socks',
   'wireguard',
+  'openvpn-client',
+  'openconnect',
 };
 
-/// Parses any text a user can paste or a subscription server can return:
-/// newline separated share links, base64 of the same, a sing-box JSON
-/// config / outbound, or a mixture of links and arbitrary text.
 final _linkStart = RegExp(
   '(?<=\\s)(?=(?:${LinkParser.supportedSchemes.join('|')})://)',
   caseSensitive: false,
 );
 
+/// Parses any text a user can paste or a subscription server can return:
+/// newline separated share links, base64 of the same, a sing-box or Xray
+/// JSON config / outbound, an OpenVPN profile, or a mixture of links and
+/// arbitrary text. [name] (a file name) names an OpenVPN profile that
+/// carries none.
 abstract final class SubscriptionParser {
-  static ParseResult parse(String content) {
+  static ParseResult parse(String content, {String? name}) {
     final text = content.replaceFirst('﻿', '').trim();
     if (text.isEmpty) return const ParseResult([], []);
+
+    if (isOpenVpnProfile(text)) {
+      try {
+        return ParseResult([parseOpenVpn(text, name: name)], const []);
+      } on LinkParseException catch (e) {
+        return ParseResult(const [], [
+          SkippedEntry(name ?? 'OpenVPN', e.message),
+        ]);
+      }
+    }
 
     if (text.startsWith('{') || text.startsWith('[')) {
       final json = _tryJson(text);
       if (json != null) {
+        if (_outline(json, name) case final outline?) {
+          return ParseResult([outline], const []);
+        }
         return _isXrayJson(json)
             ? _parseXrayJson(json)
             : _parseSingBoxJson(json);
@@ -110,6 +128,38 @@ abstract final class SubscriptionParser {
         if (token.isNotEmpty) yield token;
       }
     }
+  }
+
+  /// What an Outline dynamic access key (`ssconf://`) serves:
+  /// `{"server", "server_port", "password", "method", "prefix"}`. The
+  /// optional salt `prefix` only disguises the first packet; the server
+  /// does not need it.
+  static ProxyConfig? _outline(Object json, String? name) {
+    if (json is! Map || json['type'] != null) return null;
+    final server = json['server'];
+    final port = json['server_port'];
+    final password = json['password'];
+    final method = json['method'];
+    if (server is! String ||
+        server.isEmpty ||
+        port is! int ||
+        password is! String ||
+        method is! String) {
+      return null;
+    }
+    return ProxyConfig(
+      protocol: ProxyProtocol.shadowsocks,
+      name: name != null && name.isNotEmpty ? name : 'Outline $server',
+      server: server,
+      port: port,
+      outbound: {
+        'type': 'shadowsocks',
+        'server': server,
+        'server_port': port,
+        'method': method,
+        'password': password,
+      },
+    );
   }
 
   static Object? _tryJson(String text) {
@@ -273,7 +323,18 @@ abstract final class SubscriptionParser {
 
   static String? _serverOf(Map<String, Object?> item) {
     final server = item['server'];
+    if (item['type'] == 'openconnect' && server is String) {
+      final host = Uri.tryParse(
+        server.contains('://') ? server : 'https://$server',
+      )?.host;
+      return host == null || host.isEmpty ? null : host;
+    }
     if (server is String && server.isNotEmpty) return server;
+    final servers = item['servers'];
+    if (servers is List && servers.isNotEmpty && servers.first is Map) {
+      final address = (servers.first as Map)['server'];
+      if (address is String) return address;
+    }
     final peers = item['peers'];
     if (peers is List && peers.isNotEmpty && peers.first is Map) {
       final address = (peers.first as Map)['address'];
@@ -283,8 +344,20 @@ abstract final class SubscriptionParser {
   }
 
   static int? _portOf(Map<String, Object?> item) {
+    if (item['type'] == 'openconnect' && item['server'] is String) {
+      final server = item['server']! as String;
+      final uri = Uri.tryParse(
+        server.contains('://') ? server : 'https://$server',
+      );
+      return uri == null ? null : (uri.hasPort ? uri.port : 443);
+    }
     final port = item['server_port'];
     if (port is int) return port;
+    final servers = item['servers'];
+    if (servers is List && servers.isNotEmpty && servers.first is Map) {
+      final p = (servers.first as Map)['server_port'];
+      if (p is int) return p;
+    }
     final peers = item['peers'];
     if (peers is List && peers.isNotEmpty && peers.first is Map) {
       final p = (peers.first as Map)['port'];

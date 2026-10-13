@@ -12,6 +12,9 @@ enum VpnErrorCode {
 
   /// Auto mode found no server that answers.
   noWorkingServer,
+
+  /// The OpenVPN or Cisco server's username and password are missing.
+  loginNeeded,
   unknown,
 }
 

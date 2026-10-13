@@ -1597,6 +1597,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No WARP endpoint answered on this network'**
   String get warpScanNone;
+
+  /// No description provided for @importFromFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Import a file (.ovpn, JSON…)'**
+  String get importFromFile;
+
+  /// No description provided for @ciscoAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Cisco AnyConnect'**
+  String get ciscoAdd;
+
+  /// No description provided for @ciscoServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Server address'**
+  String get ciscoServer;
+
+  /// No description provided for @ciscoGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Group (optional)'**
+  String get ciscoGroup;
+
+  /// No description provided for @ciscoUnreachableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Server not reachable'**
+  String get ciscoUnreachableTitle;
+
+  /// No description provided for @ciscoUnreachable.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach {server} to check its certificate. Add it anyway?'**
+  String ciscoUnreachable(String server);
+
+  /// No description provided for @ciscoUntrustedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unverified certificate'**
+  String get ciscoUntrustedTitle;
+
+  /// No description provided for @ciscoUntrusted.
+  ///
+  /// In en, this message translates to:
+  /// **'No known authority vouches for this server\'s certificate, which is common for Cisco servers you buy. Trust it only if your provider gave you this server.\n\n{subject}\n{pin}'**
+  String ciscoUntrusted(String subject, String pin);
+
+  /// No description provided for @ciscoTrust.
+  ///
+  /// In en, this message translates to:
+  /// **'Trust'**
+  String get ciscoTrust;
+
+  /// No description provided for @loginTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Username and password'**
+  String get loginTitle;
+
+  /// No description provided for @loginUsername.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get loginUsername;
+
+  /// No description provided for @loginPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get loginPassword;
+
+  /// No description provided for @loginUsernameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the username'**
+  String get loginUsernameRequired;
+
+  /// No description provided for @loginNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs username and password'**
+  String get loginNeeded;
+
+  /// No description provided for @errorLoginNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter this server\'s username and password first'**
+  String get errorLoginNeeded;
 }
 
 class _AppLocalizationsDelegate

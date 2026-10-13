@@ -10,6 +10,7 @@ import '../../../../core/utils/context_ext.dart';
 import '../../../connection/application/vpn_controller.dart';
 import '../../../connection/domain/vpn_state.dart';
 import '../../../profiles/application/profiles_controller.dart';
+import '../../../profiles/presentation/import_actions.dart';
 
 Color statusColor(BuildContext context, VpnStatus status) {
   final colors = StatusColors.of(context);
@@ -46,15 +47,22 @@ class _ConnectButtonState extends ConsumerState<ConnectButton>
     super.dispose();
   }
 
-  void _onTap() {
-    final hasSelection =
-        ref.read(profilesProvider).value?.hasSelection ?? false;
-    if (!hasSelection &&
-        ref.read(vpnControllerProvider).status == VpnStatus.disconnected) {
+  Future<void> _onTap() async {
+    final profiles = ref.read(profilesProvider).value;
+    final disconnected =
+        ref.read(vpnControllerProvider).status == VpnStatus.disconnected;
+    if (!(profiles?.hasSelection ?? false) && disconnected) {
       context.showSnack(context.l10n.selectConfigFirst);
       return;
     }
-    ref.read(vpnControllerProvider.notifier).toggle();
+    // An OpenVPN or Cisco server needs its login before it can connect.
+    final selected = profiles?.selected;
+    if (disconnected && selected != null && selected.config.needsLogin) {
+      await ImportActions(context, ref).login(selected);
+      final updated = ref.read(selectedProfileProvider);
+      if (updated == null || updated.config.needsLogin) return;
+    }
+    await ref.read(vpnControllerProvider.notifier).toggle();
   }
 
   void _press(bool down) {

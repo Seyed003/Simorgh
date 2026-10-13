@@ -6,10 +6,12 @@ import 'dart:io';
 import 'package:aghelan_ghiamat/core/singbox/builder/config_builder.dart';
 import 'package:aghelan_ghiamat/core/singbox/builder/core_options.dart';
 import 'package:aghelan_ghiamat/core/singbox/link_parser.dart';
+import 'package:aghelan_ghiamat/core/singbox/protocols/openvpn.dart';
 import 'package:aghelan_ghiamat/features/settings/domain/dns_presets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fixtures.dart';
+import 'openvpn_fixtures.dart';
 
 /// Validates every generated config with the real core:
 ///
@@ -76,10 +78,29 @@ void main() {
     }
   }
 
+  // OpenVPN profiles are files, not links.
+  final profiles = {
+    'seller': parseOpenVpn(ovpnProfile).withLogin('u', 'p'),
+    'tls-crypt': parseOpenVpn(ovpnTlsCrypt),
+  };
+  for (final MapEntry(key: profile, value: proxy) in profiles.entries) {
+    for (final MapEntry(key: name, value: builder) in variants.entries) {
+      test('sing-box check OpenVPN $profile $name', skip: skip, () async {
+        final file = File('${dir.path}/openvpn-$profile-$name.json');
+        await file.writeAsString(builder.buildJson(proxy));
+        final result = await Process.run(binary!, ['check', '-c', file.path]);
+        expect(result.exitCode, 0, reason: '${result.stderr}${result.stdout}');
+      });
+    }
+  }
+
   // Auto mode: every fixture at once behind a urltest group.
   for (final MapEntry(key: name, value: builder) in variants.entries) {
     test('sing-box check auto mode $name', skip: skip, () async {
-      final proxies = allValidLinks.map(LinkParser.parse).toList();
+      final proxies = [
+        ...allValidLinks.map(LinkParser.parse),
+        ...profiles.values,
+      ];
       final file = File('${dir.path}/config-auto-$name.json');
       await file.writeAsString(builder.buildAutoJson(proxies));
       final result = await Process.run(binary!, ['check', '-c', file.path]);

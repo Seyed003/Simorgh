@@ -898,4 +898,54 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get warpScanNone => 'No WARP endpoint answered on this network';
+
+  @override
+  String get importFromFile => 'Import a file (.ovpn, JSON…)';
+
+  @override
+  String get ciscoAdd => 'Cisco AnyConnect';
+
+  @override
+  String get ciscoServer => 'Server address';
+
+  @override
+  String get ciscoGroup => 'Group (optional)';
+
+  @override
+  String get ciscoUnreachableTitle => 'Server not reachable';
+
+  @override
+  String ciscoUnreachable(String server) {
+    return 'Could not reach $server to check its certificate. Add it anyway?';
+  }
+
+  @override
+  String get ciscoUntrustedTitle => 'Unverified certificate';
+
+  @override
+  String ciscoUntrusted(String subject, String pin) {
+    return 'No known authority vouches for this server\'s certificate, which is common for Cisco servers you buy. Trust it only if your provider gave you this server.\n\n$subject\n$pin';
+  }
+
+  @override
+  String get ciscoTrust => 'Trust';
+
+  @override
+  String get loginTitle => 'Username and password';
+
+  @override
+  String get loginUsername => 'Username';
+
+  @override
+  String get loginPassword => 'Password';
+
+  @override
+  String get loginUsernameRequired => 'Enter the username';
+
+  @override
+  String get loginNeeded => 'Needs username and password';
+
+  @override
+  String get errorLoginNeeded =>
+      'Enter this server\'s username and password first';
 }

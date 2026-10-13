@@ -890,4 +890,53 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get warpScanNone => 'روی این شبکه هیچ آدرس WARP جواب نداد';
+
+  @override
+  String get importFromFile => 'وارد کردن فایل (‎.ovpn، JSON و…)';
+
+  @override
+  String get ciscoAdd => 'سیسکو (Cisco AnyConnect)';
+
+  @override
+  String get ciscoServer => 'آدرس سرور';
+
+  @override
+  String get ciscoGroup => 'گروه (اختیاری)';
+
+  @override
+  String get ciscoUnreachableTitle => 'سرور در دسترس نیست';
+
+  @override
+  String ciscoUnreachable(String server) {
+    return 'به $server وصل نشد تا گواهی‌اش بررسی شود. باز هم اضافه شود؟';
+  }
+
+  @override
+  String get ciscoUntrustedTitle => 'گواهی تأییدنشده';
+
+  @override
+  String ciscoUntrusted(String subject, String pin) {
+    return 'هیچ مرجع شناخته‌شده‌ای گواهی این سرور را تأیید نکرده است؛ این در سرورهای سیسکوی خریداری‌شده رایج است. فقط اگر این سرور را فروشنده‌ی خودتان داده به آن اعتماد کنید.\n\n$subject\n$pin';
+  }
+
+  @override
+  String get ciscoTrust => 'اعتماد می‌کنم';
+
+  @override
+  String get loginTitle => 'نام کاربری و رمز';
+
+  @override
+  String get loginUsername => 'نام کاربری';
+
+  @override
+  String get loginPassword => 'رمز عبور';
+
+  @override
+  String get loginUsernameRequired => 'نام کاربری را وارد کنید';
+
+  @override
+  String get loginNeeded => 'نیاز به نام کاربری و رمز';
+
+  @override
+  String get errorLoginNeeded => 'اول نام کاربری و رمز این سرور را وارد کنید';
 }
