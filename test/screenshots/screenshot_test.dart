@@ -22,6 +22,7 @@ import 'package:aghelan_ghiamat/features/profiles/application/profiles_controlle
 import 'package:aghelan_ghiamat/features/profiles/data/profile_store.dart';
 import 'package:aghelan_ghiamat/features/profiles/domain/profiles_state.dart';
 import 'package:aghelan_ghiamat/features/settings/application/core_options_controller.dart';
+import 'package:aghelan_ghiamat/features/network/application/internet_reach.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -99,6 +100,7 @@ void main() {
         String? activeAutoId;
         final container = ProviderContainer(
           overrides: [
+            reachProbeProvider.overrideWithValue(const FakeReachProbe()),
             sharedPreferencesProvider.overrideWithValue(prefs),
             profileStoreProvider.overrideWithValue(MemoryProfileStore()),
             vpnPlatformProvider.overrideWithValue(platform),
@@ -206,6 +208,7 @@ void main() {
       });
       final container = ProviderContainer(
         overrides: [
+          reachProbeProvider.overrideWithValue(const FakeReachProbe()),
           sharedPreferencesProvider.overrideWithValue(prefs),
           profileStoreProvider.overrideWithValue(MemoryProfileStore()),
           vpnPlatformProvider.overrideWithValue(FakeVpnPlatform()),
@@ -273,6 +276,7 @@ void main() {
       };
       final container = ProviderContainer(
         overrides: [
+          reachProbeProvider.overrideWithValue(const FakeReachProbe()),
           sharedPreferencesProvider.overrideWithValue(
             await mockPreferences({
               'settings.language': lang,

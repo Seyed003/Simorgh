@@ -606,11 +606,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get usageResetConfirm => 'Delete all usage statistics?';
 
   @override
-  String get cleanIpScan => 'Find clean Cloudflare IP';
+  String get cleanIpScan => 'Find a clean CDN IP';
 
   @override
   String get cleanIpHint =>
-      'Finds Cloudflare addresses your internet can reach. Configs that go through Cloudflare (CDN) can use one instead of their blocked address.';
+      'Finds CDN addresses (Cloudflare or ArvanCloud) your internet can reach. Configs that go through that CDN can use one instead of their blocked address.';
 
   @override
   String cleanIpTestingHost(String host) {
@@ -948,4 +948,111 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errorLoginNeeded =>
       'Enter this server\'s username and password first';
+
+  @override
+  String get chainVia => 'Connect through another server';
+
+  @override
+  String get chainViaHint =>
+      'For example a server in Iran that still reaches abroad';
+
+  @override
+  String get chainPickTitle => 'First server';
+
+  @override
+  String chainPickHint(String name) {
+    return 'Traffic goes to this server first and from there to $name.';
+  }
+
+  @override
+  String get chainNoOther => 'Add the other server first';
+
+  @override
+  String get chainCreated => 'Chained config added and selected';
+
+  @override
+  String chainThrough(String name) {
+    return 'through $name';
+  }
+
+  @override
+  String get cdnCloudflare => 'Cloudflare';
+
+  @override
+  String get cdnArvan => 'ArvanCloud';
+
+  @override
+  String get cdnArvanHint =>
+      'For configs behind ArvanCloud\'s CDN. Its addresses are inside Iran, so they often keep working on the national internet.';
+
+  @override
+  String get shareApp => 'Share the app';
+
+  @override
+  String get shareAppHint =>
+      'Send it to another phone by Bluetooth, Nearby Share or a messenger. No internet needed.';
+
+  @override
+  String get shareAppHintWindows =>
+      'Opens the app’s folder: copy it to a flash drive for another PC.';
+
+  @override
+  String get shareAppTitle => 'Send Aghelan Ghiamat';
+
+  @override
+  String get shareAppFailed =>
+      'This copy of the app can’t be sent as one file.';
+
+  @override
+  String get nationalTitle => 'Only Iranian sites are reachable';
+
+  @override
+  String get nationalHint =>
+      'The international internet looks cut off (national internet). Configs with a server abroad won’t connect directly.';
+
+  @override
+  String get nationalHelp => 'What works?';
+
+  @override
+  String get nationalSheetTitle => 'On the national internet';
+
+  @override
+  String get nationalDns => 'DNS switched automatically';
+
+  @override
+  String get nationalDnsHint =>
+      'Foreign DNS servers are cut off too, so server names are looked up with your network’s own DNS until this ends.';
+
+  @override
+  String get nationalRelay => 'Go through a server inside Iran';
+
+  @override
+  String get nationalRelayHint =>
+      'Some servers in Iranian data centres keep their link abroad. If you have a config on one, open your foreign config’s menu → “Connect through another server” and pick it.';
+
+  @override
+  String get nationalCdn => 'ArvanCloud for CDN configs';
+
+  @override
+  String get nationalCdnHint =>
+      'Configs behind ArvanCloud, an Iranian CDN, may keep working: config menu → “Find a clean CDN IP” → ArvanCloud.';
+
+  @override
+  String get nationalOffline => 'New configs and the app, offline';
+
+  @override
+  String get nationalOfflineHint =>
+      'Get fresh configs through Iranian messengers, and pass this app on by Bluetooth with “Share the app”.';
+
+  @override
+  String get nationalTest => 'Test configs';
+
+  @override
+  String get nationalRecheck => 'Check again';
+
+  @override
+  String get nationalStillCut => 'Still only Iranian sites are reachable.';
+
+  @override
+  String get nationalBack => 'The international internet is reachable again.';
 }

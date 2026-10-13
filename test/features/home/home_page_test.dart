@@ -13,6 +13,9 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:aghelan_ghiamat/features/profiles/presentation/profile_list.dart';
 import 'package:aghelan_ghiamat/features/home/presentation/widgets/connect_button.dart';
+import 'package:aghelan_ghiamat/features/network/application/internet_reach.dart';
+import 'package:aghelan_ghiamat/features/network/data/reach_probe.dart';
+import 'package:aghelan_ghiamat/features/shell/app_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -34,6 +37,7 @@ void main() {
     Size size = const Size(420, 900),
     SystemBridge system = const SystemBridge(),
     String latestRelease = 'v0.0.1',
+    InternetReach reach = InternetReach.open,
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -43,6 +47,7 @@ void main() {
     final platform = FakeVpnPlatform();
     final container = ProviderContainer(
       overrides: [
+        reachProbeProvider.overrideWithValue(FakeReachProbe(reach)),
         sharedPreferencesProvider.overrideWithValue(prefs),
         profileStoreProvider.overrideWithValue(MemoryProfileStore()),
         vpnPlatformProvider.overrideWithValue(platform),
@@ -83,6 +88,47 @@ void main() {
     await tester.pumpAndSettle();
     return (platform, container);
   }
+
+  testWidgets('explains what works on the national internet', (tester) async {
+    final system = FakeSystemBridge()..shareable = true;
+    final (_, container) = await pump(
+      tester,
+      system: system,
+      reach: InternetReach.domesticOnly,
+    );
+    expect(find.text('Only Iranian sites are reachable'), findsOneWidget);
+
+    await tester.tap(find.text('What works?'));
+    await tester.pumpAndSettle();
+    expect(find.text('DNS switched automatically'), findsOneWidget);
+    expect(find.text('Go through a server inside Iran'), findsOneWidget);
+    expect(find.text('ArvanCloud for CDN configs'), findsOneWidget);
+
+    await tester.ensureVisible(find.text('Share the app'));
+    await tester.tap(find.text('Share the app'));
+    await tester.pump();
+    expect(system.sharedApp, 1);
+
+    await tester.ensureVisible(find.text('Check again'));
+    await tester.tap(find.text('Check again'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Still only Iranian sites are reachable.'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('What works?'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Test configs'));
+    await tester.tap(find.text('Test configs'));
+    await tester.pumpAndSettle();
+    expect(container.read(appTabProvider), AppTab.servers);
+  });
+
+  testWidgets('no banner on an open internet', (tester) async {
+    await pump(tester);
+    expect(find.text('Only Iranian sites are reachable'), findsNothing);
+  });
 
   testWidgets('shows the empty state without configs', (tester) async {
     await pump(tester);

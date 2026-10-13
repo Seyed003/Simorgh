@@ -11,6 +11,7 @@ import '../../../core/widgets/dialogs.dart';
 import '../../../core/widgets/glass_widgets.dart';
 import '../../backup/presentation/backup_actions.dart';
 import '../../logs/presentation/logs_page.dart';
+import '../../network/presentation/share_app.dart';
 import '../../updates/application/update_controller.dart';
 import '../application/settings_controller.dart';
 import '../domain/app_settings.dart';
@@ -128,6 +129,8 @@ class SettingsPage extends ConsumerWidget {
               subtitle: Text(l10n.backupRestoreHint),
               onTap: () => BackupActions(context, ref).restore(),
             ),
+            if (ref.read(systemBridgeProvider).canShareApp)
+              const ShareAppTile(),
             ListTile(
               leading: const TileIcon(
                 Icons.receipt_long_rounded,

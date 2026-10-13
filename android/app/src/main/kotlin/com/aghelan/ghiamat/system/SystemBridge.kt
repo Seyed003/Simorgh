@@ -1,6 +1,7 @@
 package com.aghelan.ghiamat.system
 
 import android.app.Activity
+import android.content.ClipData
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -26,6 +27,8 @@ import io.flutter.plugin.common.MethodChannel
  *   the network under the VPN.
  * - vpnLockdown: {alwaysOn, lockdown} of the running VPN, null when unknown.
  * - takeShared: what opened the app before Flutter listened.
+ * - shareApp {title}: the share sheet with the app's own APK; false when
+ *   it is installed as split APKs, which cannot travel as one file.
  * Events (`com.aghelan.ghiamat/shared`): what later VIEW/SEND intents carry.
  * Both as {text, name}: a link or shared text, or the contents of an opened
  * file (an OpenVPN profile) with its file name.
@@ -109,12 +112,31 @@ class SystemBridge(private val activity: Activity) : MethodChannel.MethodCallHan
                 }
             }
             "networkInfo" -> result.success(networkInfo())
+            "shareApp" -> result.success(shareApp(call.argument<String>("title")))
             "takeShared" -> {
                 result.success(pending.toList())
                 pending.clear()
             }
             else -> result.notImplemented()
         }
+    }
+
+    private fun shareApp(title: String?): Boolean {
+        val info = activity.applicationInfo
+        if (!info.splitSourceDirs.isNullOrEmpty()) return false
+        @Suppress("DEPRECATION")
+        val version = runCatching {
+            activity.packageManager.getPackageInfo(activity.packageName, 0).versionName
+        }.getOrNull()
+        val name = if (version.isNullOrBlank()) "AghelanGhiamat.apk" else "AghelanGhiamat-$version.apk"
+        val uri = ApkProvider.uri(activity.packageName, name)
+        val send = Intent(Intent.ACTION_SEND).apply {
+            type = ApkProvider.MIME
+            putExtra(Intent.EXTRA_STREAM, uri)
+            clipData = ClipData.newRawUri(name, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        return runCatching { activity.startActivity(Intent.createChooser(send, title)) }.isSuccess
     }
 
     @Suppress("DEPRECATION")

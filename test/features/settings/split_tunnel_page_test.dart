@@ -8,6 +8,7 @@ import 'package:aghelan_ghiamat/features/connection/application/vpn_controller.d
 import 'package:aghelan_ghiamat/features/profiles/data/profile_store.dart';
 import 'package:aghelan_ghiamat/features/settings/application/core_options_controller.dart';
 import 'package:aghelan_ghiamat/features/settings/data/installed_apps.dart';
+import 'package:aghelan_ghiamat/features/network/application/internet_reach.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -57,6 +58,7 @@ void main() {
 
     final container = ProviderContainer(
       overrides: [
+        reachProbeProvider.overrideWithValue(const FakeReachProbe()),
         sharedPreferencesProvider.overrideWithValue(
           await mockPreferences({'settings.language': 'en'}),
         ),
@@ -111,6 +113,7 @@ void main() {
     addTearDown(tester.view.reset);
     final container = ProviderContainer(
       overrides: [
+        reachProbeProvider.overrideWithValue(const FakeReachProbe()),
         sharedPreferencesProvider.overrideWithValue(
           await mockPreferences({'settings.language': 'en'}),
         ),
@@ -164,6 +167,7 @@ void main() {
     final system = _FakeSystem(false);
     final container = ProviderContainer(
       overrides: [
+        reachProbeProvider.overrideWithValue(const FakeReachProbe()),
         sharedPreferencesProvider.overrideWithValue(
           await mockPreferences({'settings.language': 'en'}),
         ),

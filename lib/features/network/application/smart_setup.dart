@@ -73,6 +73,7 @@ ProxyConfig withFragment(ProxyConfig config, TlsFragmentMode mode) {
     server: config.server,
     port: config.port,
     outbound: outbound,
+    via: config.via,
   );
 }
 

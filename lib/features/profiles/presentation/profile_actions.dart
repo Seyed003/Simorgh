@@ -11,12 +11,14 @@ import '../../warp/data/warp_client.dart';
 import '../../warp/presentation/warp_actions.dart';
 import '../application/profiles_controller.dart';
 import '../domain/profile.dart';
+import 'chain_actions.dart';
 import 'import_actions.dart';
 
 enum _ProfileAction {
   login,
   speedTest,
   cleanIp,
+  chain,
   warpEndpoint,
   showQr,
   copyLink,
@@ -37,77 +39,94 @@ Future<void> showProfileActions(
   final fitsQr = qrData.length <= 2000;
   final action = await showModalBottomSheet<_ProfileAction>(
     context: context,
+    isScrollControlled: true,
     builder: (context) => SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
-            child: Text(
-              profile.name,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: context.theme.textTheme.titleMedium,
-            ),
+      // Scrolls on short screens: CDN configs list many actions.
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(context).height * 0.85,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+                child: Text(
+                  profile.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.theme.textTheme.titleMedium,
+                ),
+              ),
+              if (profile.config.protocol.hasLogin)
+                ListTile(
+                  leading: const Icon(Icons.key_rounded),
+                  title: Text(l10n.loginTitle),
+                  onTap: () => Navigator.pop(context, _ProfileAction.login),
+                ),
+              ListTile(
+                leading: const Icon(Icons.download_rounded),
+                title: Text(l10n.speedTest),
+                onTap: () => Navigator.pop(context, _ProfileAction.speedTest),
+              ),
+              if (profile.config.isCdnCandidate)
+                ListTile(
+                  leading: const Icon(Icons.radar_rounded),
+                  title: Text(l10n.cleanIpScan),
+                  onTap: () => Navigator.pop(context, _ProfileAction.cleanIp),
+                ),
+              if (profile.config.via == null)
+                ListTile(
+                  leading: const Icon(Icons.alt_route_rounded),
+                  title: Text(l10n.chainVia),
+                  subtitle: Text(l10n.chainViaHint),
+                  onTap: () => Navigator.pop(context, _ProfileAction.chain),
+                ),
+              if (isWarp(profile.config))
+                ListTile(
+                  leading: const Icon(Icons.cloud_sync_rounded),
+                  title: Text(l10n.warpScan),
+                  onTap: () =>
+                      Navigator.pop(context, _ProfileAction.warpEndpoint),
+                ),
+              if (fitsQr)
+                ListTile(
+                  leading: const Icon(Icons.qr_code_2_rounded),
+                  title: Text(l10n.showQrCode),
+                  onTap: () => Navigator.pop(context, _ProfileAction.showQr),
+                ),
+              if (hasLink)
+                ListTile(
+                  leading: const Icon(Icons.link_rounded),
+                  title: Text(l10n.copyLink),
+                  onTap: () => Navigator.pop(context, _ProfileAction.copyLink),
+                ),
+              ListTile(
+                leading: const Icon(Icons.data_object_rounded),
+                title: Text(l10n.copyJson),
+                onTap: () => Navigator.pop(context, _ProfileAction.copyJson),
+              ),
+              ListTile(
+                leading: const Icon(Icons.drive_file_rename_outline_rounded),
+                title: Text(l10n.rename),
+                onTap: () => Navigator.pop(context, _ProfileAction.rename),
+              ),
+              ListTile(
+                leading: Icon(
+                  Icons.delete_outline_rounded,
+                  color: context.colors.error,
+                ),
+                title: Text(
+                  l10n.delete,
+                  style: TextStyle(color: context.colors.error),
+                ),
+                onTap: () => Navigator.pop(context, _ProfileAction.delete),
+              ),
+              const SizedBox(height: 8),
+            ],
           ),
-          if (profile.config.protocol.hasLogin)
-            ListTile(
-              leading: const Icon(Icons.key_rounded),
-              title: Text(l10n.loginTitle),
-              onTap: () => Navigator.pop(context, _ProfileAction.login),
-            ),
-          ListTile(
-            leading: const Icon(Icons.download_rounded),
-            title: Text(l10n.speedTest),
-            onTap: () => Navigator.pop(context, _ProfileAction.speedTest),
-          ),
-          if (profile.config.isCdnCandidate)
-            ListTile(
-              leading: const Icon(Icons.radar_rounded),
-              title: Text(l10n.cleanIpScan),
-              onTap: () => Navigator.pop(context, _ProfileAction.cleanIp),
-            ),
-          if (isWarp(profile.config))
-            ListTile(
-              leading: const Icon(Icons.cloud_sync_rounded),
-              title: Text(l10n.warpScan),
-              onTap: () => Navigator.pop(context, _ProfileAction.warpEndpoint),
-            ),
-          if (fitsQr)
-            ListTile(
-              leading: const Icon(Icons.qr_code_2_rounded),
-              title: Text(l10n.showQrCode),
-              onTap: () => Navigator.pop(context, _ProfileAction.showQr),
-            ),
-          if (hasLink)
-            ListTile(
-              leading: const Icon(Icons.link_rounded),
-              title: Text(l10n.copyLink),
-              onTap: () => Navigator.pop(context, _ProfileAction.copyLink),
-            ),
-          ListTile(
-            leading: const Icon(Icons.data_object_rounded),
-            title: Text(l10n.copyJson),
-            onTap: () => Navigator.pop(context, _ProfileAction.copyJson),
-          ),
-          ListTile(
-            leading: const Icon(Icons.drive_file_rename_outline_rounded),
-            title: Text(l10n.rename),
-            onTap: () => Navigator.pop(context, _ProfileAction.rename),
-          ),
-          ListTile(
-            leading: Icon(
-              Icons.delete_outline_rounded,
-              color: context.colors.error,
-            ),
-            title: Text(
-              l10n.delete,
-              style: TextStyle(color: context.colors.error),
-            ),
-            onTap: () => Navigator.pop(context, _ProfileAction.delete),
-          ),
-          const SizedBox(height: 8),
-        ],
+        ),
       ),
     ),
   );
@@ -123,6 +142,8 @@ Future<void> showProfileActions(
       await Navigator.of(context).push(
         MaterialPageRoute<void>(builder: (_) => CleanIpPage(profile: profile)),
       );
+    case _ProfileAction.chain:
+      await chainProfile(context, ref, profile);
     case _ProfileAction.warpEndpoint:
       await WarpActions(context, ref).findEndpoint(profile);
     case _ProfileAction.showQr:

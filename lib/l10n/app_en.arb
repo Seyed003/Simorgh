@@ -334,8 +334,8 @@
   "usageEmpty": "Nothing recorded yet. Usage is counted while you are connected.",
   "usageReset": "Reset statistics",
   "usageResetConfirm": "Delete all usage statistics?",
-  "cleanIpScan": "Find clean Cloudflare IP",
-  "cleanIpHint": "Finds Cloudflare addresses your internet can reach. Configs that go through Cloudflare (CDN) can use one instead of their blocked address.",
+  "cleanIpScan": "Find a clean CDN IP",
+  "cleanIpHint": "Finds CDN addresses (Cloudflare or ArvanCloud) your internet can reach. Configs that go through that CDN can use one instead of their blocked address.",
   "cleanIpTestingHost": "Tested with {host}",
   "cleanIpDisconnectFirst": "Disconnect first: the scan has to use your own internet, not the VPN.",
   "cleanIpStart": "Start scan",
@@ -571,5 +571,50 @@
   "loginPassword": "Password",
   "loginUsernameRequired": "Enter the username",
   "loginNeeded": "Needs username and password",
-  "errorLoginNeeded": "Enter this server's username and password first"
+  "errorLoginNeeded": "Enter this server's username and password first",
+  "chainVia": "Connect through another server",
+  "chainViaHint": "For example a server in Iran that still reaches abroad",
+  "chainPickTitle": "First server",
+  "chainPickHint": "Traffic goes to this server first and from there to {name}.",
+  "@chainPickHint": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chainNoOther": "Add the other server first",
+  "chainCreated": "Chained config added and selected",
+  "chainThrough": "through {name}",
+  "@chainThrough": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cdnCloudflare": "Cloudflare",
+  "cdnArvan": "ArvanCloud",
+  "cdnArvanHint": "For configs behind ArvanCloud's CDN. Its addresses are inside Iran, so they often keep working on the national internet.",
+  "shareApp": "Share the app",
+  "shareAppHint": "Send it to another phone by Bluetooth, Nearby Share or a messenger. No internet needed.",
+  "shareAppHintWindows": "Opens the app’s folder: copy it to a flash drive for another PC.",
+  "shareAppTitle": "Send Aghelan Ghiamat",
+  "shareAppFailed": "This copy of the app can’t be sent as one file.",
+  "nationalTitle": "Only Iranian sites are reachable",
+  "nationalHint": "The international internet looks cut off (national internet). Configs with a server abroad won’t connect directly.",
+  "nationalHelp": "What works?",
+  "nationalSheetTitle": "On the national internet",
+  "nationalDns": "DNS switched automatically",
+  "nationalDnsHint": "Foreign DNS servers are cut off too, so server names are looked up with your network’s own DNS until this ends.",
+  "nationalRelay": "Go through a server inside Iran",
+  "nationalRelayHint": "Some servers in Iranian data centres keep their link abroad. If you have a config on one, open your foreign config’s menu → “Connect through another server” and pick it.",
+  "nationalCdn": "ArvanCloud for CDN configs",
+  "nationalCdnHint": "Configs behind ArvanCloud, an Iranian CDN, may keep working: config menu → “Find a clean CDN IP” → ArvanCloud.",
+  "nationalOffline": "New configs and the app, offline",
+  "nationalOfflineHint": "Get fresh configs through Iranian messengers, and pass this app on by Bluetooth with “Share the app”.",
+  "nationalTest": "Test configs",
+  "nationalRecheck": "Check again",
+  "nationalStillCut": "Still only Iranian sites are reachable.",
+  "nationalBack": "The international internet is reachable again."
 }

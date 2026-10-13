@@ -378,7 +378,8 @@ class ProfilesController extends AsyncNotifier<ProfilesState> {
   static String _fingerprint(Profile p) => _configFingerprint(p.config);
 
   static String _configFingerprint(ProxyConfig c) =>
-      '${c.name}|${jsonEncode(c.outbound)}';
+      '${c.name}|${jsonEncode(c.outbound)}'
+      '${c.via == null ? '' : '|via ${_configFingerprint(c.via!)}'}';
 
   static String _subscriptionName(
     String? name,

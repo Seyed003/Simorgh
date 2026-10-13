@@ -60,10 +60,25 @@ Open-source VPN client for **Android** and **Windows**, powered by the
   turns on the test core instead of stopping each other.
 - **Per-app proxy (Android):** all apps, only selected apps, or every app
   except the selected ones go through the VPN.
-- **Clean Cloudflare IP finder:** for configs served through Cloudflare
-  (ws/gRPC/HTTPUpgrade), scans a sample of Cloudflare's addresses from your own
-  connection (TLS with the config's SNI, then `/cdn-cgi/trace`) and makes a
-  copy of the config pointed at the address you pick.
+- **Clean CDN IP finder (Cloudflare or ArvanCloud):** for configs served
+  through a CDN (ws/gRPC/HTTPUpgrade), scans a sample of the CDN's addresses
+  from your own connection (TLS with the config's SNI, then `/cdn-cgi/trace`
+  on Cloudflare or any HTTP answer on ArvanCloud) and makes a copy of the
+  config pointed at the address you pick. ArvanCloud's edges are in Iran, so
+  they often keep working on the national internet.
+- **For the national internet** (only Iranian sites reachable):
+  - **Detection:** with the VPN off, the app checks a few foreign and Iranian
+    addresses (at start, on return to the app, after a failed connection) and
+    shows a banner with what still works.
+  - **DNS fallback:** while it lasts, a foreign direct DNS gives way to the
+    system's own (domestic) resolver, so server names still resolve. The
+    setting itself is not changed.
+  - **Chaining (“Connect through another server”):** a config's menu can put
+    it behind another config, e.g. a server in an Iranian data centre that
+    still reaches abroad. The chain is a new config; up to three hops.
+  - **Share the app offline:** Settings → “Share the app” sends the
+    installed APK by Bluetooth, Nearby Share or a messenger (on Windows it
+    opens the app folder to copy).
 - **Usage statistics:** today / 7 days / 30 days, a 14-day chart and a daily
   table, counted from the core's own totals (so traffic while the app was
   closed is included).
@@ -285,8 +300,23 @@ are adapted from [sing-box-for-android](https://github.com/SagerNet/sing-box-for
   سابسکریپشن. سرعت به مگابیت بر ثانیه زیر هر سرور نمایش داده می‌شود.
 - **انتخاب برنامه‌ها (Split Tunnel، اندروید):** همه‌ی برنامه‌ها، فقط
   برنامه‌های انتخاب‌شده، یا همه به‌جز انتخاب‌شده‌ها از VPN رد می‌شوند.
-- **پیدا کردن IP تمیز کلودفلر:** برای کانفیگ‌هایی که از کلودفلر رد می‌شوند،
-  IPهای سالم را با اینترنت خودتان پیدا می‌کند و با یک لمس کانفیگ جدید می‌سازد.
+- **پیدا کردن IP تمیز CDN (کلودفلر یا ابرآروان):** برای کانفیگ‌هایی که از
+  CDN رد می‌شوند، IPهای سالم را با اینترنت خودتان پیدا می‌کند و با یک لمس
+  کانفیگ جدید می‌سازد. سرورهای ابرآروان داخل ایران‌اند و در اینترنت ملی هم
+  اغلب کار می‌کنند.
+- **برای اینترنت ملی** (وقتی فقط سایت‌های داخلی باز می‌شوند):
+  - **تشخیص خودکار:** وقتی VPN خاموش است، برنامه چند آدرس خارجی و داخلی را
+    امتحان می‌کند (هنگام باز شدن، برگشت به برنامه و بعد از وصل نشدن) و
+    بنری نشان می‌دهد که چه چیزهایی هنوز کار می‌کند.
+  - **DNS جایگزین:** تا وقتی این وضعیت هست، به‌جای DNS خارجی از DNS خودِ
+    شبکه (داخلی) استفاده می‌شود تا نام سرورها پیدا شوند؛ تنظیمات شما عوض
+    نمی‌شود.
+  - **زنجیره («اتصال از طریق سرور دیگر»):** از منوی هر کانفیگ می‌شود آن را
+    پشت کانفیگ دیگری گذاشت؛ مثلاً سروری در دیتاسنتر داخل ایران که هنوز به
+    خارج راه دارد. نتیجه یک کانفیگ تازه است (حداکثر سه مرحله).
+  - **فرستادن خود برنامه بدون اینترنت:** تنظیمات ← «فرستادن خود برنامه»
+    فایل نصبی را با بلوتوث، Nearby Share یا پیام‌رسان می‌فرستد (در ویندوز
+    پوشه‌ی برنامه برای کپی باز می‌شود).
 - **آمار مصرف اینترنت:** امروز، ۷ و ۳۰ روز اخیر، نمودار ۱۴ روزه و جدول روزانه.
 - **دکمه‌ی سریع در نوار اعلان اندروید و ویجت صفحه‌ی اصلی.**
 - **به‌روزرسانی خودکار سابسکریپشن‌ها** هنگام باز شدن برنامه.

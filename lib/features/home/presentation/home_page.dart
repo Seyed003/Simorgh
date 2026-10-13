@@ -7,6 +7,7 @@ import '../../../core/branding/phoenix.dart';
 import '../../../core/theme/glass.dart';
 import '../../../core/utils/context_ext.dart';
 import '../../../core/widgets/glass_widgets.dart';
+import '../../network/presentation/national_internet.dart';
 import '../../profiles/application/profiles_controller.dart';
 import '../../profiles/presentation/add_config_sheet.dart';
 import '../../profiles/presentation/profile_list.dart';
@@ -39,6 +40,7 @@ class HomePage extends ConsumerWidget {
                         SizedBox(height: 16),
                         ConnectionPanel(orbSize: 230),
                         SizedBox(height: 24),
+                        NationalInternetBanner(),
                         UpdateBanner(),
                         ActiveServerCard(),
                         SizedBox(height: 12),
@@ -82,6 +84,7 @@ class HomePage extends ConsumerWidget {
                       const Spacer(),
                       ConnectionPanel(orbSize: orb),
                       const Spacer(),
+                      const NationalInternetBanner(),
                       const UpdateBanner(),
                       if (empty)
                         const _EmptyCard()

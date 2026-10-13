@@ -11,6 +11,7 @@ import 'package:aghelan_ghiamat/features/connection/application/vpn_controller.d
 import 'package:aghelan_ghiamat/features/connection/domain/traffic.dart';
 import 'package:aghelan_ghiamat/features/profiles/application/profiles_controller.dart';
 import 'package:aghelan_ghiamat/features/profiles/data/profile_store.dart';
+import 'package:aghelan_ghiamat/features/network/application/internet_reach.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -78,6 +79,29 @@ void main() {
     });
   });
 
+  test('ArvanCloud: every usable address of its small ranges, no more', () {
+    final ips = CleanIpScanner.sample(
+      5000,
+      Random(2),
+      ranges: CdnProvider.arvan.ranges,
+    );
+    // 1536 addresses, minus what looks like network/broadcast.
+    expect(ips.length, lessThanOrEqualTo(1536));
+    expect(ips.length, greaterThan(1400));
+    expect(ips.toSet(), hasLength(ips.length));
+    expect(
+      ips.every(
+        (ip) =>
+            ip.startsWith('185.143.23') ||
+            ip.startsWith('185.220.226.') ||
+            ip.startsWith('193.176.240.'),
+      ),
+      isTrue,
+    );
+    expect(CdnProvider.arvan.probe, httpProbe);
+    expect(CdnProvider.cloudflare.probe, traceProbe);
+  });
+
   test('samples distinct addresses inside the Cloudflare ranges', () {
     final ips = CleanIpScanner.sample(500, Random(1));
     expect(ips.toSet(), hasLength(500));
@@ -107,6 +131,7 @@ void main() {
   test('controller keeps the fastest hits and can stop', () async {
     final container = ProviderContainer(
       overrides: [
+        reachProbeProvider.overrideWithValue(const FakeReachProbe()),
         cleanIpScannerFactoryProvider.overrideWithValue(_fakeScanner),
       ],
     );
@@ -124,12 +149,44 @@ void main() {
     expect(latencies, orderedEquals([...latencies]..sort()));
   });
 
+  test('controller scans ArvanCloud addresses once chosen', () async {
+    final container = ProviderContainer(
+      overrides: [
+        reachProbeProvider.overrideWithValue(const FakeReachProbe()),
+        cleanIpScannerFactoryProvider.overrideWithValue(_fakeScanner),
+      ],
+    );
+    addTearDown(container.dispose);
+    final sub = container.listen(cleanIpProvider, (_, _) {});
+    addTearDown(sub.close);
+    final notifier = container.read(cleanIpProvider.notifier)
+      ..choose(CdnProvider.arvan);
+    expect(container.read(cleanIpProvider).provider, CdnProvider.arvan);
+    notifier.start('example.ir');
+    while (container.read(cleanIpProvider).running) {
+      await Future<void>.delayed(const Duration(milliseconds: 5));
+    }
+    final state = container.read(cleanIpProvider);
+    expect(state.provider, CdnProvider.arvan);
+    expect(state.hits, isNotEmpty);
+    expect(
+      state.hits.every(
+        (h) =>
+            h.ip.startsWith('185.143.23') ||
+            h.ip.startsWith('185.220.226.') ||
+            h.ip.startsWith('193.176.240.'),
+      ),
+      isTrue,
+    );
+  });
+
   testWidgets('scan and make a config from a result', (tester) async {
     tester.view.physicalSize = const Size(420, 1400);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     final container = ProviderContainer(
       overrides: [
+        reachProbeProvider.overrideWithValue(const FakeReachProbe()),
         sharedPreferencesProvider.overrideWithValue(
           await mockPreferences({'settings.language': 'en'}),
         ),
@@ -157,7 +214,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.more_vert_rounded).first);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Find clean Cloudflare IP'));
+    await tester.tap(find.text('Find a clean CDN IP'));
     await tester.pumpAndSettle();
     expect(find.text('Tested with example.com'), findsOneWidget);
 
@@ -182,6 +239,7 @@ void main() {
     final platform = FakeVpnPlatform();
     final container = ProviderContainer(
       overrides: [
+        reachProbeProvider.overrideWithValue(const FakeReachProbe()),
         sharedPreferencesProvider.overrideWithValue(
           await mockPreferences({'settings.language': 'en'}),
         ),
@@ -209,7 +267,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.more_vert_rounded).first);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Find clean Cloudflare IP'));
+    await tester.tap(find.text('Find a clean CDN IP'));
     await tester.pumpAndSettle();
     expect(
       find.text(
@@ -268,6 +326,16 @@ void main() {
         expect(hit, isNotNull);
         expect(hit!.colo, 'TST');
         expect(hosts.single, 'cdn.example.org');
+
+        // ArvanCloud has no trace page: any answer of the edge counts.
+        final arvan = await httpProbe(
+          '127.0.0.1',
+          'cdn.example.org',
+          port: server.port,
+          allowBadCertificate: true,
+        );
+        expect(arvan, isNotNull);
+        expect(arvan!.colo, isNull);
 
         // A closed port fails quietly.
         final closed = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);

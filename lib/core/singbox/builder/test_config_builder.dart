@@ -8,7 +8,13 @@ import 'core_options.dart';
 /// outbound (tag `t0`, `t1`, ...), no inbounds, and the Clash API to drive
 /// `GET /proxies/{tag}/delay`.
 class TestConfig {
-  TestConfig._(this.json, this.tagToId, this._outboundTags, this._endpointTags);
+  TestConfig._(
+    this.json,
+    this.tagToId,
+    this._outboundTags,
+    this._endpointTags,
+    this._owners,
+  );
 
   final Map<String, Object?> json;
 
@@ -16,6 +22,9 @@ class TestConfig {
   final Map<String, String> tagToId;
   final List<String> _outboundTags;
   final List<String> _endpointTags;
+
+  /// Every tag, chain hops included -> the id it belongs to.
+  final Map<String, String> _owners;
 
   String encode() => jsonEncode(json);
 
@@ -28,7 +37,7 @@ class TestConfig {
     final index = int.parse(match.group(2)!);
     final tags = match.group(1) == 'endpoint' ? _endpointTags : _outboundTags;
     if (index < 0 || index >= tags.length) return null;
-    return tagToId[tags[index]];
+    return _owners[tags[index]];
   }
 
   static final _blame = RegExp(r'(outbound|endpoint)s?\[(\d+)\]');
@@ -56,6 +65,7 @@ class TestConfigBuilder {
     final tagToId = <String, String>{};
     final outboundTags = <String>[];
     final endpointTags = <String>[];
+    final owners = <String, String>{};
 
     final inbounds = <Map<String, Object?>>[];
     final rules = <Map<String, Object?>>[];
@@ -81,13 +91,16 @@ class TestConfigBuilder {
           'outbound': tag,
         });
       }
-      final outbound = prepareOutbound(proxy, tag: tag, options: options);
-      if (proxy.protocol.isEndpoint) {
-        endpoints.add(outbound);
-        endpointTags.add(tag);
-      } else {
-        outbounds.add(outbound);
-        outboundTags.add(tag);
+      for (final hop in prepareChain(proxy, tag: tag, options: options)) {
+        final hopTag = hop.outbound['tag']! as String;
+        owners[hopTag] = id;
+        if (hop.endpoint) {
+          endpoints.add(hop.outbound);
+          endpointTags.add(hopTag);
+        } else {
+          outbounds.add(hop.outbound);
+          outboundTags.add(hopTag);
+        }
       }
     }
     // The direct outbound goes last so indexes of tested servers match
@@ -119,6 +132,6 @@ class TestConfigBuilder {
         },
       },
     };
-    return TestConfig._(json, tagToId, outboundTags, endpointTags);
+    return TestConfig._(json, tagToId, outboundTags, endpointTags, owners);
   }
 }

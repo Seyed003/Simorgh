@@ -11,6 +11,7 @@ import '../connection/application/vpn_controller.dart';
 import '../connection/domain/vpn_state.dart';
 import '../connection/presentation/vpn_error_text.dart';
 import '../home/presentation/home_page.dart';
+import '../network/application/internet_reach.dart';
 import '../profiles/application/incoming_import.dart';
 import '../profiles/presentation/import_actions.dart';
 import '../profiles/presentation/profile_list.dart';
@@ -47,6 +48,7 @@ class _AppShellState extends ConsumerState<AppShell> {
   /// Tabs are built the first time they are opened, then kept alive.
   final _opened = <AppTab>{AppTab.home};
   StreamSubscription<SharedText>? _shared;
+  late final AppLifecycleListener _lifecycle;
 
   @override
   void initState() {
@@ -55,8 +57,10 @@ class _AppShellState extends ConsumerState<AppShell> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         unawaited(ref.read(updateProvider.notifier).checkAutomatically());
+        _checkInternet();
       }
     });
+    _lifecycle = AppLifecycleListener(onResume: () => _checkInternet());
     // Config links tapped in other apps, text and .ovpn files shared to
     // this one.
     _shared = ref.read(systemBridgeProvider).sharedText().listen((shared) {
@@ -69,7 +73,19 @@ class _AppShellState extends ConsumerState<AppShell> {
   @override
   void dispose() {
     unawaited(_shared?.cancel());
+    _lifecycle.dispose();
     super.dispose();
+  }
+
+  /// Looks for the national internet while the VPN is off (through a
+  /// working tunnel everything answers): at start, on return to the app,
+  /// after a disconnect, and at once when a connection fails.
+  void _checkInternet({bool now = false}) {
+    if (ref.read(vpnControllerProvider).status != VpnStatus.disconnected) {
+      return;
+    }
+    final reach = ref.read(internetReachProvider.notifier);
+    unawaited(now ? reach.check() : reach.refresh());
   }
 
   @override
@@ -87,7 +103,14 @@ class _AppShellState extends ConsumerState<AppShell> {
     ) {
       if (next != null && next != previous) {
         context.showSnack(vpnErrorText(context, next));
+        _checkInternet(now: true);
       }
+    });
+    ref.listen<VpnStatus>(vpnControllerProvider.select((s) => s.status), (
+      previous,
+      next,
+    ) {
+      if (next == VpnStatus.disconnected && previous != next) _checkInternet();
     });
 
     return LayoutBuilder(

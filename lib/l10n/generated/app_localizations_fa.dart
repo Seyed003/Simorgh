@@ -597,11 +597,11 @@ class AppLocalizationsFa extends AppLocalizations {
   String get usageResetConfirm => 'همه‌ی آمار مصرف پاک شود؟';
 
   @override
-  String get cleanIpScan => 'پیدا کردن IP تمیز کلودفلر';
+  String get cleanIpScan => 'پیدا کردن IP تمیز CDN';
 
   @override
   String get cleanIpHint =>
-      'IPهای کلودفلری را پیدا می‌کند که اینترنت شما به آن‌ها دسترسی دارد. کانفیگ‌هایی که از کلودفلر (CDN) رد می‌شوند می‌توانند به‌جای آدرس مسدودشده از آن استفاده کنند.';
+      'IPهای CDN (کلودفلر یا ابرآروان) را پیدا می‌کند که اینترنت شما به آن‌ها دسترسی دارد. کانفیگ‌هایی که از همان CDN رد می‌شوند می‌توانند به‌جای آدرس مسدودشده از آن استفاده کنند.';
 
   @override
   String cleanIpTestingHost(String host) {
@@ -939,4 +939,110 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get errorLoginNeeded => 'اول نام کاربری و رمز این سرور را وارد کنید';
+
+  @override
+  String get chainVia => 'اتصال از طریق سرور دیگر';
+
+  @override
+  String get chainViaHint => 'مثلاً سرور داخل ایران که هنوز به خارج راه دارد';
+
+  @override
+  String get chainPickTitle => 'سرور اول';
+
+  @override
+  String chainPickHint(String name) {
+    return 'ترافیک اول به این سرور می‌رود و از آنجا به $name.';
+  }
+
+  @override
+  String get chainNoOther => 'اول سرور دیگر را اضافه کنید';
+
+  @override
+  String get chainCreated => 'کانفیگ زنجیره‌ای اضافه و انتخاب شد';
+
+  @override
+  String chainThrough(String name) {
+    return 'از طریق $name';
+  }
+
+  @override
+  String get cdnCloudflare => 'کلودفلر';
+
+  @override
+  String get cdnArvan => 'ابرآروان';
+
+  @override
+  String get cdnArvanHint =>
+      'برای کانفیگ‌هایی که پشت CDN ابرآروان هستند. آدرس‌هایش داخل ایران است و برای همین در اینترنت ملی هم اغلب کار می‌کند.';
+
+  @override
+  String get shareApp => 'فرستادن خود برنامه';
+
+  @override
+  String get shareAppHint =>
+      'با بلوتوث، Nearby Share یا پیام‌رسان به گوشی دیگر بفرستید؛ اینترنت لازم نیست.';
+
+  @override
+  String get shareAppHintWindows =>
+      'پوشه‌ی برنامه باز می‌شود: آن را برای کامپیوتر دیگر روی فلش کپی کنید.';
+
+  @override
+  String get shareAppTitle => 'فرستادن عاقلان قیامت';
+
+  @override
+  String get shareAppFailed =>
+      'این نسخه از برنامه را نمی‌شود به‌صورت یک فایل فرستاد.';
+
+  @override
+  String get nationalTitle => 'فقط سایت‌های داخلی باز می‌شوند';
+
+  @override
+  String get nationalHint =>
+      'به نظر می‌رسد اینترنت بین‌الملل قطع است (اینترنت ملی). کانفیگ‌هایی که سرورشان خارج از ایران است مستقیم وصل نمی‌شوند.';
+
+  @override
+  String get nationalHelp => 'چه کار کنم؟';
+
+  @override
+  String get nationalSheetTitle => 'در اینترنت ملی';
+
+  @override
+  String get nationalDns => 'DNS خودکار عوض شد';
+
+  @override
+  String get nationalDnsHint =>
+      'DNSهای خارجی هم قطع‌اند؛ برای همین تا وقتی این وضعیت هست، نام سرورها با DNS خودِ شبکه‌ی شما پیدا می‌شود.';
+
+  @override
+  String get nationalRelay => 'از یک سرور داخل ایران رد شوید';
+
+  @override
+  String get nationalRelayHint =>
+      'بعضی سرورهای دیتاسنترهای داخل ایران هنوز به خارج راه دارند. اگر کانفیگی روی چنین سروری دارید، منوی کانفیگ خارجی ← «اتصال از طریق سرور دیگر» را بزنید و آن را انتخاب کنید.';
+
+  @override
+  String get nationalCdn => 'ابرآروان برای کانفیگ‌های CDN';
+
+  @override
+  String get nationalCdnHint =>
+      'کانفیگ‌هایی که پشت ابرآروان (CDN ایرانی) هستند ممکن است کار کنند: منوی کانفیگ ← «پیدا کردن IP تمیز CDN» ← ابرآروان.';
+
+  @override
+  String get nationalOffline => 'کانفیگ و برنامه بدون اینترنت';
+
+  @override
+  String get nationalOfflineHint =>
+      'کانفیگ تازه را از پیام‌رسان‌های داخلی بگیرید و خود برنامه را با «فرستادن خود برنامه» از راه بلوتوث به دوستانتان بدهید.';
+
+  @override
+  String get nationalTest => 'تست کانفیگ‌ها';
+
+  @override
+  String get nationalRecheck => 'بررسی دوباره';
+
+  @override
+  String get nationalStillCut => 'هنوز فقط سایت‌های داخلی باز می‌شوند.';
+
+  @override
+  String get nationalBack => 'اینترنت بین‌الملل دوباره در دسترس است.';
 }

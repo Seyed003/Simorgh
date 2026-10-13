@@ -49,6 +49,34 @@ class CleanIpPage extends ConsumerWidget {
             style: context.theme.textTheme.bodySmall,
           ),
           const SizedBox(height: 12),
+          SegmentedButton<CdnProvider>(
+            showSelectedIcon: false,
+            segments: [
+              ButtonSegment(
+                value: CdnProvider.cloudflare,
+                label: Text(l10n.cdnCloudflare),
+              ),
+              ButtonSegment(
+                value: CdnProvider.arvan,
+                label: Text(l10n.cdnArvan),
+              ),
+            ],
+            selected: {state.provider},
+            onSelectionChanged: state.running
+                ? null
+                : (s) => controller.choose(s.first),
+          ),
+          if (state.provider == CdnProvider.arvan)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                l10n.cdnArvanHint,
+                style: context.theme.textTheme.bodySmall?.copyWith(
+                  color: context.colors.onSurfaceVariant,
+                ),
+              ),
+            ),
+          const SizedBox(height: 12),
           if (!vpnOff)
             Card(
               color: context.colors.errorContainer,

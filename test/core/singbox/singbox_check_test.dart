@@ -94,12 +94,34 @@ void main() {
     }
   }
 
+  // Chains: a server reached through another one.
+  final chains = {
+    'vless via trojan': LinkParser.parse(vlessReality)
+        .chainedVia(LinkParser.parse(trojanTls)),
+    'xhttp via shadowsocks': LinkParser.parse(vlessXhttp)
+        .chainedVia(LinkParser.parse(ssSip002)),
+    'openvpn via vless': profiles['tls-crypt']!.chainedVia(
+      LinkParser.parse(vlessWs),
+    ),
+    'wireguard via socks': LinkParser.parse(wireguard)
+        .chainedVia(LinkParser.parse(socks)),
+  };
+  for (final MapEntry(key: chain, value: proxy) in chains.entries) {
+    test('sing-box check chain $chain', skip: skip, () async {
+      final file = File('${dir.path}/chain-${chain.hashCode}.json');
+      await file.writeAsString(variants['android']!.buildJson(proxy));
+      final result = await Process.run(binary!, ['check', '-c', file.path]);
+      expect(result.exitCode, 0, reason: '${result.stderr}${result.stdout}');
+    });
+  }
+
   // Auto mode: every fixture at once behind a urltest group.
   for (final MapEntry(key: name, value: builder) in variants.entries) {
     test('sing-box check auto mode $name', skip: skip, () async {
       final proxies = [
         ...allValidLinks.map(LinkParser.parse),
         ...profiles.values,
+        ...chains.values,
       ];
       final file = File('${dir.path}/config-auto-$name.json');
       await file.writeAsString(builder.buildAutoJson(proxies));

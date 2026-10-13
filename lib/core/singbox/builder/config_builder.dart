@@ -37,11 +37,16 @@ class SingBoxConfigBuilder {
   final String? cacheFilePath;
 
   Map<String, Object?> build(ProxyConfig proxy) {
-    final outbound = _prepareOutbound(proxy);
-    final isEndpoint = proxy.protocol.isEndpoint;
+    final chain = prepareChain(proxy, tag: ConfigTags.proxy, options: options);
     return _assemble(
-      outbounds: [if (!isEndpoint) outbound],
-      endpoints: [if (isEndpoint) outbound],
+      outbounds: [
+        for (final hop in chain)
+          if (!hop.endpoint) hop.outbound,
+      ],
+      endpoints: [
+        for (final hop in chain)
+          if (hop.endpoint) hop.outbound,
+      ],
     );
   }
 
@@ -71,8 +76,9 @@ class SingBoxConfigBuilder {
     for (final (i, proxy) in candidates.indexed) {
       final tag = autoTag(i);
       tags.add(tag);
-      final outbound = prepareOutbound(proxy, tag: tag, options: options);
-      (proxy.protocol.isEndpoint ? endpoints : outbounds).add(outbound);
+      for (final hop in prepareChain(proxy, tag: tag, options: options)) {
+        (hop.endpoint ? endpoints : outbounds).add(hop.outbound);
+      }
     }
     return _assemble(
       outbounds: [
@@ -121,9 +127,6 @@ class SingBoxConfigBuilder {
       'experimental': _experimental(),
     };
   }
-
-  Map<String, Object?> _prepareOutbound(ProxyConfig proxy) =>
-      prepareOutbound(proxy, tag: ConfigTags.proxy, options: options);
 
   Map<String, Object?> _dns() {
     final servers = <Map<String, Object?>>[];
@@ -239,6 +242,30 @@ class SingBoxConfigBuilder {
         if (cacheFilePath != null) 'path': cacheFilePath,
       },
     };
+  }
+}
+
+/// [proxy]'s outbound tagged [tag], followed by the servers it is reached
+/// through ([ProxyConfig.via]), tagged `$tag-via`, `$tag-via-via`…: each
+/// one dials through the next with sing-box's `detour`.
+List<({Map<String, Object?> outbound, bool endpoint})> prepareChain(
+  ProxyConfig proxy, {
+  required String tag,
+  required CoreOptions options,
+}) {
+  final chain = <({Map<String, Object?> outbound, bool endpoint})>[];
+  var hop = proxy;
+  var hopTag = tag;
+  while (true) {
+    final outbound = prepareOutbound(hop, tag: hopTag, options: options);
+    final next = hop.via;
+    // Three servers in a row is the most that makes sense.
+    final follow = next != null && chain.length < 2;
+    if (follow) outbound['detour'] = '$hopTag-via';
+    chain.add((outbound: outbound, endpoint: hop.protocol.isEndpoint));
+    if (!follow) return chain;
+    hop = next;
+    hopTag = '$hopTag-via';
   }
 }
 

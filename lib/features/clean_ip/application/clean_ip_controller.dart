@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -20,9 +21,13 @@ class CleanIpState {
     this.tested = 0,
     this.total = 0,
     this.hits = const [],
+    this.provider = CdnProvider.cloudflare,
   });
 
   final bool running;
+
+  /// The CDN being (or last) scanned.
+  final CdnProvider provider;
   final int tested;
   final int total;
 
@@ -34,11 +39,13 @@ class CleanIpState {
     int? tested,
     int? total,
     List<CleanIpHit>? hits,
+    CdnProvider? provider,
   }) => CleanIpState(
     running: running ?? this.running,
     tested: tested ?? this.tested,
     total: total ?? this.total,
     hits: hits ?? this.hits,
+    provider: provider ?? this.provider,
   );
 }
 
@@ -54,12 +61,27 @@ class CleanIpController extends Notifier<CleanIpState> {
     return const CleanIpState();
   }
 
+  /// Chooses the CDN for the next scan.
+  void choose(CdnProvider provider) {
+    if (state.running) return;
+    state = CleanIpState(provider: provider);
+  }
+
   void start(String host) {
     if (state.running) return;
     final scanner = ref.read(cleanIpScannerFactoryProvider)();
-    state = CleanIpState(running: true, total: scanner.sampleSize);
+    final provider = state.provider;
+    state = CleanIpState(
+      running: true,
+      total: CleanIpScanner.sample(
+        scanner.sampleSize,
+        Random(0),
+        ranges: provider.ranges,
+      ).length,
+      provider: provider,
+    );
     _run = scanner
-        .scan(host)
+        .scan(host, provider: provider)
         .listen(
           (update) {
             final hit = update.hit;

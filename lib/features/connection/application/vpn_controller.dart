@@ -11,6 +11,7 @@ import '../../../core/platform/system_bridge.dart';
 import '../../../core/storage/preferences.dart';
 import '../../../core/utils/net_utils.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../network/application/internet_reach.dart';
 import '../../network/application/network_tuning.dart';
 import '../../latency/application/auto_candidates.dart';
 import '../../latency/application/latency_controller.dart';
@@ -227,7 +228,7 @@ class VpnController extends Notifier<VpnState> {
     );
     if (attempt != _attempt) return;
     final builder = SingBoxConfigBuilder(
-      options: ref.read(coreOptionsProvider),
+      options: ref.read(effectiveCoreOptionsProvider),
       platform: platform.corePlatform,
       clashApi: clashApi,
     );

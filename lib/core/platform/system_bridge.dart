@@ -29,6 +29,26 @@ class SystemBridge {
     }
   }
 
+  /// Whether [shareApp] can hand the app to another device.
+  bool get canShareApp => _android || Platform.isWindows;
+
+  /// Passes the app on without the internet: on Android the share sheet
+  /// with the installed APK (Bluetooth, Nearby Share, a messenger); on
+  /// Windows the app's folder, to copy. False when that is not possible.
+  Future<bool> shareApp({required String title}) async {
+    if (_android) {
+      return await _methods.invokeMethod<bool>('shareApp', {'title': title}) ??
+          false;
+    }
+    if (Platform.isWindows) {
+      await Process.run('explorer', [
+        File(Platform.resolvedExecutable).parent.path,
+      ]);
+      return true;
+    }
+    return false;
+  }
+
   /// Always-on / lockdown state of the running VPN; `null` when unknown
   /// (not connected, older Android, other platforms).
   Future<({bool alwaysOn, bool lockdown})?> vpnLockdown() async {

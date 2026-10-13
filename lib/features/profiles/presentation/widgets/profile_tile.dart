@@ -84,6 +84,29 @@ class ProfileTile extends StatelessWidget {
                       color: colors.onSurfaceVariant,
                     ),
                   ),
+                  if (config.via case final via?)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.alt_route_rounded,
+                            size: 13,
+                            color: colors.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 3),
+                          Flexible(
+                            child: Text(
+                              context.l10n.chainThrough(via.name),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: context.theme.textTheme.labelSmall
+                                  ?.copyWith(color: colors.onSurfaceVariant),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   if (config.isInsecure) const InsecureBadge(),
                   if (config.needsLogin) const LoginNeededBadge(),
                   SpeedBadge(profileId: profile.id),
