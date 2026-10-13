@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/branding/animated_phoenix.dart';
 import '../../../../core/branding/phoenix.dart';
 import '../../../../core/theme/glass.dart';
 import '../../../../core/theme/status_colors.dart';
@@ -34,17 +35,53 @@ class ConnectButton extends ConsumerStatefulWidget {
 }
 
 class _ConnectButtonState extends ConsumerState<ConnectButton>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final AnimationController _spin = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 1300),
   );
+  // Drives the wing flap: a loop while connecting, then a short settling
+  // burst once connected that ends on fully open wings.
+  late final AnimationController _flap = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 2600),
+  );
+  VpnStatus? _lastStatus;
   bool _pressed = false;
 
   @override
   void dispose() {
     _spin.dispose();
+    _flap.dispose();
     super.dispose();
+  }
+
+  /// Starts the right wing motion when the connection state changes: a loop
+  /// while busy, a one-off welcome flap on connect, held still when off. Kept
+  /// finite when connected so widget tests still settle.
+  void _onStatus(VpnStatus status) {
+    if (status == _lastStatus) return;
+    _lastStatus = status;
+    switch (status) {
+      case VpnStatus.connecting || VpnStatus.disconnecting:
+        _flap.repeat(period: const Duration(milliseconds: 520));
+      case VpnStatus.connected:
+        _flap.forward(from: 0);
+      case VpnStatus.disconnected:
+        _flap.stop();
+    }
+  }
+
+  /// The extra wing swing, in degrees, for the current frame.
+  double _flapDegrees(VpnStatus status) {
+    final v = _flap.value;
+    return switch (status) {
+      VpnStatus.connecting || VpnStatus.disconnecting =>
+        13 * math.sin(v * 2 * math.pi),
+      // A few flaps on arrival, damped so the wings settle fully open.
+      VpnStatus.connected => 11 * math.sin(v * 2 * math.pi * 3) * (1 - v) * (1 - v),
+      VpnStatus.disconnected => 0,
+    };
   }
 
   Future<void> _onTap() async {
@@ -86,6 +123,15 @@ class _ConnectButtonState extends ConsumerState<ConnectButton>
     final ash = context.colors.onSurfaceVariant.withValues(alpha: 0.65);
     final l10n = context.l10n;
     final size = widget.size;
+
+    // Wings: tucked when off, part-open and beating while connecting, flung
+    // fully open on connect.
+    _onStatus(status);
+    final targetSpread = connected
+        ? 1.0
+        : busy
+        ? 0.9
+        : 0.0;
 
     return Semantics(
       button: true,
@@ -146,11 +192,21 @@ class _ConnectButtonState extends ConsumerState<ConnectButton>
                       tint: heat > 0 ? fire : null,
                       tintStrength: 0.2 * heat,
                       child: Center(
-                        child: PhoenixMark(
-                          size: size * 0.68,
-                          heat: heat,
-                          ash: ash,
-                          glow: heat * 0.6,
+                        child: TweenAnimationBuilder<double>(
+                          tween: Tween(end: targetSpread),
+                          duration: const Duration(milliseconds: 820),
+                          curve: Curves.easeOutCubic,
+                          builder: (context, spread, _) => AnimatedBuilder(
+                            animation: _flap,
+                            builder: (context, _) => AnimatedPhoenix(
+                              size: size * 0.74,
+                              spread: spread,
+                              flapDegrees: _flapDegrees(status),
+                              heat: heat,
+                              ash: ash,
+                              glow: heat * 0.6,
+                            ),
+                          ),
                         ),
                       ),
                     ),
