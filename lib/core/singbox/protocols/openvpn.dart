@@ -423,7 +423,9 @@ class _Profile {
   final blocks = <String, String>{};
   final connections = <_Profile>[];
 
-  static _Profile parse(String text) {
+  /// [inConnection]: parsing a `<connection>` block, which cannot hold
+  /// another one (a crafted file nesting thousands would recurse that deep).
+  static _Profile parse(String text, {bool inConnection = false}) {
     final profile = _Profile();
     final lines = text.replaceFirst('﻿', '').split(RegExp(r'\r?\n'));
     for (var i = 0; i < lines.length; i++) {
@@ -437,7 +439,11 @@ class _Profile {
           body.add(lines[i]);
         }
         if (tag == 'connection') {
-          profile.connections.add(_Profile.parse(body.join('\n')));
+          if (!inConnection) {
+            profile.connections.add(
+              _Profile.parse(body.join('\n'), inConnection: true),
+            );
+          }
         } else {
           profile.blocks[tag] = body.join('\n').trim();
         }

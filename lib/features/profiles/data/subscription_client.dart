@@ -44,6 +44,10 @@ class SubscriptionClient {
   static const userAgent = 'AghelanGhiamat/${AppInfo.version}';
   static const timeout = Duration(seconds: 20);
 
+  /// Real subscriptions are a few hundred KB at most; anything far bigger
+  /// is a broken or hostile server trying to run the phone out of memory.
+  static const maxBytes = 8 * 1024 * 1024;
+
   Future<SubscriptionResponse> fetch(String url) async {
     final uri = Uri.tryParse(url.trim());
     if (uri == null ||
@@ -51,18 +55,38 @@ class SubscriptionClient {
         uri.host.isEmpty) {
       throw const SubscriptionException('invalid URL');
     }
-    final http.Response response;
+    final request = http.Request('GET', uri)
+      ..headers.addAll({'User-Agent': userAgent, 'Accept': '*/*'});
+    final List<int> bytes;
+    final http.StreamedResponse response;
     try {
-      response = await _client
-          .get(uri, headers: {'User-Agent': userAgent, 'Accept': '*/*'})
-          .timeout(timeout);
+      (response, bytes) = await _download(request).timeout(timeout);
+    } on SubscriptionException {
+      rethrow;
     } on Exception catch (e) {
       throw SubscriptionException(e.toString());
     }
+    final body = utf8.decode(bytes, allowMalformed: true);
+    return SubscriptionResponse(body, response.headers);
+  }
+
+  Future<(http.StreamedResponse, List<int>)> _download(
+    http.Request request,
+  ) async {
+    final response = await _client.send(request);
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw SubscriptionException('HTTP ${response.statusCode}');
     }
-    final body = utf8.decode(response.bodyBytes, allowMalformed: true);
-    return SubscriptionResponse(body, response.headers);
+    if ((response.contentLength ?? 0) > maxBytes) {
+      throw const SubscriptionException('response too large');
+    }
+    final bytes = <int>[];
+    await for (final chunk in response.stream) {
+      bytes.addAll(chunk);
+      if (bytes.length > maxBytes) {
+        throw const SubscriptionException('response too large');
+      }
+    }
+    return (response, bytes);
   }
 }

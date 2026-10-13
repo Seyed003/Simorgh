@@ -92,7 +92,15 @@ void main() {
             .firstWhere((e) => e is VpnStarted)
             .timeout(const Duration(seconds: 15));
         expect(await p.isRunning(), isTrue);
-        expect(File('${dir.path}/core/config.json').existsSync(), isTrue);
+        // The config (with the servers' secrets) goes in on stdin, never
+        // to a file another program could read or swap.
+        expect(
+          dir
+              .listSync(recursive: true)
+              .whereType<File>()
+              .where((f) => f.path.endsWith('.json')),
+          isEmpty,
+        );
         expect(await p.coreVersion(), isNotEmpty);
 
         final stopped = p.events.firstWhere((e) => e is VpnStopped);
@@ -103,6 +111,18 @@ void main() {
         expect(await p.isRunning(), isFalse);
       },
     );
+
+    test('checks configs through stdin', skip: skip, () async {
+      final p = platform(exe: binary);
+      expect(
+        await p.checkConfig(config(mixedPort: 20808, apiPort: 20809)),
+        isNull,
+      );
+      expect(
+        await p.checkConfig('{"outbounds":[{"type":"no-such-type"}]}'),
+        contains('no-such-type'),
+      );
+    });
 
     test('a core that fails to start reports coreExited', skip: skip, () async {
       final p = platform(exe: binary);

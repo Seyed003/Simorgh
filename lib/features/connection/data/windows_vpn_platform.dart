@@ -71,19 +71,10 @@ class WindowsVpnPlatform implements VpnPlatform {
 
     final workDir = (await workingDirectory())!;
     await _killOrphan(workDir);
-    final configFile = File('$workDir${Platform.pathSeparator}config.json');
-    await configFile.writeAsString(request.configJson, flush: true);
 
     _recentLines.clear();
     _stopRequested = false;
-    final process = await Process.start(exe.path, [
-      'run',
-      '-c',
-      configFile.path,
-      '-D',
-      workDir,
-      '--disable-color',
-    ], workingDirectory: workDir);
+    final process = await _runWithConfig(exe, request.configJson, workDir);
     _process = process;
     await File('$workDir${Platform.pathSeparator}core.pid')
         .writeAsString('${process.pid}');
@@ -167,23 +158,49 @@ class WindowsVpnPlatform implements VpnPlatform {
   Future<String?> checkConfig(String configJson) async {
     final exe = File(coreExecutable);
     if (!exe.existsSync()) return 'core not found: ${exe.path}';
-    final dir = await _testerDirectory();
-    final file = File('${dir.path}${Platform.pathSeparator}check.json');
-    await file.writeAsString(configJson, flush: true);
-    final result = await Process.run(exe.path, [
+    final process = await Process.start(exe.path, [
       'check',
       '-c',
-      file.path,
+      'stdin',
       '--disable-color',
     ]);
-    if (result.exitCode == 0) return null;
-    final output = '${result.stderr}\n${result.stdout}'.trim();
-    return output.isEmpty ? 'exit code ${result.exitCode}' : output;
+    final stdout = process.stdout.transform(const SystemEncoding().decoder);
+    final stderr = process.stderr.transform(const SystemEncoding().decoder);
+    final outputs = Future.wait([stderr.join(), stdout.join()]);
+    process.stdin.write(configJson);
+    await process.stdin.close();
+    final code = await process.exitCode;
+    if (code == 0) return null;
+    final output = (await outputs).join('\n').trim();
+    return output.isEmpty ? 'exit code $code' : output;
   }
 
-  /// The tester is a second, unprivileged sing-box process without TUN.
-  /// `route.auto_detect_interface` in its config binds its sockets to the
-  /// physical interface, so a running tunnel does not wrap measurements.
+  /// Starts `sing-box run` with [configJson] on its standard input. The
+  /// config never touches the disk: it holds the servers' secrets, and a
+  /// file in the user's profile could be swapped by any program the user
+  /// runs before the (elevated) core reads it.
+  Future<Process> _runWithConfig(
+    File exe,
+    String configJson,
+    String workDir,
+  ) async {
+    final process = await Process.start(exe.path, [
+      'run',
+      '-c',
+      'stdin',
+      '-D',
+      workDir,
+      '--disable-color',
+    ], workingDirectory: workDir);
+    process.stdin.write(configJson);
+    await process.stdin.close();
+    return process;
+  }
+
+  /// The tester is a second sing-box process without TUN (elevated like
+  /// the app itself). `route.auto_detect_interface` in its config binds its
+  /// sockets to the physical interface, so a running tunnel does not wrap
+  /// measurements.
   @override
   Future<void> startTester(String configJson) async {
     await stopTester();
@@ -192,16 +209,7 @@ class WindowsVpnPlatform implements VpnPlatform {
       throw VpnError(VpnErrorCode.coreMissing, exe.path);
     }
     final dir = await _testerDirectory();
-    final file = File('${dir.path}${Platform.pathSeparator}tester.json');
-    await file.writeAsString(configJson, flush: true);
-    final process = await Process.start(exe.path, [
-      'run',
-      '-c',
-      file.path,
-      '-D',
-      dir.path,
-      '--disable-color',
-    ], workingDirectory: dir.path);
+    final process = await _runWithConfig(exe, configJson, dir.path);
     _tester = process;
     final output = <String>[];
     for (final stream in [process.stdout, process.stderr]) {
@@ -264,12 +272,19 @@ class WindowsVpnPlatform implements VpnPlatform {
   /// `net session` only succeeds in an elevated process.
   static Future<bool> isElevated() async {
     try {
-      final result = await Process.run('net', ['session'], runInShell: true);
+      final result = await Process.run(systemTool('net.exe'), ['session']);
       return result.exitCode == 0;
     } on ProcessException {
       return false;
     }
   }
+
+  /// A Windows tool by its full path. A bare name would also be looked up
+  /// next to the app, where (in an unzipped folder) anyone could drop a
+  /// program the elevated app then runs.
+  static String systemTool(String name) =>
+      '${Platform.environment['SystemRoot'] ?? r'C:\Windows'}'
+      '\\System32\\$name';
 
   /// Kills a core left running by a previous crashed session, which would
   /// otherwise keep the TUN interface and ports busy.
@@ -280,7 +295,7 @@ class WindowsVpnPlatform implements VpnPlatform {
     final pid = int.tryParse((await pidFile.readAsString()).trim());
     await pidFile.delete();
     if (pid == null) return;
-    final list = await Process.run('tasklist', [
+    final list = await Process.run(systemTool('tasklist.exe'), [
       '/FI',
       'PID eq $pid',
       '/FO',
@@ -288,7 +303,7 @@ class WindowsVpnPlatform implements VpnPlatform {
       '/NH',
     ]);
     if ((list.stdout as String).toLowerCase().contains('sing-box.exe')) {
-      await Process.run('taskkill', ['/PID', '$pid', '/F']);
+      await Process.run(systemTool('taskkill.exe'), ['/PID', '$pid', '/F']);
     }
   }
 

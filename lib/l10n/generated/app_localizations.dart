@@ -1295,7 +1295,7 @@ abstract class AppLocalizations {
   /// No description provided for @insecureHint.
   ///
   /// In en, this message translates to:
-  /// **'This config does not check the server\'s certificate: someone on the way could read or change its traffic'**
+  /// **'This config does not check who the server is (its certificate or SSH key): someone on the way could read or change its traffic'**
   String get insecureHint;
 
   /// No description provided for @autoReconnecting.
@@ -1873,6 +1873,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The international internet is reachable again.'**
   String get nationalBack;
+
+  /// No description provided for @subscriptionHttpWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'This address is not encrypted (http, not https): your internet provider could read it and swap its configs for its own servers. Use an https link if the seller has one.'**
+  String get subscriptionHttpWarning;
 }
 
 class _AppLocalizationsDelegate

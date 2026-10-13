@@ -701,7 +701,7 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get insecureHint =>
-      'این کانفیگ گواهی سرور را بررسی نمی‌کند: ممکن است کسی در مسیر، ترافیک آن را بخواند یا تغییر دهد';
+      'این کانفیگ هویت سرور (گواهی یا کلید SSH) را بررسی نمی‌کند؛ کسی که سر راه است می‌تواند ترافیک را بخواند یا تغییر دهد';
 
   @override
   String get autoReconnecting => 'اتصال قطع شد؛ در حال وصل شدن دوباره…';
@@ -1045,4 +1045,8 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get nationalBack => 'اینترنت بین‌الملل دوباره در دسترس است.';
+
+  @override
+  String get subscriptionHttpWarning =>
+      'این آدرس رمزنگاری نشده است (http به‌جای https): ارائه‌دهنده‌ی اینترنت می‌تواند آن را ببیند و کانفیگ‌هایش را با سرورهای خودش عوض کند. اگر فروشنده لینک https دارد، از آن استفاده کنید.';
 }

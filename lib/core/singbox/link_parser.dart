@@ -65,6 +65,12 @@ abstract final class LinkParser {
       throw LinkParseException(e.message);
     } on RangeError catch (e) {
       throw LinkParseException(e.message.toString());
+    } on StateError catch (e) {
+      // A link with an empty list where one value is needed (`host=,`).
+      throw LinkParseException(e.message);
+    } on TypeError {
+      // JSON inside a link (vmess://, xhttp extra) with the wrong types.
+      throw const LinkParseException('malformed link');
     }
   }
 

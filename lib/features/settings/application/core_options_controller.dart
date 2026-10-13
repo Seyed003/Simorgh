@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -5,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/singbox/builder/core_options.dart';
 import '../../../core/storage/preferences.dart';
+import '../../../core/utils/net_utils.dart';
 
 final coreOptionsProvider =
     NotifierProvider<CoreOptionsController, CoreOptions>(
@@ -23,7 +25,26 @@ class CoreOptionsController extends Notifier<CoreOptions> {
 
   @override
   CoreOptions build() {
-    final raw = ref.watch(sharedPreferencesProvider).getString(_key);
+    final prefs = ref.watch(sharedPreferencesProvider);
+    final options = _load(prefs.getString(_key));
+    final secured = _withPassword(options);
+    if (!identical(secured, options)) {
+      unawaited(prefs.setString(_key, jsonEncode(secured.toJson())));
+    }
+    return secured;
+  }
+
+  /// A local proxy that should ask for a password but has none (the
+  /// Windows default, older settings, a restored backup) gets one: an open
+  /// proxy lets any program on the computer use the VPN.
+  static CoreOptions _withPassword(CoreOptions options) =>
+      options.mixedPort != null &&
+          options.mixedAuth &&
+          (options.mixedPassword ?? '').isEmpty
+      ? options.copyWith(mixedPassword: randomHexSecret(8))
+      : options;
+
+  CoreOptions _load(String? raw) {
     final defaults = defaultCoreOptions();
     if (raw == null) return defaults;
     try {
@@ -41,14 +62,21 @@ class CoreOptionsController extends Notifier<CoreOptions> {
   }
 
   Future<void> update(CoreOptions Function(CoreOptions current) change) async {
-    state = change(state);
+    state = _withPassword(change(state));
     await ref
         .read(sharedPreferencesProvider)
         .setString(_key, jsonEncode(state.toJson()));
   }
 
   Future<void> reset() async {
-    state = defaultCoreOptions();
-    await ref.read(sharedPreferencesProvider).remove(_key);
+    final prefs = ref.read(sharedPreferencesProvider);
+    final defaults = defaultCoreOptions();
+    state = _withPassword(defaults);
+    // Stored only to keep a new proxy password across restarts.
+    if (identical(state, defaults)) {
+      await prefs.remove(_key);
+    } else {
+      await prefs.setString(_key, jsonEncode(state.toJson()));
+    }
   }
 }
