@@ -1883,7 +1883,7 @@ abstract class AppLocalizations {
   /// No description provided for @freeConfig.
   ///
   /// In en, this message translates to:
-  /// **'Free config'**
+  /// **'Free connection'**
   String get freeConfig;
 
   /// No description provided for @freeConfigTitle.

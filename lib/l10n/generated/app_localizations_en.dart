@@ -1061,7 +1061,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'This address is not encrypted (http, not https): your internet provider could read it and swap its configs for its own servers. Use an https link if the seller has one.';
 
   @override
-  String get freeConfig => 'Free config';
+  String get freeConfig => 'Free connection';
 
   @override
   String freeConfigTitle(String network) {

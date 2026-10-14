@@ -1051,7 +1051,7 @@ class AppLocalizationsFa extends AppLocalizations {
       'این آدرس رمزنگاری نشده است (http به‌جای https): ارائه‌دهنده‌ی اینترنت می‌تواند آن را ببیند و کانفیگ‌هایش را با سرورهای خودش عوض کند. اگر فروشنده لینک https دارد، از آن استفاده کنید.';
 
   @override
-  String get freeConfig => 'کانفیگ رایگان';
+  String get freeConfig => 'اتصال رایگان';
 
   @override
   String freeConfigTitle(String network) {

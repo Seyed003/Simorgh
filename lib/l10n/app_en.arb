@@ -618,7 +618,7 @@
   "nationalStillCut": "Still only Iranian sites are reachable.",
   "nationalBack": "The international internet is reachable again.",
   "subscriptionHttpWarning": "This address is not encrypted (http, not https): your internet provider could read it and swap its configs for its own servers. Use an https link if the seller has one.",
-  "freeConfig": "Free config",
+  "freeConfig": "Free connection",
   "freeConfigTitle": "A free config for {network}",
   "@freeConfigTitle": {
     "placeholders": {
