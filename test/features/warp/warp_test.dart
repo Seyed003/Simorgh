@@ -92,6 +92,35 @@ void main() {
     expect(offline.register(), throwsA(isA<WarpException>()));
   });
 
+  test('blocked API falls back to a clean Cloudflare IP', () async {
+    final tried = <String>[];
+    final client = WarpClient(
+      // The API's own address is blocked.
+      MockClient((_) async => throw http.ClientException('blocked')),
+      cleanIps: (host) async {
+        expect(host, 'api.cloudflareclient.com');
+        return ['1.1.1.2', '1.0.0.3'];
+      },
+      clientForIp: (ip) => MockClient((request) async {
+        tried.add(ip);
+        expect(request.url.toString(), '${WarpClient.defaultApi}/reg');
+        // The first clean IP is dead; the second answers.
+        if (ip == '1.1.1.2') throw http.ClientException('reset');
+        return http.Response(warpAnswer(), 200);
+      }),
+    );
+    final account = await client.register(random: Random(1));
+    expect(tried, ['1.1.1.2', '1.0.0.3']);
+    expect(isWarp(account.config()), isTrue);
+  });
+
+  test('without a clean-IP finder a blocked API still just fails', () async {
+    final client = WarpClient(
+      MockClient((_) async => throw http.ClientException('blocked')),
+    );
+    expect(client.register(), throwsA(isA<WarpException>()));
+  });
+
   test('endpoint samples and moving a config', () {
     final sample = sampleWarpEndpoints(24, Random(1));
     expect(sample, hasLength(24));

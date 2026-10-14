@@ -1,11 +1,15 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/io_client.dart';
 
 import '../../../core/singbox/link_parser.dart';
 import '../../../core/singbox/proxy_config.dart';
+import '../../clean_ip/data/clean_ip_scanner.dart';
 import '../../profiles/data/subscription_client.dart';
 import 'x25519.dart';
 
@@ -61,42 +65,83 @@ class WarpException implements Exception {
   String toString() => message;
 }
 
+/// Finds reachable Cloudflare edge IPs for [host] when its own address is
+/// blocked; fastest scan hits first, empty when none are found.
+typedef CleanIpFinder = Future<List<String>> Function(String host);
+
 /// Registers a new WARP device with Cloudflare's client API, as the
 /// official app does.
 class WarpClient {
-  const WarpClient(this._client, {this.api = defaultApi});
+  WarpClient(
+    this._client, {
+    this.api = defaultApi,
+    this.cleanIps,
+    http.Client Function(String ip)? clientForIp,
+  }) : _clientForIp = clientForIp ?? _pinnedClient;
 
   static const defaultApi = 'https://api.cloudflareclient.com/v0a2158';
+  static const _timeout = Duration(seconds: 8);
+  static const _headers = {
+    'User-Agent': 'okhttp/3.12.1',
+    'CF-Client-Version': 'a-6.10-2158',
+    'Content-Type': 'application/json; charset=UTF-8',
+  };
 
   final http.Client _client;
   final String api;
 
+  /// Supplies clean Cloudflare edge IPs when the API's own address is blocked.
+  final CleanIpFinder? cleanIps;
+
+  /// Builds a client whose TCP goes to a given IP while TLS and the request
+  /// keep the API's hostname.
+  final http.Client Function(String ip) _clientForIp;
+
   Future<WarpAccount> register({Random? random, DateTime? now}) async {
     final (private, public) = generateKeyPair(random);
-    final http.Response response;
+    final body = jsonEncode({
+      'install_id': '',
+      'fcm_token': '',
+      'tos': (now ?? DateTime.now()).toUtc().toIso8601String(),
+      'key': base64.encode(public),
+      'type': 'Android',
+      'model': 'PC',
+      'locale': 'en_US',
+    });
+
+    Future<WarpAccount> over(http.Client client) async => _account(
+      await client
+          .post(Uri.parse('$api/reg'), headers: _headers, body: body)
+          .timeout(_timeout),
+      private,
+    );
+
+    // Directly first: instant where api.cloudflareclient.com is reachable
+    // (abroad, or with a tunnel already up).
     try {
-      response = await _client
-          .post(
-            Uri.parse('$api/reg'),
-            headers: const {
-              'User-Agent': 'okhttp/3.12.1',
-              'CF-Client-Version': 'a-6.10-2158',
-              'Content-Type': 'application/json; charset=UTF-8',
-            },
-            body: jsonEncode({
-              'install_id': '',
-              'fcm_token': '',
-              'tos': (now ?? DateTime.now()).toUtc().toIso8601String(),
-              'key': base64.encode(public),
-              'type': 'Android',
-              'model': 'PC',
-              'locale': 'en_US',
-            }),
-          )
-          .timeout(const Duration(seconds: 20));
-    } on Exception catch (e) {
-      throw WarpException(e.toString());
+      return await over(_client);
+    } on Exception catch (direct) {
+      // Its address is blocked (e.g. Iran, no tunnel yet): reach it over a
+      // clean Cloudflare edge IP. The whole edge serves the API, so any
+      // reachable IP works while SNI and Host stay the real hostname, which
+      // steps around DNS poisoning and the blocking of its own addresses.
+      final finder = cleanIps;
+      if (finder == null) throw WarpException(direct.toString());
+      for (final ip in await finder(Uri.parse(api).host)) {
+        final client = _clientForIp(ip);
+        try {
+          return await over(client);
+        } on Exception {
+          // Try the next clean IP.
+        } finally {
+          client.close();
+        }
+      }
+      throw WarpException(direct.toString());
     }
+  }
+
+  WarpAccount _account(http.Response response, List<int> private) {
     if (response.statusCode != 200) {
       throw WarpException('HTTP ${response.statusCode}');
     }
@@ -134,11 +179,47 @@ class WarpClient {
       reserved: reserved,
     );
   }
+
+  /// A client pinned to [ip]: the TCP connection goes there, but TLS uses the
+  /// request's hostname for SNI and the certificate check.
+  static http.Client _pinnedClient(String ip) {
+    final io = HttpClient()..connectionTimeout = _timeout;
+    io.connectionFactory = (uri, proxyHost, proxyPort) =>
+        Socket.startConnect(ip, uri.port);
+    return IOClient(io);
+  }
 }
 
 final warpClientProvider = Provider<WarpClient>(
-  (ref) => WarpClient(ref.watch(httpClientProvider)),
+  (ref) =>
+      WarpClient(ref.watch(httpClientProvider), cleanIps: _cleanCloudflareIps),
 );
+
+/// Scans for reachable Cloudflare edge IPs that can serve [host], the same
+/// way the app finds clean IPs for configs; returns up to a few.
+Future<List<String>> _cleanCloudflareIps(String host) async {
+  final scanner = CleanIpScanner(sampleSize: 150, concurrency: 24);
+  final ips = <String>[];
+  final enough = Completer<void>();
+  final sub = scanner.scan(host).listen(
+    (update) {
+      if (update.hit == null) return;
+      ips.add(update.hit!.ip);
+      if (ips.length >= 3 && !enough.isCompleted) enough.complete();
+    },
+    onDone: () {
+      if (!enough.isCompleted) enough.complete();
+    },
+  );
+  try {
+    await enough.future.timeout(const Duration(seconds: 12));
+  } on TimeoutException {
+    // Use whatever answered in time.
+  } finally {
+    await sub.cancel();
+  }
+  return ips;
+}
 
 /// Cloudflare's WARP peer key: marks a WireGuard config as WARP.
 const warpPeerKey = 'bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=';
