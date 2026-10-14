@@ -8,6 +8,7 @@ tray marks the black is keyed to alpha from brightness.
 
 Outputs:
   assets/branding/app_icon.png                       1024, rounded
+  assets/branding/phoenix_mark.png                   transparent, connect button
   android/.../mipmap-*/ic_launcher.png               legacy launcher
   android/.../mipmap-*/ic_launcher_foreground.png    adaptive foreground
   windows/runner/resources/app_icon.ico
@@ -102,6 +103,12 @@ def foreground(size, height_frac=0.60):
     return fg
 
 
+def mark(height=720):
+    """The phoenix on its own (transparent), for the in-app connect button."""
+    b = bird_rgba()
+    return b.resize((round(b.size[0] * height / b.size[1]), height), Image.LANCZOS)
+
+
 def tray(size, grey=False):
     bird = bird_rgba()
     if grey:
@@ -134,6 +141,7 @@ DENSITIES = [('mdpi', 48), ('hdpi', 72), ('xhdpi', 96), ('xxhdpi', 144), ('xxxhd
 
 def main():
     save_png(full_icon(1024, 224), 'assets/branding/app_icon.png')
+    save_png(mark(), 'assets/branding/phoenix_mark.png')
     for density, size in DENSITIES:
         save_png(full_icon(size, round(size * 0.22)),
                  f'android/app/src/main/res/mipmap-{density}/ic_launcher.png')
