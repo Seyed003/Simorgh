@@ -10,7 +10,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Aghelan Ghiamat';
+  String get appTitle => 'Simorgh';
 
   @override
   String get statusDisconnected => 'Disconnected';
@@ -997,7 +997,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Opens the app’s folder: copy it to a flash drive for another PC.';
 
   @override
-  String get shareAppTitle => 'Send Aghelan Ghiamat';
+  String get shareAppTitle => 'Send Simorgh';
 
   @override
   String get shareAppFailed =>

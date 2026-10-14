@@ -72,7 +72,7 @@ void main() {
           platform: CorePlatform.windows,
         ).build(LinkParser.parse(trojanTls));
         final inbounds = _list(config['inbounds']);
-        expect(inbounds.first['interface_name'], 'AghelanGhiamat');
+        expect(inbounds.first['interface_name'], 'Simorgh');
         expect(inbounds.first['address'], [
           '172.19.0.1/30',
           'fdfe:dcba:9876::1/126',

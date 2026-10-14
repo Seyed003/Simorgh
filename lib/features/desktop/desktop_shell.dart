@@ -22,7 +22,7 @@ Future<void> initDesktopWindow() async {
     size: Size(1100, 720),
     minimumSize: Size(400, 600),
     center: true,
-    title: 'Aghelan Ghiamat',
+    title: 'Simorgh',
   );
   await windowManager.waitUntilReadyToShow(options, () async {
     await windowManager.show();

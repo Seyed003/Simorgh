@@ -10,7 +10,7 @@ class AppLocalizationsFa extends AppLocalizations {
   AppLocalizationsFa([String locale = 'fa']) : super(locale);
 
   @override
-  String get appTitle => 'عاقلان قیامت';
+  String get appTitle => 'سیمرغ';
 
   @override
   String get statusDisconnected => 'قطع';
@@ -987,7 +987,7 @@ class AppLocalizationsFa extends AppLocalizations {
       'پوشه‌ی برنامه باز می‌شود: آن را برای کامپیوتر دیگر روی فلش کپی کنید.';
 
   @override
-  String get shareAppTitle => 'فرستادن عاقلان قیامت';
+  String get shareAppTitle => 'فرستادن سیمرغ';
 
   @override
   String get shareAppFailed =>

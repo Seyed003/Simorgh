@@ -7,8 +7,8 @@
 
 namespace {
 
-constexpr wchar_t kWindowTitle[] = L"Aghelan Ghiamat";
-constexpr wchar_t kSingleInstanceMutex[] = L"AghelanGhiamat.SingleInstance";
+constexpr wchar_t kWindowTitle[] = L"Simorgh";
+constexpr wchar_t kSingleInstanceMutex[] = L"Simorgh.SingleInstance";
 
 // Only one instance may own the TUN adapter; a second launch brings the
 // existing window (possibly hidden in the tray) to the front instead.

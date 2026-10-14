@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "Aghelan Ghiamat" "\0"
-            VALUE "FileDescription", "Aghelan Ghiamat VPN" "\0"
+            VALUE "CompanyName", "Simorgh" "\0"
+            VALUE "FileDescription", "Simorgh VPN" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "aghelan_ghiamat" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 Aghelan Ghiamat contributors. GPL-3.0-or-later." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 Simorgh contributors. GPL-3.0-or-later." "\0"
             VALUE "OriginalFilename", "aghelan_ghiamat.exe" "\0"
-            VALUE "ProductName", "Aghelan Ghiamat" "\0"
+            VALUE "ProductName", "Simorgh" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

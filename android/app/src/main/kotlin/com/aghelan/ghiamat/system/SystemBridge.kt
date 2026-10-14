@@ -162,7 +162,7 @@ class SystemBridge(private val activity: Activity) : MethodChannel.MethodCallHan
         val version = runCatching {
             activity.packageManager.getPackageInfo(activity.packageName, 0).versionName
         }.getOrNull()
-        val name = if (version.isNullOrBlank()) "AghelanGhiamat.apk" else "AghelanGhiamat-$version.apk"
+        val name = if (version.isNullOrBlank()) "Simorgh.apk" else "Simorgh-$version.apk"
         val uri = ApkProvider.uri(activity.packageName, name)
         val send = Intent(Intent.ACTION_SEND).apply {
             type = ApkProvider.MIME

@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="assets/branding/app_icon.png" width="112" alt="Aghelan Ghiamat icon">
+<img src="assets/branding/app_icon.png" width="112" alt="Simorgh icon">
 
-# Aghelan Ghiamat · عاقلان قیامت
+# Simorgh · سیمرغ
 
 Open-source VPN client for **Android** and **Windows**, powered by the
 [sing-box](https://github.com/SagerNet/sing-box) core.

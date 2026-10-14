@@ -10,7 +10,7 @@
 #ifndef AppVersion
   #define AppVersion "0.0.0"
 #endif
-#define AppName "Aghelan Ghiamat"
+#define AppName "Simorgh"
 #define AppExe "aghelan_ghiamat.exe"
 #define BuildDir "..\..\build\windows\x64\runner\Release"
 
@@ -21,7 +21,7 @@ AppId={{00aeb273-b3a0-4ec3-945a-baff4404f400}
 AppName={#AppName}
 AppVersion={#AppVersion}
 AppVerName={#AppName} {#AppVersion}
-AppPublisher=Aghelan Ghiamat
+AppPublisher=Simorgh
 AppPublisherURL=https://github.com/seyed003/aghelan-ghiamat
 DefaultDirName={autopf}\{#AppName}
 DefaultGroupName={#AppName}

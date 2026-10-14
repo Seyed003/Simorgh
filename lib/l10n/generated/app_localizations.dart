@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
-  /// **'Aghelan Ghiamat'**
+  /// **'Simorgh'**
   String get appTitle;
 
   /// No description provided for @statusDisconnected.
@@ -1769,7 +1769,7 @@ abstract class AppLocalizations {
   /// No description provided for @shareAppTitle.
   ///
   /// In en, this message translates to:
-  /// **'Send Aghelan Ghiamat'**
+  /// **'Send Simorgh'**
   String get shareAppTitle;
 
   /// No description provided for @shareAppFailed.

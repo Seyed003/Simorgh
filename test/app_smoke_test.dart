@@ -28,14 +28,14 @@ Future<void> _pumpApp(WidgetTester tester, Map<String, Object> prefs) async {
 void main() {
   testWidgets('defaults to Persian with right-to-left layout', (tester) async {
     await _pumpApp(tester, {});
-    expect(find.text('عاقلان قیامت'), findsOneWidget);
+    expect(find.text('سیمرغ'), findsOneWidget);
     final direction = Directionality.of(tester.element(find.byType(Scaffold)));
     expect(direction, TextDirection.rtl);
   });
 
   testWidgets('English is left-to-right', (tester) async {
     await _pumpApp(tester, {'settings.language': 'en'});
-    expect(find.text('Aghelan Ghiamat'), findsOneWidget);
+    expect(find.text('Simorgh'), findsOneWidget);
     final direction = Directionality.of(tester.element(find.byType(Scaffold)));
     expect(direction, TextDirection.ltr);
   });

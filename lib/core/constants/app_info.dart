@@ -1,7 +1,7 @@
 /// Static facts about the application that never change at runtime.
 abstract final class AppInfo {
-  static const String name = 'Aghelan Ghiamat';
-  static const String nameFa = 'عاقلان قیامت';
+  static const String name = 'Simorgh';
+  static const String nameFa = 'سیمرغ';
   static const String repositoryUrl =
       'https://github.com/seyed003/aghelan-ghiamat';
   static const String license = 'GPL-3.0-or-later';

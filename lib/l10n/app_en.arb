@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "appTitle": "Aghelan Ghiamat",
+  "appTitle": "Simorgh",
   "statusDisconnected": "Disconnected",
   "statusConnecting": "Connecting…",
   "statusConnected": "Connected",
@@ -599,7 +599,7 @@
   "shareApp": "Share the app",
   "shareAppHint": "Send it to another phone by Bluetooth, Nearby Share or a messenger. No internet needed.",
   "shareAppHintWindows": "Opens the app’s folder: copy it to a flash drive for another PC.",
-  "shareAppTitle": "Send Aghelan Ghiamat",
+  "shareAppTitle": "Send Simorgh",
   "shareAppFailed": "This copy of the app can’t be sent as one file.",
   "nationalTitle": "Only Iranian sites are reachable",
   "nationalHint": "The international internet looks cut off (national internet). Configs with a server abroad won’t connect directly.",
