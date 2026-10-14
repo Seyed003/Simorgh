@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/branding/phoenix.dart';
+import '../../core/branding/phoenix_image.dart';
 import '../../core/platform/system_bridge.dart';
 import '../../core/theme/glass.dart';
 import '../../core/utils/context_ext.dart';
@@ -323,8 +323,7 @@ class _TabItem extends StatelessWidget {
       AppTab.home => TweenAnimationBuilder<double>(
         tween: Tween(end: selected ? 1 : 0),
         duration: const Duration(milliseconds: 300),
-        builder: (context, heat, _) =>
-            PhoenixMark(size: 28, heat: heat, ash: color),
+        builder: (context, heat, _) => PhoenixImageMark(size: 28, heat: heat),
       ),
       AppTab.servers => Icon(
         selected ? Icons.dns_rounded : Icons.dns_outlined,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/branding/phoenix.dart';
+import '../../../core/branding/phoenix_image.dart';
 import '../../../core/utils/context_ext.dart';
 import '../../../core/widgets/dialogs.dart';
 import '../../../core/widgets/glass_widgets.dart';
@@ -244,11 +244,7 @@ class _EmptyState extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
       child: Column(
         children: [
-          PhoenixMark(
-            size: 72,
-            heat: 0,
-            ash: context.colors.onSurfaceVariant.withValues(alpha: 0.5),
-          ),
+          const PhoenixImageMark(size: 72, heat: 0),
           const SizedBox(height: 16),
           Text(
             l10n.noConfigs,

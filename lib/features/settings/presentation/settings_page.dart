@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/branding/phoenix.dart';
+import '../../../core/branding/phoenix_image.dart';
 import '../../../core/constants/app_info.dart';
 import '../../../core/platform/system_bridge.dart';
 import '../../../core/theme/glass.dart';
@@ -228,12 +228,7 @@ class _AboutCard extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
         child: Column(
           children: [
-            PhoenixMark(
-              size: 92,
-              ring: true,
-              ringColor: context.colors.primary.withValues(alpha: 0.4),
-              glow: 0.5,
-            ),
+            const PhoenixImageMark(size: 92, glow: 0.5),
             const SizedBox(height: 10),
             Text(
               '${AppInfo.nameFa} · ${AppInfo.name}',
