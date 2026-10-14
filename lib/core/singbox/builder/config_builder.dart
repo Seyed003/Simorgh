@@ -167,7 +167,7 @@ class SingBoxConfigBuilder {
         'type': 'tun',
         'tag': ConfigTags.tunIn,
         if (platform == CorePlatform.windows)
-          'interface_name': 'AghelanGhiamat',
+          'interface_name': 'Simorgh',
         'address': [
           '172.19.0.1/30',
           if (options.enableIpv6) 'fdfe:dcba:9876::1/126',

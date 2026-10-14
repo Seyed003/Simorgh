@@ -90,7 +90,7 @@ void main() {
     expect(outcome.subscription!.info!.used, 30);
     expect(
       requests.single.headers['User-Agent'],
-      startsWith('AghelanGhiamat/'),
+      startsWith('Simorgh/'),
     );
     final state = c.read(profilesProvider).value!;
     expect(state.profilesOf(outcome.subscription!.id), hasLength(2));

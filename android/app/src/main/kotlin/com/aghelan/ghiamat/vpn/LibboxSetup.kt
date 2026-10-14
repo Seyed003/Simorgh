@@ -24,7 +24,7 @@ object LibboxSetup {
             fixAndroidStack = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P ||
                 Build.VERSION.SDK_INT in Build.VERSION_CODES.N..Build.VERSION_CODES.N_MR1
             logMaxLines = 1000
-            crashReportSource = "AghelanGhiamat"
+            crashReportSource = "Simorgh"
         }
         Libbox.setup(options)
     }

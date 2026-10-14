@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">عاقلان قیامت</string>
+    <string name="app_name">سیمرغ</string>
     <string name="vpn_channel_name">وضعیت VPN</string>
     <string name="vpn_status_connecting">در حال اتصال…</string>
     <string name="vpn_status_connected">متصل</string>

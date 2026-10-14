@@ -43,7 +43,7 @@ class SubscriptionClient {
 
   final http.Client _client;
 
-  static const userAgent = 'AghelanGhiamat/${AppInfo.version}';
+  static const userAgent = 'Simorgh/${AppInfo.version}';
   static const timeout = Duration(seconds: 20);
 
   /// Real subscriptions are a few hundred KB at most; anything far bigger

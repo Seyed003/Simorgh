@@ -163,7 +163,7 @@ jobs:
         run: |
           $setup = Start-Process build\installer\aghelan-ghiamat-windows-x64-setup.exe -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -Wait -PassThru
           if ($setup.ExitCode -ne 0) { throw "setup exited with $($setup.ExitCode)" }
-          $dir = Join-Path $env:ProgramFiles 'Aghelan Ghiamat'
+          $dir = Join-Path $env:ProgramFiles 'Simorgh'
           foreach ($file in 'aghelan_ghiamat.exe', 'core\sing-box.exe', 'unins000.exe') {
             if (-not (Test-Path (Join-Path $dir $file))) { throw "not installed: $file" }
           }

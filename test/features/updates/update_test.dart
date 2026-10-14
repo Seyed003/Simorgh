@@ -35,7 +35,7 @@ void main() {
       String tag, {
       int status = 200,
       Map<String, Object> prefs = const {},
-      String host = 'https://github.com/Seyed003/aghelan-ghiamat',
+      String host = 'https://github.com/Seyed003/Simorgh',
     }) async {
       calls = 0;
       final client = MockClient((request) async {

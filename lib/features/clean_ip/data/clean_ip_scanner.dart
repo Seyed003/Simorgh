@@ -99,7 +99,7 @@ Future<CleanIpHit?> _httpsProbe(
     tls.write(
       'GET $path HTTP/1.1\r\n'
       'Host: $host\r\n'
-      'User-Agent: AghelanGhiamat\r\n'
+      'User-Agent: Simorgh\r\n'
       'Connection: close\r\n\r\n',
     );
     await tls.flush();
