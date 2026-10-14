@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/branding/phoenix.dart';
+import '../../../core/branding/phoenix_image.dart';
 import '../../../core/theme/glass.dart';
 import '../../../core/utils/context_ext.dart';
 import '../../../core/widgets/glass_widgets.dart';
@@ -113,11 +113,7 @@ class _Brand extends StatelessWidget {
     padding: const EdgeInsetsDirectional.fromSTEB(4, 8, 4, 0),
     child: Row(
       children: [
-        PhoenixMark(
-          size: 40,
-          ring: true,
-          ringColor: context.colors.primary.withValues(alpha: 0.45),
-        ),
+        const PhoenixImageMark(size: 40),
         const SizedBox(width: 10),
         Expanded(
           child: Column(
