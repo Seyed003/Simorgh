@@ -1064,6 +1064,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get freeConfig => 'Free connection';
 
   @override
+  String get freeServersName => 'Free servers';
+
+  @override
+  String get freeServersExplain =>
+      "Uses free, public internet servers; the app finds the fastest working one and connects. These servers are not anonymous or trusted — don't use them for sensitive things like banking or signing in. If they're slow or down, try again in a moment.";
+
+  @override
+  String get freeServersFetching => 'Getting free servers…';
+
+  @override
+  String get freeServersReady => 'Free servers ready';
+
+  @override
   String freeConfigTitle(String network) {
     return 'A free config for $network';
   }

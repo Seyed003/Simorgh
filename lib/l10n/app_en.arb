@@ -619,6 +619,10 @@
   "nationalBack": "The international internet is reachable again.",
   "subscriptionHttpWarning": "This address is not encrypted (http, not https): your internet provider could read it and swap its configs for its own servers. Use an https link if the seller has one.",
   "freeConfig": "Free connection",
+  "freeServersName": "Free servers",
+  "freeServersExplain": "Uses free, public internet servers; the app finds the fastest working one and connects. These servers are not anonymous or trusted — don't use them for sensitive things like banking or signing in. If they're slow or down, try again in a moment.",
+  "freeServersFetching": "Getting free servers…",
+  "freeServersReady": "Free servers ready",
   "freeConfigTitle": "A free config for {network}",
   "@freeConfigTitle": {
     "placeholders": {

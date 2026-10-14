@@ -1054,6 +1054,19 @@ class AppLocalizationsFa extends AppLocalizations {
   String get freeConfig => 'اتصال رایگان';
 
   @override
+  String get freeServersName => 'سرورهای رایگان';
+
+  @override
+  String get freeServersExplain =>
+      'از سرورهای عمومی و رایگان اینترنت استفاده می‌کند؛ برنامه سریع‌ترینِ سالم را خودش پیدا می‌کند و وصل می‌شود. این سرورها ناشناس و قابل‌اعتماد نیستند — برای کارهای حساس مثل بانک و ورود به حساب‌ها از آن‌ها استفاده نکنید. اگر کُند یا قطع بودند، چند لحظه بعد دوباره بزنید.';
+
+  @override
+  String get freeServersFetching => 'گرفتن سرورهای رایگان…';
+
+  @override
+  String get freeServersReady => 'سرورهای رایگان آماده شد';
+
+  @override
   String freeConfigTitle(String network) {
     return 'کانفیگ رایگان برای $network';
   }
