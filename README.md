@@ -133,8 +133,9 @@ Open-source VPN client for **Android** and **Windows**, powered by the
   the old app), GitHub releases on tags and an in-app update check.
 - **Liquid Glass design:** frosted glass panels with lit rims over an aurora
   backdrop that warms up while connected, a floating glass tab bar (a side
-  rail on wide windows) and the phoenix as the connect button: ash grey when
-  off, catching fire as the tunnel comes up.
+  rail on wide windows) and the phoenix as the connect button: wings folded
+  and ash grey when off, spreading open and flapping as it catches fire while
+  the tunnel comes up.
 - **Persian + English** with full right-to-left layout, light/dark themes,
   bundled Vazirmatn font.
 - **Connection settings:** remote/direct DNS (DoH, DoT, DoQ, UDP, system),
@@ -160,7 +161,8 @@ android/app/src/main/kotlin/com/aghelan/ghiamat/vpn/
                       VpnService + libbox PlatformInterface, Flutter bridge
 windows/              runner (admin manifest, single instance), core/sing-box.exe
 core/xray/            the "xray" sing-box outbound (Go), patched into the core build
-scripts/              build the core (sing-box + Xray), brand generator (phoenix + icons)
+scripts/              build the core (sing-box + Xray); app icon (make_icon.py), animated
+                      phoenix (make_phoenix.py) and the mono mark (make_brand.py)
 test/                 unit, widget and real-core integration tests
 ```
 
