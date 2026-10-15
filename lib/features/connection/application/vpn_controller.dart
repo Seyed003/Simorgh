@@ -441,6 +441,8 @@ class VpnController extends Notifier<VpnState> {
   void _startHealthMonitor() {
     _healthTimer?.cancel();
     _healthFailures = 0;
+    // No point watching (or holding a timer) when recovery is turned off.
+    if (!ref.read(settingsProvider).autoReconnect) return;
     _healthTimer = Timer.periodic(
       healthCheckInterval,
       (_) => unawaited(_healthTick()),

@@ -59,7 +59,10 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(
-          await mockPreferences(prefs),
+          // auto_reconnect off so the dead-tunnel watch's periodic timer is
+          // not left pending when the button connects; these tests are about
+          // the free-connection button, not recovery.
+          await mockPreferences({'settings.auto_reconnect': false, ...prefs}),
         ),
         profileStoreProvider.overrideWithValue(MemoryProfileStore()),
         vpnPlatformProvider.overrideWithValue(FakeVpnPlatform()),
