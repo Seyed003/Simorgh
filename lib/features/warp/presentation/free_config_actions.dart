@@ -44,15 +44,16 @@ Future<void> getFreeConnection(BuildContext context, WidgetRef ref) async {
       () => free.ensure(name: l10n.freeServersName),
     );
   } on Object {
-    // Couldn't reach any server list: try the free WARP route instead.
-    if (context.mounted) await getFreeConfig(context, ref);
+    // Couldn't reach any server list: fall back to the free WARP route.
+    // The disclosure above already covered this, so don't ask again.
+    if (context.mounted) await getFreeConfig(context, ref, askFirst: false);
     return;
   } finally {
     status.dispose();
   }
   if (!context.mounted) return;
   if (count <= 0) {
-    await getFreeConfig(context, ref);
+    await getFreeConfig(context, ref, askFirst: false);
     return;
   }
 
@@ -69,8 +70,13 @@ Future<void> getFreeConnection(BuildContext context, WidgetRef ref) async {
 }
 
 /// The "free config" button: finds the fastest WARP route on the user's
-/// operator, selects it and connects.
-Future<void> getFreeConfig(BuildContext context, WidgetRef ref) async {
+/// operator, selects it and connects. [askFirst] is false when another flow
+/// (the free-servers button falling back here) has already shown a disclosure.
+Future<void> getFreeConfig(
+  BuildContext context,
+  WidgetRef ref, {
+  bool askFirst = true,
+}) async {
   final l10n = context.l10n;
   final service = ref.read(freeConfigServiceProvider);
   NetworkIdentity network;
@@ -81,7 +87,7 @@ Future<void> getFreeConfig(BuildContext context, WidgetRef ref) async {
   }
   if (!context.mounted) return;
   // Explained once; afterwards the button just does it.
-  if (service.profileId == null) {
+  if (askFirst && service.profileId == null) {
     final ok = await confirmDialog(
       context,
       title: l10n.freeConfigTitle(networkLabel(context, network)),
