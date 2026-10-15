@@ -1883,8 +1883,32 @@ abstract class AppLocalizations {
   /// No description provided for @freeConfig.
   ///
   /// In en, this message translates to:
-  /// **'Free config'**
+  /// **'Free connection'**
   String get freeConfig;
+
+  /// No description provided for @freeServersName.
+  ///
+  /// In en, this message translates to:
+  /// **'Free servers'**
+  String get freeServersName;
+
+  /// No description provided for @freeServersExplain.
+  ///
+  /// In en, this message translates to:
+  /// **'Uses free, public internet servers; the app finds the fastest working one and connects.'**
+  String get freeServersExplain;
+
+  /// No description provided for @freeServersFetching.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting free servers…'**
+  String get freeServersFetching;
+
+  /// No description provided for @freeServersReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Free servers ready'**
+  String get freeServersReady;
 
   /// No description provided for @freeConfigTitle.
   ///

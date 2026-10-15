@@ -1061,7 +1061,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'This address is not encrypted (http, not https): your internet provider could read it and swap its configs for its own servers. Use an https link if the seller has one.';
 
   @override
-  String get freeConfig => 'Free config';
+  String get freeConfig => 'Free connection';
+
+  @override
+  String get freeServersName => 'Free servers';
+
+  @override
+  String get freeServersExplain =>
+      "Uses free, public internet servers; the app finds the fastest working one and connects. These servers are not anonymous or trusted — don't use them for sensitive things like banking or signing in. If they're slow or down, try again in a moment.";
+
+  @override
+  String get freeServersFetching => 'Getting free servers…';
+
+  @override
+  String get freeServersReady => 'Free servers ready';
 
   @override
   String freeConfigTitle(String network) {

@@ -10,6 +10,7 @@ import 'package:aghelan_ghiamat/features/network/application/internet_reach.dart
 import 'package:aghelan_ghiamat/features/network/domain/network_identity.dart';
 import 'package:aghelan_ghiamat/features/profiles/application/profiles_controller.dart';
 import 'package:aghelan_ghiamat/features/profiles/data/profile_store.dart';
+import 'package:aghelan_ghiamat/features/profiles/data/subscription_client.dart';
 import 'package:aghelan_ghiamat/features/warp/application/free_config.dart';
 import 'package:aghelan_ghiamat/features/warp/application/warp_service.dart';
 import 'package:aghelan_ghiamat/features/warp/data/warp_client.dart';
@@ -62,6 +63,11 @@ void main() {
         ),
         profileStoreProvider.overrideWithValue(MemoryProfileStore()),
         vpnPlatformProvider.overrideWithValue(FakeVpnPlatform()),
+        // The free-servers lists are out of reach here, so the free button
+        // falls back to WARP — the deterministic path these tests exercise.
+        httpClientProvider.overrideWithValue(
+          MockClient((_) async => http.Response('', 404)),
+        ),
         reachProbeProvider.overrideWithValue(const FakeReachProbe()),
         trafficProvider.overrideWith((ref) => Stream.value(TrafficStats.zero)),
         systemBridgeProvider.overrideWithValue(bridge),
@@ -201,7 +207,9 @@ void main() {
     expect(c.read(profilesProvider).value!.selectedId, ready.profile.id);
   });
 
-  testWidgets('the home button finds a route and connects', (tester) async {
+  testWidgets('the home button discloses, falls back to WARP and connects', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(420, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -214,24 +222,27 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Free config'));
+    await tester.tap(find.text('Free connection'));
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 50)),
     );
     await tester.pumpAndSettle();
-    expect(find.text('A free config for Irancell'), findsOneWidget);
+    // First use shows the public-servers disclosure.
+    expect(find.text('Free servers'), findsOneWidget);
     await tester.tap(find.text('Find and connect'));
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 300)),
-    );
-    await tester.pumpAndSettle();
-    expect(find.text('Free config ready for Irancell'), findsOneWidget);
-    // Connecting takes a little real I/O (a free local port).
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 300)),
-    );
-    await tester.pumpAndSettle();
+    // The curated lists 404 here, so it falls back to WARP without a second
+    // prompt and connects. (The free-servers happy path is unit-tested in
+    // free_servers_test.dart; here we check the button's wiring.) Two progress
+    // dialogs and a real free local port are involved, so pump single frames —
+    // their spinners would stall pumpAndSettle — while the async work runs,
+    // until the core is handed its config.
     final platform = c.read(vpnPlatformProvider) as FakeVpnPlatform;
+    for (var i = 0; i < 100 && platform.requests.isEmpty; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+      await tester.pump();
+    }
     expect(platform.requests, hasLength(1));
     expect(c.read(profilesProvider).value!.selected!.name, 'Free · Irancell');
   });
@@ -249,6 +260,6 @@ void main() {
     );
     await tester.pumpAndSettle();
     // A layout overflow would fail the test on its own.
-    expect(find.text('کانفیگ رایگان'), findsOneWidget);
+    expect(find.text('اتصال رایگان'), findsOneWidget);
   });
 }
