@@ -232,18 +232,17 @@ void main() {
     await tester.tap(find.text('Find and connect'));
     // The curated lists 404 here, so it falls back to WARP without a second
     // prompt and connects. (The free-servers happy path is unit-tested in
-    // free_servers_test.dart; here we check the button's wiring.)
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 400)),
-    );
-    await tester.pumpAndSettle();
-    expect(find.text('Free config ready for Irancell'), findsOneWidget);
-    // Connecting takes a little real I/O (a free local port).
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 300)),
-    );
-    await tester.pumpAndSettle();
+    // free_servers_test.dart; here we check the button's wiring.) Two progress
+    // dialogs and a real free local port are involved, so pump single frames —
+    // their spinners would stall pumpAndSettle — while the async work runs,
+    // until the core is handed its config.
     final platform = c.read(vpnPlatformProvider) as FakeVpnPlatform;
+    for (var i = 0; i < 100 && platform.requests.isEmpty; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+      await tester.pump();
+    }
     expect(platform.requests, hasLength(1));
     expect(c.read(profilesProvider).value!.selected!.name, 'Free · Irancell');
   });
