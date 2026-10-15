@@ -23,14 +23,19 @@ void main() {
   Future<ProviderContainer> create({
     String links = '',
     FakeVpnPlatform? fake,
+    Map<String, Object> prefs = const {},
+    bool? tunnelAlive,
   }) async {
     platform = fake ?? FakeVpnPlatform();
-    final prefs = await mockPreferences();
     final container = ProviderContainer(
       overrides: [
-        sharedPreferencesProvider.overrideWithValue(prefs),
+        sharedPreferencesProvider.overrideWithValue(
+          await mockPreferences(prefs),
+        ),
         profileStoreProvider.overrideWithValue(MemoryProfileStore()),
         vpnPlatformProvider.overrideWithValue(platform),
+        if (tunnelAlive case final alive?)
+          tunnelProbeProvider.overrideWithValue((_) async => alive),
       ],
     );
     addTearDown(container.dispose);
@@ -128,6 +133,72 @@ void main() {
     await _settle();
     expect(platform.requests, hasLength(2));
     expect(c.read(vpnControllerProvider).status, VpnStatus.disconnected);
+  });
+
+  test('with auto-reconnect off a drop is left to the user', () async {
+    VpnController.reconnectDelay = const Duration(milliseconds: 10);
+    addTearDown(
+      () => VpnController.reconnectDelay = const Duration(seconds: 2),
+    );
+    final c = await create(
+      links: trojanBare,
+      prefs: {'settings.auto_reconnect': false},
+    );
+    await c.read(vpnControllerProvider.notifier).connect();
+    await _settle();
+    platform.emit(const VpnStopped(VpnError(VpnErrorCode.coreExited, 'boom')));
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    await _settle();
+    expect(platform.requests, hasLength(1));
+    expect(c.read(vpnControllerProvider).status, VpnStatus.disconnected);
+  });
+
+  test('a dead tunnel reconnects by itself', () async {
+    VpnController.healthCheckInterval = const Duration(milliseconds: 10);
+    addTearDown(
+      () => VpnController.healthCheckInterval = const Duration(seconds: 20),
+    );
+    final c = await create(links: trojanBare, tunnelAlive: false);
+    await c.read(vpnControllerProvider.notifier).connect();
+    await _settle();
+    expect(c.read(vpnControllerProvider).status, VpnStatus.connected);
+    expect(platform.requests, hasLength(1));
+    // The health probe keeps failing, so after the threshold it reconnects.
+    await Future<void>.delayed(const Duration(milliseconds: 150));
+    await _settle();
+    expect(platform.requests.length, greaterThan(1));
+  });
+
+  test('a healthy tunnel is left running', () async {
+    VpnController.healthCheckInterval = const Duration(milliseconds: 10);
+    addTearDown(
+      () => VpnController.healthCheckInterval = const Duration(seconds: 20),
+    );
+    final c = await create(links: trojanBare, tunnelAlive: true);
+    await c.read(vpnControllerProvider.notifier).connect();
+    await _settle();
+    await Future<void>.delayed(const Duration(milliseconds: 150));
+    await _settle();
+    expect(platform.requests, hasLength(1));
+    expect(c.read(vpnControllerProvider).status, VpnStatus.connected);
+  });
+
+  test('a dead tunnel is left alone when auto-reconnect is off', () async {
+    VpnController.healthCheckInterval = const Duration(milliseconds: 10);
+    addTearDown(
+      () => VpnController.healthCheckInterval = const Duration(seconds: 20),
+    );
+    final c = await create(
+      links: trojanBare,
+      tunnelAlive: false,
+      prefs: {'settings.auto_reconnect': false},
+    );
+    await c.read(vpnControllerProvider.notifier).connect();
+    await _settle();
+    await Future<void>.delayed(const Duration(milliseconds: 150));
+    await _settle();
+    expect(platform.requests, hasLength(1));
+    expect(c.read(vpnControllerProvider).status, VpnStatus.connected);
   });
 
   test('selecting another profile while connected reconnects to it', () async {

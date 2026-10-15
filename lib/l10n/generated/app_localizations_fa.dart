@@ -707,6 +707,13 @@ class AppLocalizationsFa extends AppLocalizations {
   String get autoReconnecting => 'اتصال قطع شد؛ در حال وصل شدن دوباره…';
 
   @override
+  String get autoReconnect => 'اتصال همیشگی';
+
+  @override
+  String get autoReconnectHint =>
+      'اگر اتصال قطع شد یا تونل روشن ماند ولی دیگر اینترنت رد نکرد، خودش دوباره وصل می‌شود. در حالت خودکار به سرور دیگری هم سوییچ می‌کند.';
+
+  @override
   String get tools => 'ابزارها';
 
   @override

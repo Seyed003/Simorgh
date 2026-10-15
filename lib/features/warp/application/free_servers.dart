@@ -20,12 +20,18 @@ class FreeServersService {
 
   final Ref _ref;
 
-  /// Tried in order until one returns usable configs. Kept small and
-  /// already speed-curated so the latency test can measure them all on a
-  /// phone without choking.
+  /// Tried in order until one returns usable configs, so the most reliable,
+  /// best-curated lists come first. Several more follow as fall-backs for
+  /// when one is unreachable or a repo moves. All are small, already
+  /// speed-curated lists (share links or a base64 blob of them) so the
+  /// latency test can measure them on a phone without choking — not the
+  /// giant thousands-of-config aggregators.
   static const sources = <String>[
     'https://cdn.jsdelivr.net/gh/0xRadikal/Free-v2ray-Configs@main/top100.txt',
     'https://cdn.jsdelivr.net/gh/mahdibland/V2RayAggregator@master/Eternity.txt',
+    'https://cdn.jsdelivr.net/gh/mahdibland/ShadowsocksAggregator@master/Eternity.txt',
+    'https://cdn.jsdelivr.net/gh/ripaojiedian/freenode@main/sub',
+    'https://cdn.jsdelivr.net/gh/Pawdroid/Free-servers@main/sub',
   ];
 
   /// The sources as [addSubscription] stores them: it normalises the url it

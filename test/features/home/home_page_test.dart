@@ -43,7 +43,12 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    final prefs = await mockPreferences({'settings.language': 'en'});
+    // Off so the dead-tunnel watch's periodic timer is not created and left
+    // pending when a test connects (this suite is not testing recovery).
+    final prefs = await mockPreferences({
+      'settings.language': 'en',
+      'settings.auto_reconnect': false,
+    });
     final platform = FakeVpnPlatform();
     final container = ProviderContainer(
       overrides: [

@@ -408,6 +408,8 @@
   "insecure": "Insecure",
   "insecureHint": "This config does not check who the server is (its certificate or SSH key): someone on the way could read or change its traffic",
   "autoReconnecting": "The connection dropped; reconnecting…",
+  "autoReconnect": "Keep me connected",
+  "autoReconnectHint": "Reconnect by itself if the connection drops, or if the tunnel stays on but stops carrying traffic. In auto mode it also switches to another server.",
   "tools": "Tools",
   "backupSave": "Save a backup",
   "backupSaveHint": "Configs, subscriptions and settings in one file. Keep it private: it holds your server passwords.",

@@ -715,6 +715,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoReconnecting => 'The connection dropped; reconnecting…';
 
   @override
+  String get autoReconnect => 'Keep me connected';
+
+  @override
+  String get autoReconnectHint =>
+      'Reconnect by itself if the connection drops, or if the tunnel stays on but stops carrying traffic. In auto mode it also switches to another server.';
+
+  @override
   String get tools => 'Tools';
 
   @override

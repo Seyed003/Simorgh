@@ -1304,6 +1304,18 @@ abstract class AppLocalizations {
   /// **'The connection dropped; reconnecting…'**
   String get autoReconnecting;
 
+  /// No description provided for @autoReconnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep me connected'**
+  String get autoReconnect;
+
+  /// No description provided for @autoReconnectHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnect by itself if the connection drops, or if the tunnel stays on but stops carrying traffic. In auto mode it also switches to another server.'**
+  String get autoReconnectHint;
+
   /// No description provided for @tools.
   ///
   /// In en, this message translates to:
