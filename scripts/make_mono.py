@@ -10,7 +10,8 @@ Run from the repo root:  python3 scripts/make_mono.py
 """
 import os
 
-from PIL import Image, ImageDraw, ImageFilter
+import numpy as np
+from PIL import Image, ImageDraw
 
 SOURCE = 'assets/branding/phoenix_mark.png'
 RES = 'android/app/src/main/res'
@@ -24,37 +25,29 @@ MONO_FILL = 0.62  # glyph within the adaptive safe zone
 
 
 def glyph():
-    """A clean white silhouette of the phoenix: drop the faint ring and the
-    stray embers, keep only the bird."""
+    """A clean, smooth silhouette of the phoenix.
+
+    Keeps only the bird's own connected region (so the faint ring and the
+    loose embers around it drop away) and reuses the artwork's soft,
+    anti-aliased alpha inside it instead of a hard 1-bit cut — so the feather
+    detail and smooth edges survive down to the small sizes.
+    """
     src = Image.open(SOURCE).convert('RGBA')
-    alpha = src.split()[-1]
-    mask = alpha.point(lambda v: 255 if v > 55 else 0).convert('L')
-    # Opening removes the thin ring and specks; a light blur rounds the edges.
-    mask = mask.filter(ImageFilter.MinFilter(7)).filter(ImageFilter.MaxFilter(7))
-    mask = mask.filter(ImageFilter.GaussianBlur(0.6)).point(
-        lambda v: 255 if v > 128 else 0
-    )
-    # Keep only the component the bird's centre sits in (drops loose embers).
-    px = mask.load()
-    w, h = mask.size
-    sx = sy = n = 0
-    for y in range(0, h, 2):
-        for x in range(0, w, 2):
-            if px[x, y]:
-                sx += x
-                sy += y
-                n += 1
-    seed = (sx // n, sy // n)
-    if not px[seed[0], seed[1]]:
-        seed = next(
-            (x, y)
-            for y in range(h)
-            for x in range(w)
-            if px[x, y]
-        )
-    ImageDraw.floodfill(mask, seed, 128, thresh=10)
-    bird = mask.point(lambda v: 255 if v == 128 else 0).convert('L')
-    return bird.crop(bird.getbbox())
+    alpha = np.array(src)[:, :, 3]
+    binary = Image.fromarray(((alpha > 40) * 255).astype('uint8'), 'L')
+
+    a = np.array(binary)
+    ys, xs = np.where(a > 0)
+    seed = (int(round(xs.mean())), int(round(ys.mean())))
+    if a[seed[1], seed[0]] == 0:  # centre fell on a gap: snap to nearest ink
+        i = int(np.argmin((xs - seed[0]) ** 2 + (ys - seed[1]) ** 2))
+        seed = (int(xs[i]), int(ys[i]))
+    flood = binary.copy()
+    ImageDraw.floodfill(flood, seed, 128, thresh=10)
+    bird = np.array(flood) == 128
+
+    out = Image.fromarray((alpha * bird).astype('uint8'), 'L')
+    return out.crop(out.getbbox())
 
 
 def white(a):
