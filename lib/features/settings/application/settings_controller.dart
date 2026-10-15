@@ -12,6 +12,7 @@ class SettingsController extends Notifier<AppSettings> {
   static const _themeKey = 'settings.theme_mode';
   static const _languageKey = 'settings.language';
   static const _subscriptionUpdateKey = 'settings.subscription_update_hours';
+  static const _autoReconnectKey = 'settings.auto_reconnect';
 
   @override
   AppSettings build() {
@@ -25,6 +26,9 @@ class SettingsController extends Notifier<AppSettings> {
       subscriptionUpdateHours:
           prefs.getInt(_subscriptionUpdateKey) ??
           const AppSettings().subscriptionUpdateHours,
+      autoReconnect:
+          prefs.getBool(_autoReconnectKey) ??
+          const AppSettings().autoReconnect,
     );
   }
 
@@ -45,5 +49,12 @@ class SettingsController extends Notifier<AppSettings> {
     await ref
         .read(sharedPreferencesProvider)
         .setString(_languageKey, language.name);
+  }
+
+  Future<void> setAutoReconnect(bool value) async {
+    state = state.copyWith(autoReconnect: value);
+    await ref
+        .read(sharedPreferencesProvider)
+        .setBool(_autoReconnectKey, value);
   }
 }

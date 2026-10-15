@@ -13,6 +13,7 @@ import '../../../core/utils/formatters.dart';
 import '../../../core/utils/net_utils.dart';
 import '../../connection/application/vpn_controller.dart';
 import '../application/core_options_controller.dart';
+import '../application/settings_controller.dart';
 import '../domain/dns_presets.dart';
 import '../../network/application/network_tuning.dart';
 import '../../network/presentation/smart_setup_tile.dart';
@@ -141,6 +142,8 @@ class ConnectionSettingsSection extends ConsumerWidget {
 
     final android =
         ref.watch(vpnPlatformProvider).corePlatform == CorePlatform.android;
+    final settings = ref.watch(settingsProvider);
+    final settingsController = ref.read(settingsProvider.notifier);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -148,6 +151,16 @@ class ConnectionSettingsSection extends ConsumerWidget {
         GlassGroup(
           children: [
             const SmartSetupTile(),
+            SwitchListTile(
+              secondary: const TileIcon(
+                Icons.autorenew_rounded,
+                TileIcon.blue,
+              ),
+              title: Text(l10n.autoReconnect),
+              subtitle: Text(l10n.autoReconnectHint),
+              value: settings.autoReconnect,
+              onChanged: settingsController.setAutoReconnect,
+            ),
             if (android) const KillSwitchTile(),
             if (android)
               ListTile(

@@ -31,4 +31,19 @@ void main() {
     expect(container.read(settingsProvider).language, AppLanguage.en);
     expect(container.read(settingsProvider).subscriptionUpdateHours, 0);
   });
+
+  test('auto-reconnect is on by default and persists', () async {
+    final container = await createContainer();
+    addTearDown(container.dispose);
+    expect(container.read(settingsProvider).autoReconnect, isTrue);
+
+    await container.read(settingsProvider.notifier).setAutoReconnect(false);
+    expect(
+      container
+          .read(sharedPreferencesProvider)
+          .getBool('settings.auto_reconnect'),
+      isFalse,
+    );
+    expect(container.read(settingsProvider).autoReconnect, isFalse);
+  });
 }

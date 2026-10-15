@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:aghelan_ghiamat/core/storage/preferences.dart';
 import 'package:aghelan_ghiamat/features/connection/application/vpn_controller.dart';
 import 'package:aghelan_ghiamat/features/profiles/application/profiles_controller.dart';
@@ -79,6 +81,21 @@ void main() {
 
     final state = await c.read(profilesProvider.future);
     expect(state.subscriptions, hasLength(1));
+  });
+
+  test('imports a source that returns a base64 blob', () async {
+    // Some of the curated lists are a base64 blob of share links, not plain
+    // text; the parser decodes them, so ensure() still yields servers.
+    final blob = base64.encode(utf8.encode(freeList));
+    final c = await container(
+      MockClient((_) async => http.Response(blob, 200)),
+    );
+    addTearDown(c.dispose);
+
+    final added = await c
+        .read(freeServersServiceProvider)
+        .ensure(name: 'Free servers');
+    expect(added, greaterThan(0));
   });
 
   test('every source is a valid https jsDelivr URL', () {

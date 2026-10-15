@@ -37,6 +37,30 @@ final vpnControllerProvider = NotifierProvider<VpnController, VpnState>(
   VpnController.new,
 );
 
+/// Whether traffic really flows through the live tunnel: the core measures a
+/// real request to a foreign test URL through the active outbound, so a
+/// tunnel that is "connected" but dead (the server stopped passing traffic)
+/// comes back `false`. Injected so tests can drive a dead tunnel without a
+/// running core.
+typedef TunnelProbe = Future<bool> Function(ClashApiOptions clashApi);
+
+final tunnelProbeProvider = Provider<TunnelProbe>(
+  (ref) => (clashApi) async {
+    final client = ClashApiClient(clashApi);
+    // In auto mode the routable tag is a `urltest` GROUP; testing the group
+    // itself would force an immediate re-pick, so measure the member it is
+    // currently using. In single mode 'proxy' is the outbound and proxyNow
+    // is null, so the outbound itself is measured.
+    final active = await client.proxyNow(ConfigTags.proxy);
+    final delay = await client.delay(
+      active ?? ConfigTags.proxy,
+      url: SingBoxConfigBuilder.defaultTestUrl,
+      timeout: const Duration(seconds: 5),
+    );
+    return delay != null;
+  },
+);
+
 /// Live traffic of the running core, reset on every connection.
 final trafficProvider = StreamProvider.autoDispose<TrafficStats>((ref) async* {
   final api = ref.watch(
@@ -114,7 +138,10 @@ class VpnController extends Notifier<VpnState> {
   VpnState build() {
     final platform = ref.watch(vpnPlatformProvider);
     _events = platform.events.listen(_onEvent);
-    ref.onDispose(() => _events?.cancel());
+    ref.onDispose(() {
+      _events?.cancel();
+      _healthTimer?.cancel();
+    });
 
     // Switching servers (or to auto mode) while connected restarts the core.
     ref.listen<String?>(profilesProvider.select((s) => s.value?.selectedId), (
@@ -311,6 +338,7 @@ class VpnController extends Notifier<VpnState> {
   Future<void> disconnect() async {
     if (state.status == VpnStatus.disconnected) return;
     _attempt++;
+    _stopHealthMonitor();
     if (state.findingServer) {
       // The core was never started: just abandon the search.
       state = const VpnState();
@@ -357,7 +385,9 @@ class VpnController extends Notifier<VpnState> {
           profileId: session == null ? null : () => session.profileId,
           autoProfileIds: session?.autoProfileIds,
         );
+        _startHealthMonitor();
       case VpnStopped(:final error):
+        _stopHealthMonitor();
         // A stale stop from the platform must not end a server search.
         if (state.findingServer) return;
         final dropped = error != null && state.isConnected && !_restartPending;
@@ -372,6 +402,7 @@ class VpnController extends Notifier<VpnState> {
   /// When the core dies under a live connection, apps would carry on
   /// without the tunnel: reconnect once, unless that just happened.
   Future<void> _reconnectAfterDrop() async {
+    if (!ref.read(settingsProvider).autoReconnect) return;
     final now = DateTime.now();
     final last = _lastDropReconnect;
     if (last != null && now.difference(last) < reconnectCooldown) return;
@@ -390,6 +421,74 @@ class VpnController extends Notifier<VpnState> {
   static Duration reconnectDelay = const Duration(seconds: 2);
   static const reconnectCooldown = Duration(minutes: 2);
   DateTime? _lastDropReconnect;
+
+  // --- Dead-tunnel watch -------------------------------------------------
+  // While connected, a tunnel can keep reporting "connected" yet stop
+  // carrying traffic (the server was blocked or went down). Nothing fires an
+  // event for that, so probe it: on a run of failures, reconnect — in auto
+  // mode that re-measures the servers and moves to a working one.
+
+  Timer? _healthTimer;
+  int _healthFailures = 0;
+  bool _healthChecking = false;
+  DateTime? _lastRecovery;
+
+  @visibleForTesting
+  static Duration healthCheckInterval = const Duration(seconds: 20);
+  static const healthFailuresToRecover = 3;
+  static const recoveryCooldown = Duration(seconds: 30);
+
+  void _startHealthMonitor() {
+    _healthTimer?.cancel();
+    _healthFailures = 0;
+    _healthTimer = Timer.periodic(
+      healthCheckInterval,
+      (_) => unawaited(_healthTick()),
+    );
+  }
+
+  void _stopHealthMonitor() {
+    _healthTimer?.cancel();
+    _healthTimer = null;
+    _healthFailures = 0;
+    _healthChecking = false;
+  }
+
+  Future<void> _healthTick() async {
+    if (_healthChecking || !ref.mounted) return;
+    if (!ref.read(settingsProvider).autoReconnect) return;
+    final clashApi = state.clashApi;
+    if (!state.isConnected || clashApi == null) return;
+    _healthChecking = true;
+    final attempt = _attempt;
+    final bool alive;
+    try {
+      alive = await ref.read(tunnelProbeProvider)(clashApi);
+    } on Object {
+      return;
+    } finally {
+      _healthChecking = false;
+    }
+    if (!ref.mounted || attempt != _attempt || !state.isConnected) return;
+    if (alive) {
+      _healthFailures = 0;
+      return;
+    }
+    if (++_healthFailures < healthFailuresToRecover) return;
+    unawaited(_recoverDeadTunnel());
+  }
+
+  /// The tunnel is up but carries nothing: reconnect so the core measures the
+  /// servers again and (in auto mode) moves to one that works. Rate-limited
+  /// so a stretch of failures cannot loop.
+  Future<void> _recoverDeadTunnel() async {
+    final now = DateTime.now();
+    final last = _lastRecovery;
+    if (last != null && now.difference(last) < recoveryCooldown) return;
+    _lastRecovery = now;
+    _stopHealthMonitor();
+    await restart();
+  }
 
   void _connectIfRestartPending(VpnError? error) {
     if (!_restartPending) return;
@@ -418,6 +517,9 @@ class VpnController extends Notifier<VpnState> {
       clashApi: session?.clashApi,
       autoProfileIds: session?.autoProfileIds ?? const [],
     );
+    // Reattached to a tunnel the UI did not start, so no VpnStarted event
+    // fired: watch its health from here too (when the session is known).
+    if (state.clashApi != null) _startHealthMonitor();
   }
 
   ({ClashApiOptions clashApi, String? profileId, List<String> autoProfileIds})?
