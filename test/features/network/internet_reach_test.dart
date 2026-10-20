@@ -148,6 +148,27 @@ void main() {
       expect(c.read(effectiveCoreOptionsProvider).directDns, '1.1.1.1');
     });
 
+    test('simulate pins the reach, then hands control back', () async {
+      // The real probe would say "open"; the simulation overrides it.
+      final c = await container(InternetReach.open);
+      final reach = c.read(internetReachProvider.notifier);
+
+      reach.simulate(InternetReach.domesticOnly);
+      expect(c.read(internetReachProvider).domesticOnly, isTrue);
+      expect(c.read(effectiveCoreOptionsProvider).directDns, 'local');
+
+      // A real check (e.g. from the app shell on resume) does not undo it.
+      await reach.check();
+      expect(c.read(internetReachProvider).domesticOnly, isTrue);
+
+      // Handing control back re-runs the probe: open again.
+      reach.simulate(null);
+      await reach.check();
+      expect(c.read(internetReachProvider).reach, InternetReach.open);
+      expect(c.read(internetReachProvider).simulated, isNull);
+      expect(c.read(effectiveCoreOptionsProvider).directDns, '1.1.1.1');
+    });
+
     test('refresh skips a fresh result', () async {
       var runs = 0;
       final c = ProviderContainer(

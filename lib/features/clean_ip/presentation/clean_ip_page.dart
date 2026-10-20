@@ -15,15 +15,37 @@ import '../data/clean_ip_scanner.dart';
 
 /// Finds Cloudflare addresses the user's own connection can reach, and
 /// turns one into a copy of [profile] that uses it.
-class CleanIpPage extends ConsumerWidget {
-  const CleanIpPage({super.key, this.profile});
+class CleanIpPage extends ConsumerStatefulWidget {
+  const CleanIpPage({super.key, this.profile, this.initialProvider});
 
   final Profile? profile;
+
+  /// CDN to preselect when the page opens (e.g. ArvanCloud from the
+  /// national-internet help). `null` keeps the last choice.
+  final CdnProvider? initialProvider;
+
+  @override
+  ConsumerState<CleanIpPage> createState() => _CleanIpPageState();
+}
+
+class _CleanIpPageState extends ConsumerState<CleanIpPage> {
+  Profile? get profile => widget.profile;
 
   String get _host => profile?.config.tlsHost ?? 'speed.cloudflare.com';
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void initState() {
+    super.initState();
+    final initial = widget.initialProvider;
+    if (initial != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) ref.read(cleanIpProvider.notifier).choose(initial);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = context.l10n;
     final locale = context.localeCode;
     final state = ref.watch(cleanIpProvider);
@@ -149,17 +171,13 @@ class CleanIpPage extends ConsumerWidget {
               child: Text(l10n.cleanIpNone, textAlign: TextAlign.center),
             ),
           for (final hit in state.hits)
-            _HitTile(hit: hit, onTap: () => _showActions(context, ref, hit)),
+            _HitTile(hit: hit, onTap: () => _showActions(context, hit)),
         ],
       ),
     );
   }
 
-  Future<void> _showActions(
-    BuildContext context,
-    WidgetRef ref,
-    CleanIpHit hit,
-  ) async {
+  Future<void> _showActions(BuildContext context, CleanIpHit hit) async {
     final l10n = context.l10n;
     final profile = this.profile;
     final action = await showModalBottomSheet<String>(

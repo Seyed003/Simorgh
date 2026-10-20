@@ -8,6 +8,8 @@ import '../../../core/theme/glass.dart';
 import '../../../core/theme/status_colors.dart';
 import '../../../core/utils/context_ext.dart';
 import '../../../core/widgets/glass_widgets.dart';
+import '../../clean_ip/data/clean_ip_scanner.dart';
+import '../../clean_ip/presentation/clean_ip_page.dart';
 import '../../connection/application/vpn_controller.dart';
 import '../../connection/domain/vpn_state.dart';
 import '../../latency/application/latency_controller.dart';
@@ -110,12 +112,26 @@ Future<void> showNationalInternetHelp(BuildContext context, WidgetRef ref) {
                 color: TileIcon.orange,
                 title: l10n.nationalRelay,
                 text: l10n.nationalRelayHint,
+                onTap: () {
+                  Navigator.pop(sheet);
+                  ref.read(appTabProvider.notifier).select(AppTab.servers);
+                },
               ),
               _Step(
                 icon: Icons.cloud_rounded,
                 color: TileIcon.blue,
                 title: l10n.nationalCdn,
                 text: l10n.nationalCdnHint,
+                onTap: () {
+                  Navigator.pop(sheet);
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const CleanIpPage(
+                        initialProvider: CdnProvider.arvan,
+                      ),
+                    ),
+                  );
+                },
               ),
               _Step(
                 icon: Icons.bluetooth_rounded,
@@ -182,6 +198,7 @@ class _Step extends StatelessWidget {
     required this.color,
     required this.title,
     required this.text,
+    this.onTap,
   });
 
   final IconData icon;
@@ -189,10 +206,17 @@ class _Step extends StatelessWidget {
   final String title;
   final String text;
 
+  /// When set, the step becomes a one-tap shortcut to its tool.
+  final VoidCallback? onTap;
+
   @override
   Widget build(BuildContext context) => ListTile(
     leading: TileIcon(icon, color),
     title: Text(title),
     subtitle: Text(text),
+    trailing: onTap == null
+        ? null
+        : const Icon(Icons.chevron_right_rounded),
+    onTap: onTap,
   );
 }

@@ -1054,6 +1054,28 @@ class AppLocalizationsFa extends AppLocalizations {
   String get nationalBack => 'اینترنت بین‌الملل دوباره در دسترس است.';
 
   @override
+  String get devSection => 'توسعه‌دهنده';
+
+  @override
+  String get simulateReach => 'شبیه‌سازی وضعیت اتصال';
+
+  @override
+  String get simulateReachHint =>
+      'فقط در نسخه‌ی توسعه. وانمود می‌کند اینترنت باز است، به اینترنت ملی محدود شده، یا کاملاً قطع است، تا بنر و راه‌حل‌هایش دیده شوند. برای دیدنشان VPN را خاموش کنید.';
+
+  @override
+  String get reachReal => 'واقعی';
+
+  @override
+  String get reachOpen => 'باز';
+
+  @override
+  String get reachNational => 'ملی';
+
+  @override
+  String get reachOffline => 'قطع';
+
+  @override
   String get subscriptionHttpWarning =>
       'این آدرس رمزنگاری نشده است (http به‌جای https): ارائه‌دهنده‌ی اینترنت می‌تواند آن را ببیند و کانفیگ‌هایش را با سرورهای خودش عوض کند. اگر فروشنده لینک https دارد، از آن استفاده کنید.';
 

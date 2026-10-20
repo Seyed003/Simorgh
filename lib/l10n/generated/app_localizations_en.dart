@@ -1064,6 +1064,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nationalBack => 'The international internet is reachable again.';
 
   @override
+  String get devSection => 'Developer';
+
+  @override
+  String get simulateReach => 'Simulate the connection';
+
+  @override
+  String get simulateReachHint =>
+      'Debug builds only. Pretends the link is open, cut back to the national internet, or dead, so the banner and its workarounds show up. Turn the VPN off to see them.';
+
+  @override
+  String get reachReal => 'Real';
+
+  @override
+  String get reachOpen => 'Open';
+
+  @override
+  String get reachNational => 'National';
+
+  @override
+  String get reachOffline => 'Offline';
+
+  @override
   String get subscriptionHttpWarning =>
       'This address is not encrypted (http, not https): your internet provider could read it and swap its configs for its own servers. Use an https link if the seller has one.';
 
