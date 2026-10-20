@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,6 +12,8 @@ import '../../../core/widgets/dialogs.dart';
 import '../../../core/widgets/glass_widgets.dart';
 import '../../backup/presentation/backup_actions.dart';
 import '../../logs/presentation/logs_page.dart';
+import '../../network/application/internet_reach.dart';
+import '../../network/data/reach_probe.dart';
 import '../../network/presentation/share_app.dart';
 import '../../updates/application/update_controller.dart';
 import '../application/settings_controller.dart';
@@ -145,6 +148,10 @@ class SettingsPage extends ConsumerWidget {
             ),
           ],
         ),
+        if (kDebugMode) ...[
+          SectionLabel(l10n.devSection),
+          const _ReachSimulator(),
+        ],
         SectionLabel(l10n.about),
         const _AboutCard(),
         const SizedBox(height: 12),
@@ -289,6 +296,59 @@ class _LabeledControl extends StatelessWidget {
           SizedBox(width: double.infinity, child: child),
         ],
       ),
+    );
+  }
+}
+
+/// Debug-only: pretends the link is open, cut back to the national internet,
+/// or dead, so the national-internet banner and its workarounds can be seen
+/// without the real thing. Never built into a release.
+class _ReachSimulator extends ConsumerWidget {
+  const _ReachSimulator();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final simulated = ref.watch(
+      internetReachProvider.select((s) => s.simulated),
+    );
+    return GlassGroup(
+      children: [
+        _LabeledControl(
+          icon: const TileIcon(Icons.bug_report_rounded, TileIcon.gray),
+          label: l10n.simulateReach,
+          child: SegmentedButton<InternetReach?>(
+            showSelectedIcon: false,
+            segments: [
+              ButtonSegment(value: null, label: Text(l10n.reachReal)),
+              ButtonSegment(
+                value: InternetReach.open,
+                label: Text(l10n.reachOpen),
+              ),
+              ButtonSegment(
+                value: InternetReach.domesticOnly,
+                label: Text(l10n.reachNational),
+              ),
+              ButtonSegment(
+                value: InternetReach.offline,
+                label: Text(l10n.reachOffline),
+              ),
+            ],
+            selected: {simulated},
+            onSelectionChanged: (s) =>
+                ref.read(internetReachProvider.notifier).simulate(s.first),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          child: Text(
+            l10n.simulateReachHint,
+            style: context.theme.textTheme.bodySmall?.copyWith(
+              color: context.colors.onSurfaceVariant,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/singbox/builder/core_options.dart';
@@ -13,12 +15,21 @@ final internetReachProvider =
     );
 
 class InternetReachState {
-  const InternetReachState({this.reach, this.checking = false, this.checkedAt});
+  const InternetReachState({
+    this.reach,
+    this.checking = false,
+    this.checkedAt,
+    this.simulated,
+  });
 
   /// `null` until the first check.
   final InternetReach? reach;
   final bool checking;
   final DateTime? checkedAt;
+
+  /// Developer override pinning [reach] to a chosen value; `null` means the
+  /// real probe decides. Set in debug builds only.
+  final InternetReach? simulated;
 
   bool get domesticOnly => reach == InternetReach.domesticOnly;
 }
@@ -30,7 +41,29 @@ class InternetReachController extends Notifier<InternetReachState> {
   @override
   InternetReachState build() => const InternetReachState();
 
+  /// Pins the result to [forced] so the national-internet banner, the DNS
+  /// fallback and the rest can be exercised on an ordinary connection;
+  /// `null` hands control back to the real probe and checks again at once.
+  /// A developer aid, wired up in debug builds only.
+  void simulate(InternetReach? forced) {
+    state = InternetReachState(
+      reach: forced ?? state.reach,
+      checkedAt: DateTime.now(),
+      simulated: forced,
+    );
+    if (forced == null) unawaited(check());
+  }
+
   Future<void> check() async {
+    final forced = state.simulated;
+    if (forced != null) {
+      state = InternetReachState(
+        reach: forced,
+        checkedAt: DateTime.now(),
+        simulated: forced,
+      );
+      return;
+    }
     if (state.checking) return;
     state = InternetReachState(
       reach: state.reach,

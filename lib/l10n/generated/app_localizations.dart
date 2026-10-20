@@ -1886,6 +1886,48 @@ abstract class AppLocalizations {
   /// **'The international internet is reachable again.'**
   String get nationalBack;
 
+  /// No description provided for @devSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Developer'**
+  String get devSection;
+
+  /// No description provided for @simulateReach.
+  ///
+  /// In en, this message translates to:
+  /// **'Simulate the connection'**
+  String get simulateReach;
+
+  /// No description provided for @simulateReachHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Debug builds only. Pretends the link is open, cut back to the national internet, or dead, so the banner and its workarounds show up. Turn the VPN off to see them.'**
+  String get simulateReachHint;
+
+  /// No description provided for @reachReal.
+  ///
+  /// In en, this message translates to:
+  /// **'Real'**
+  String get reachReal;
+
+  /// No description provided for @reachOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get reachOpen;
+
+  /// No description provided for @reachNational.
+  ///
+  /// In en, this message translates to:
+  /// **'National'**
+  String get reachNational;
+
+  /// No description provided for @reachOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline'**
+  String get reachOffline;
+
   /// No description provided for @subscriptionHttpWarning.
   ///
   /// In en, this message translates to:
