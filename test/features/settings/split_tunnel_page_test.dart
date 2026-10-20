@@ -79,6 +79,8 @@ void main() {
     await tester.tap(find.byIcon(Icons.settings_outlined));
     await tester.pumpAndSettle();
     expect(find.text('All apps'), findsOneWidget);
+    await tester.ensureVisible(find.text('Per-app proxy'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Per-app proxy'));
     await tester.pumpAndSettle();
 
