@@ -100,6 +100,16 @@ class FakeSystemBridge extends SystemBridge {
     sharedApp++;
     return shareable;
   }
+
+  /// Battery-optimisation exemption state the fake reports; `null` = unknown.
+  bool? battery;
+  int batteryRequests = 0;
+
+  @override
+  Future<bool?> batteryUnrestricted() async => battery;
+
+  @override
+  Future<void> requestBatteryUnrestricted() async => batteryRequests++;
 }
 
 /// Answers every check with [result] instead of going online.

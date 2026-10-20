@@ -1286,6 +1286,30 @@ abstract class AppLocalizations {
   /// **'Open settings'**
   String get openSettings;
 
+  /// No description provided for @batteryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep running in the background'**
+  String get batteryTitle;
+
+  /// No description provided for @batteryOn.
+  ///
+  /// In en, this message translates to:
+  /// **'On: the system won\'t kill the tunnel in the background'**
+  String get batteryOn;
+
+  /// No description provided for @batteryOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Restricted: tap to let it stay connected in the background'**
+  String get batteryOff;
+
+  /// No description provided for @batteryUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to let it run in the background without limits'**
+  String get batteryUnknown;
+
   /// No description provided for @insecure.
   ///
   /// In en, this message translates to:
