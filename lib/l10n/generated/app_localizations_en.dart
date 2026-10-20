@@ -652,6 +652,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'YouTube, Instagram and browsers use TCP instead of QUIC through the VPN, which is much faster on most servers';
 
   @override
+  String get blockAds => 'Block ads and trackers';
+
+  @override
+  String get blockAdsHint =>
+      'Drops the big ad and tracker networks, so pages are lighter and less of your browsing is tracked. A light built-in block, not a full ad-blocker; turn off if a site misbehaves';
+
+  @override
   String get home => 'Home';
 
   @override

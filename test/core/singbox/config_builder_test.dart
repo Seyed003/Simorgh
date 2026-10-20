@@ -216,6 +216,45 @@ void main() {
       );
     });
 
+    test('ads are blocked only when asked', () {
+      Map<String, Object?> build(CoreOptions options) => SingBoxConfigBuilder(
+        options: options,
+        platform: CorePlatform.android,
+      ).build(LinkParser.parse(trojanBare));
+
+      bool blocksAds(Map<String, Object?> r) =>
+          (r['rule_set'] as List?)?.contains('block-ads') ?? false;
+
+      // Off by default: nothing about ads in the route.
+      final off = _map(build(const CoreOptions())['route']);
+      expect(_list(off['rules']).where(blocksAds), isEmpty);
+      expect(
+        _list(off['rule_set']).where((s) => s['tag'] == 'block-ads'),
+        isEmpty,
+      );
+
+      // On: a reject rule for the ad rule set, and the inline set itself.
+      final on = _map(build(const CoreOptions(blockAds: true))['route']);
+      expect(_list(on['rules']).singleWhere(blocksAds)['action'], 'reject');
+      final adSet = _list(
+        on['rule_set'],
+      ).singleWhere((s) => s['tag'] == 'block-ads');
+      expect(adSet['type'], 'inline');
+      expect(
+        _list(adSet['rules']).single['domain_suffix'],
+        contains('doubleclick.net'),
+      );
+
+      // Works on its own, without the Iran rule set.
+      final noIran = _map(
+        build(const CoreOptions(bypassIran: false, blockAds: true))['route'],
+      );
+      expect(
+        _list(noIran['rule_set']).map((s) => s['tag']),
+        ['block-ads'],
+      );
+    });
+
     test('TLS fragment and mux go only where they apply', () {
       Map<String, Object?> outbound(String link, CoreOptions options) =>
           prepareOutbound(
