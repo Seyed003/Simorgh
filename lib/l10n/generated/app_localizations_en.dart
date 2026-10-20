@@ -705,6 +705,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get openSettings => 'Open settings';
 
   @override
+  String get batteryTitle => 'Keep running in the background';
+
+  @override
+  String get batteryOn =>
+      "On: the system won't kill the tunnel in the background";
+
+  @override
+  String get batteryOff =>
+      'Restricted: tap to let it stay connected in the background';
+
+  @override
+  String get batteryUnknown => 'Tap to let it run in the background without limits';
+
+  @override
   String get insecure => 'Insecure';
 
   @override

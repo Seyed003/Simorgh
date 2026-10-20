@@ -17,6 +17,7 @@ import '../application/settings_controller.dart';
 import '../domain/dns_presets.dart';
 import '../../network/application/network_tuning.dart';
 import '../../network/presentation/smart_setup_tile.dart';
+import 'battery_tile.dart';
 import 'kill_switch_tile.dart';
 import 'split_tunnel_page.dart';
 
@@ -162,6 +163,7 @@ class ConnectionSettingsSection extends ConsumerWidget {
               onChanged: settingsController.setAutoReconnect,
             ),
             if (android) const KillSwitchTile(),
+            if (android) const BatteryTile(),
             if (android)
               ListTile(
                 leading: const TileIcon(Icons.apps_rounded, TileIcon.blue),

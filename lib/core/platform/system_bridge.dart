@@ -74,6 +74,21 @@ class SystemBridge {
     );
   }
 
+  /// Whether the OS exempts the app from battery optimisation, so the tunnel
+  /// is not killed in the background. `null` off Android or when unreadable.
+  Future<bool?> batteryUnrestricted() async {
+    if (!_android) return null;
+    return _methods.invokeMethod<bool>('batteryUnrestricted');
+  }
+
+  /// Asks the OS to stop battery-optimising the app (its system dialog, or
+  /// the battery-optimisation settings list as a fall-back).
+  Future<void> requestBatteryUnrestricted() async {
+    if (_android) {
+      await _methods.invokeMethod<void>('requestBatteryUnrestricted');
+    }
+  }
+
   /// The network under the VPN; a desktop counts as one network.
   Future<NetworkIdentity> network() async {
     if (!_android) return NetworkIdentity.desktop;

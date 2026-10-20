@@ -697,6 +697,18 @@ class AppLocalizationsFa extends AppLocalizations {
   String get openSettings => 'باز کردن تنظیمات';
 
   @override
+  String get batteryTitle => 'اجرای بی‌وقفه در پس‌زمینه';
+
+  @override
+  String get batteryOn => 'روشن: سیستم تونل را در پس‌زمینه قطع نمی‌کند';
+
+  @override
+  String get batteryOff => 'محدود شده: بزنید تا در پس‌زمینه وصل بماند';
+
+  @override
+  String get batteryUnknown => 'بزنید تا در پس‌زمینه بدون محدودیت اجرا شود';
+
+  @override
   String get insecure => 'ناامن';
 
   @override

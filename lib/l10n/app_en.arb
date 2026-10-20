@@ -405,6 +405,10 @@
     }
   },
   "openSettings": "Open settings",
+  "batteryTitle": "Keep running in the background",
+  "batteryOn": "On: the system won't kill the tunnel in the background",
+  "batteryOff": "Restricted: tap to let it stay connected in the background",
+  "batteryUnknown": "Tap to let it run in the background without limits",
   "insecure": "Insecure",
   "insecureHint": "This config does not check who the server is (its certificate or SSH key): someone on the way could read or change its traffic",
   "autoReconnecting": "The connection dropped; reconnecting…",

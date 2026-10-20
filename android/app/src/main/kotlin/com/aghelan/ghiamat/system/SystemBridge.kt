@@ -1,5 +1,6 @@
 package com.aghelan.ghiamat.system
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ClipData
 import android.content.Intent
@@ -9,6 +10,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
 import android.provider.OpenableColumns
 import android.provider.Settings
 import android.telephony.TelephonyManager
@@ -29,6 +31,9 @@ import io.flutter.plugin.common.MethodChannel
  * - networkInfo: {kind: wifi|cellular|ethernet|other, operator, mccMnc} of
  *   the network under the VPN.
  * - vpnLockdown: {alwaysOn, lockdown} of the running VPN, null when unknown.
+ * - batteryUnrestricted: whether the OS exempts the app from battery
+ *   optimisation (so the service survives in the background), null if unknown.
+ * - requestBatteryUnrestricted: ask the OS for that exemption.
  * - takeShared: what opened the app before Flutter listened.
  * - shareApp {title}: the share sheet with the app's own APK; false when
  *   it is installed as split APKs, which cannot travel as one file.
@@ -145,6 +150,11 @@ class SystemBridge(private val activity: Activity) : MethodChannel.MethodCallHan
                     result.success(mapOf("alwaysOn" to service.isAlwaysOn, "lockdown" to service.isLockdownEnabled))
                 }
             }
+            "batteryUnrestricted" -> result.success(batteryUnrestricted())
+            "requestBatteryUnrestricted" -> {
+                requestBatteryUnrestricted()
+                result.success(null)
+            }
             "networkInfo" -> result.success(networkInfo())
             "shareApp" -> result.success(shareApp(call.argument<String>("title")))
             "takeShared" -> {
@@ -171,6 +181,29 @@ class SystemBridge(private val activity: Activity) : MethodChannel.MethodCallHan
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         return runCatching { activity.startActivity(Intent.createChooser(send, title)) }.isSuccess
+    }
+
+    /** Whether the OS exempts the app from battery optimisation, so the VPN
+     *  service is not killed in the background; null if it cannot be read. */
+    private fun batteryUnrestricted(): Boolean? =
+        activity.getSystemService(PowerManager::class.java)
+            ?.isIgnoringBatteryOptimizations(activity.packageName)
+
+    /** Asks the OS to exempt the app (the system dialog), falling back to the
+     *  battery-optimisation settings list when that request is unavailable. */
+    @SuppressLint("BatteryLife")
+    private fun requestBatteryUnrestricted() {
+        val direct = runCatching {
+            activity.startActivity(
+                Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                    .setData(Uri.parse("package:${activity.packageName}"))
+            )
+        }
+        if (direct.isFailure) {
+            runCatching {
+                activity.startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+            }
+        }
     }
 
     @Suppress("DEPRECATION")

@@ -6,6 +6,9 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SYSTEM_EXEMPTED" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- So the user can let the tunnel keep running without the OS battery
+         saver killing the VPN service in the background. -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <!-- Per-app split tunneling lists the installed apps to choose from. -->
     <uses-permission
         android:name="android.permission.QUERY_ALL_PACKAGES"
