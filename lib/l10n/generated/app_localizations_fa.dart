@@ -643,6 +643,13 @@ class AppLocalizationsFa extends AppLocalizations {
       'یوتیوب، اینستاگرام و مرورگرها به‌جای QUIC از TCP استفاده می‌کنند که از داخل VPN روی بیشتر سرورها خیلی سریع‌تر است';
 
   @override
+  String get blockAds => 'مسدود کردن تبلیغات و ردیاب‌ها';
+
+  @override
+  String get blockAdsHint =>
+      'شبکه‌های اصلی تبلیغات و ردیابی را مسدود می‌کند؛ صفحه‌ها سبک‌تر می‌شوند و کمتر ردیابی می‌شوید. یک مسدودساز سبکِ داخلی است، نه یک ad-blocker کامل؛ اگر سایتی درست کار نکرد خاموشش کنید';
+
+  @override
   String get home => 'خانه';
 
   @override

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import '../protocols/xray_outbound.dart';
 import '../proxy_config.dart';
+import '../rules/ad_rules.dart';
 import '../rules/iran_rules.dart';
 import 'core_options.dart';
 import 'dns_server.dart';
@@ -207,6 +208,10 @@ class SingBoxConfigBuilder {
   }
 
   Map<String, Object?> _route() {
+    final ruleSets = <Map<String, Object?>>[
+      if (options.bypassIran) ...iranRuleSets(ipv6: options.enableIpv6),
+      if (options.blockAds) adRuleSet(),
+    ];
     return {
       'rules': [
         if (options.sniff) {'action': 'sniff'},
@@ -222,9 +227,15 @@ class SingBoxConfigBuilder {
         // once, as Xray does with Vision. Domestic QUIC went direct above.
         if (options.blockQuic)
           {'network': 'udp', 'port': 443, 'action': 'reject'},
+        // Drop connections to the big ad and tracker networks (sniffed by
+        // their domain), so the ad never loads.
+        if (options.blockAds)
+          {
+            'rule_set': [AdRuleSets.ads],
+            'action': 'reject',
+          },
       ],
-      if (options.bypassIran)
-        'rule_set': iranRuleSets(ipv6: options.enableIpv6),
+      if (ruleSets.isNotEmpty) 'rule_set': ruleSets,
       'final': ConfigTags.proxy,
       'auto_detect_interface': true,
       'default_domain_resolver': defaultDomainResolver(options),

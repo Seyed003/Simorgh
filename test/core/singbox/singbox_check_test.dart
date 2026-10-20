@@ -55,6 +55,7 @@ void main() {
         muxProtocol: 'smux',
         perAppMode: PerAppMode.include,
         perAppPackages: ['org.telegram.messenger', 'com.android.chrome'],
+        blockAds: true,
       ),
       platform: CorePlatform.android,
       clashApi: ClashApiOptions(port: 19092, secret: 'z'),

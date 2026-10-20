@@ -219,6 +219,14 @@ class ConnectionSettingsSection extends ConsumerWidget {
               onChanged: (v) =>
                   controller.update((o) => o.copyWith(enableIpv6: v)),
             ),
+            SwitchListTile(
+              secondary: const TileIcon(Icons.block_rounded, TileIcon.red),
+              title: Text(l10n.blockAds),
+              subtitle: Text(l10n.blockAdsHint),
+              value: options.blockAds,
+              onChanged: (v) =>
+                  controller.update((o) => o.copyWith(blockAds: v)),
+            ),
           ],
         ),
         SectionLabel(l10n.advanced),

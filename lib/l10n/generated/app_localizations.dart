@@ -1196,6 +1196,18 @@ abstract class AppLocalizations {
   /// **'YouTube, Instagram and browsers use TCP instead of QUIC through the VPN, which is much faster on most servers'**
   String get blockQuicHint;
 
+  /// No description provided for @blockAds.
+  ///
+  /// In en, this message translates to:
+  /// **'Block ads and trackers'**
+  String get blockAds;
+
+  /// No description provided for @blockAdsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Drops the big ad and tracker networks, so pages are lighter and less of your browsing is tracked. A light built-in block, not a full ad-blocker; turn off if a site misbehaves'**
+  String get blockAdsHint;
+
   /// No description provided for @home.
   ///
   /// In en, this message translates to:

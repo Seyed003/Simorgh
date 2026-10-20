@@ -50,6 +50,7 @@ class CoreOptions {
     this.perAppMode = PerAppMode.off,
     this.perAppPackages = const [],
     this.blockQuic = true,
+    this.blockAds = false,
     this.mixedAuth = true,
     this.mixedPassword,
   });
@@ -122,6 +123,10 @@ class CoreOptions {
   /// is much faster through TCP-based proxies.
   final bool blockQuic;
 
+  /// Reject connections to the big ad and tracker networks, so pages are
+  /// lighter and less of the browsing is tracked. Off by default.
+  final bool blockAds;
+
   /// The local proxy asks for [mixedUsername] and [mixedPassword], so other
   /// apps on the device cannot use it (or learn the server) on their own.
   final bool mixedAuth;
@@ -151,6 +156,7 @@ class CoreOptions {
     PerAppMode? perAppMode,
     List<String>? perAppPackages,
     bool? blockQuic,
+    bool? blockAds,
     bool? mixedAuth,
     String? mixedPassword,
   }) {
@@ -174,6 +180,7 @@ class CoreOptions {
       perAppMode: perAppMode ?? this.perAppMode,
       perAppPackages: perAppPackages ?? this.perAppPackages,
       blockQuic: blockQuic ?? this.blockQuic,
+      blockAds: blockAds ?? this.blockAds,
       mixedAuth: mixedAuth ?? this.mixedAuth,
       mixedPassword: mixedPassword ?? this.mixedPassword,
     );
@@ -197,6 +204,7 @@ class CoreOptions {
     'perAppMode': perAppMode.name,
     'perAppPackages': perAppPackages,
     'blockQuic': blockQuic,
+    'blockAds': blockAds,
     'mixedAuth': mixedAuth,
     'mixedPassword': mixedPassword,
   };
@@ -235,6 +243,7 @@ class CoreOptions {
           ? (json['perAppPackages']! as List).whereType<String>().toList()
           : d.perAppPackages,
       blockQuic: json['blockQuic'] as bool? ?? d.blockQuic,
+      blockAds: json['blockAds'] as bool? ?? d.blockAds,
       mixedAuth: json['mixedAuth'] as bool? ?? d.mixedAuth,
       mixedPassword: json['mixedPassword'] as String? ?? d.mixedPassword,
     );

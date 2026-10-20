@@ -373,6 +373,8 @@
   },
   "blockQuic": "Faster video and apps (block QUIC)",
   "blockQuicHint": "YouTube, Instagram and browsers use TCP instead of QUIC through the VPN, which is much faster on most servers",
+  "blockAds": "Block ads and trackers",
+  "blockAdsHint": "Drops the big ad and tracker networks, so pages are lighter and less of your browsing is tracked. A light built-in block, not a full ad-blocker; turn off if a site misbehaves",
   "home": "Home",
   "tabUsage": "Usage",
   "advanced": "Advanced",
