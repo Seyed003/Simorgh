@@ -90,7 +90,9 @@ ProxyConfig parseOpenVpn(String text, {String? name}) {
     out['mode'] = 'static_key';
     out['static_key'] = profile.inline('secret', 'secret');
     final direction = _direction(
-      secret.length > 1 ? secret[1] : profile.last('key-direction')?.first,
+      secret.length > 1
+          ? secret[1]
+          : profile.last('key-direction')?.firstOrNull,
     );
     if (direction != null) out['key_direction'] = direction;
     final ifconfig = profile.last('ifconfig');

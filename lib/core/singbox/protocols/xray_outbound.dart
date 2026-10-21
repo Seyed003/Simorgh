@@ -31,6 +31,9 @@ const _xrayFingerprints = {
   'randomizednoalpn',
 };
 
+/// XHTTP modes Xray accepts.
+const _xhttpModes = {'auto', 'packet-up', 'stream-up', 'stream-one'};
+
 String _xrayFingerprint(String? fp) {
   final value = (fp ?? '').toLowerCase();
   if (_xrayFingerprints.contains(value)) return value;
@@ -109,10 +112,13 @@ Map<String, Object?> xrayStreamSettings({
           throw const LinkParseException('xhttp "extra" is not an object');
         }
       }
+      // Panels often put the TCP header type ("none") where v2rayN keeps the
+      // mode, and Xray refuses a mode it does not know.
+      final xhttpMode = (mode ?? '').toLowerCase();
       stream['xhttpSettings'] = {
         'path': (path == null || path.isEmpty) ? '/' : path,
         if (hosts.isNotEmpty) 'host': hosts.first,
-        'mode': (mode == null || mode.isEmpty) ? 'auto' : mode,
+        'mode': _xhttpModes.contains(xhttpMode) ? xhttpMode : 'auto',
         'extra': ?extraSettings,
       };
     case 'kcp' || 'mkcp':

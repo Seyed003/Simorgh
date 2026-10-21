@@ -152,6 +152,37 @@ void main() {
       expect(p.isCdnCandidate, isTrue);
     });
 
+    test('VMess xhttp takes its mode from `type` only when it is a mode', () {
+      Map<String, Object?> xhttp(String type) => _map(
+        _map(
+          _map(
+            LinkParser.parse(
+              vmessJson({
+                'v': '2',
+                'ps': 'vm-xhttp',
+                'add': 'vm.example.com',
+                'port': '443',
+                'id': uuid,
+                'aid': '0',
+                'scy': 'auto',
+                'net': 'xhttp',
+                'type': type,
+                'path': '/vx',
+                'tls': 'tls',
+                'sni': 'vm.example.com',
+              }),
+            ).outbound['xray'],
+          )['streamSettings'],
+        )['xhttpSettings'],
+      );
+      // v2rayN keeps the XHTTP mode in `type`...
+      expect(xhttp('packet-up')['mode'], 'packet-up');
+      // ...but many panels fill `type` with the TCP header type for every
+      // network, and Xray refuses an unknown XHTTP mode.
+      expect(xhttp('none')['mode'], 'auto');
+      expect(xhttp('http')['mode'], 'auto');
+    });
+
     test('xhttp with reality, mode and extra', () {
       final stream = _map(
         _map(
