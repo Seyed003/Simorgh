@@ -12,7 +12,7 @@ abstract final class AppInfo {
   static const String releasesPage = '$repositoryUrl/releases/latest';
 
   /// Keep in sync with `version:` in pubspec.yaml.
-  static const String version = '0.2.3';
+  static const String version = '0.2.4';
 
   /// sing-box release that the Android libbox and the Windows binary are
   /// pinned to. Keep in sync with `scripts/core_version.txt`.
