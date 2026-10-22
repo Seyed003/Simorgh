@@ -21,9 +21,15 @@ ProxyConfig parseVless(String link) {
       ? uri.fragment
       : 'VLESS ${uri.host}:$port';
 
-  // XHTTP, mKCP and VLESS Encryption run on the bundled Xray engine.
+  // XHTTP, mKCP, VLESS Encryption and certificate checks sing-box lacks run
+  // on the bundled Xray engine.
   if (isXrayTransport(network) ||
-      (encryption != null && encryption != 'none')) {
+      (encryption != null && encryption != 'none') ||
+      needsXrayCertCheck(
+        security: uri.param(['security']),
+        pinnedCertSha256: uri.param(['pcs']),
+        verifyCertName: uri.param(['vcn']),
+      )) {
     return ProxyConfig(
       protocol: ProxyProtocol.vless,
       name: name,

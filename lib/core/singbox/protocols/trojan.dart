@@ -22,7 +22,12 @@ ProxyConfig parseTrojan(String link) {
   final name = uri.fragment.isNotEmpty
       ? uri.fragment
       : 'Trojan ${uri.host}:$port';
-  if (isXrayTransport(network)) {
+  if (isXrayTransport(network) ||
+      needsXrayCertCheck(
+        security: uri.param(['security']) ?? 'tls',
+        pinnedCertSha256: uri.param(['pcs']),
+        verifyCertName: uri.param(['vcn']),
+      )) {
     return ProxyConfig(
       protocol: ProxyProtocol.trojan,
       name: name,
