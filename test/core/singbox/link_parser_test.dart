@@ -490,6 +490,56 @@ void main() {
     });
   });
 
+  group('certificate checks only Xray has', () {
+    Map<String, Object?> stream(String link) {
+      final p = LinkParser.parse(link);
+      expect(p.outbound['type'], 'xray', reason: link);
+      return _map(_map(p.outbound['xray'])['streamSettings']);
+    }
+
+    // CDN fronting: SNI firefox.com on Fastly, whose certificate is for
+    // *.fastly.com. sing-box can only check it against the SNI, which fails,
+    // so nothing connected although other clients do.
+    test('a ws link with vcn runs on Xray and checks that name', () {
+      final s = stream(vlessWsFronted);
+      expect(s['network'], 'ws');
+      final tls = _map(s['tlsSettings']);
+      expect(tls['serverName'], 'firefox.com');
+      expect(tls['verifyPeerCertByName'], 'www.fastly.com');
+    });
+
+    test('a pinned certificate (pcs) runs on Xray for every protocol', () {
+      for (final link in [
+        'vless://$uuid@cdn.example.com:443?security=tls&sni=firefox.com&type=grpc&serviceName=g&pcs=$pinnedCert#v',
+        'trojan://pass@cdn.example.com:443?sni=firefox.com&type=ws&path=%2Ft&pcs=$pinnedCert#t',
+        'vmess://$uuid@cdn.example.com:443?security=tls&sni=firefox.com&type=ws&path=%2Fv&pcs=$pinnedCert#m',
+        vmessJson({
+          'v': '2',
+          'add': 'cdn.example.com',
+          'port': '443',
+          'id': uuid,
+          'net': 'ws',
+          'path': '/j',
+          'tls': 'tls',
+          'sni': 'firefox.com',
+          'pcs': pinnedCert,
+        }),
+      ]) {
+        final tls = _map(stream(link)['tlsSettings']);
+        expect(tls['pinnedPeerCertSha256'], pinnedCert, reason: link);
+      }
+    });
+
+    test('without them, or without TLS, links stay on sing-box', () {
+      for (final link in [
+        'vless://$uuid@cdn.example.com:443?security=tls&sni=firefox.com&type=ws&path=%2Fws#plain',
+        'vless://$uuid@cdn.example.com:80?security=none&type=ws&path=%2Fws&vcn=x.example.com#none',
+      ]) {
+        expect(LinkParser.parse(link).outbound['type'], 'vless', reason: link);
+      }
+    });
+  });
+
   group('errors', () {
     test('unknown scheme', () {
       expect(

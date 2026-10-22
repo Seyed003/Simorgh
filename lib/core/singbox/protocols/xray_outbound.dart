@@ -16,6 +16,19 @@ bool isXrayTransport(String? network) => const {
   'mkcp',
 }.contains(network?.toLowerCase());
 
+/// TLS certificate checks only Xray implements: a pinned certificate
+/// (`pcs`) or a name other than the SNI to check it against (`vcn`), which
+/// links fronted through a CDN rely on. sing-box would check the SNI
+/// instead, fail, and connect nowhere, so such links run on Xray.
+bool needsXrayCertCheck({
+  required String? security,
+  String? pinnedCertSha256,
+  String? verifyCertName,
+}) =>
+    const {'tls', 'xtls'}.contains(security?.toLowerCase()) &&
+    ((pinnedCertSha256?.isNotEmpty ?? false) ||
+        (verifyCertName?.isNotEmpty ?? false));
+
 /// Fingerprints Xray's uTLS accepts.
 const _xrayFingerprints = {
   'chrome',

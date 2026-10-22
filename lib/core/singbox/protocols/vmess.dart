@@ -58,7 +58,12 @@ ProxyConfig _parseV2rayNJson(String link, String decoded) {
       : (host.isNotEmpty ? splitList(host).first : server);
   final network = str('net');
   final name = str('ps').isNotEmpty ? str('ps') : 'VMess $server:$port';
-  if (isXrayTransport(network)) {
+  if (isXrayTransport(network) ||
+      needsXrayCertCheck(
+        security: str('tls'),
+        pinnedCertSha256: str('pcs'),
+        verifyCertName: str('vcn'),
+      )) {
     final kcp = network == 'kcp' || network == 'mkcp';
     return ProxyConfig(
       protocol: ProxyProtocol.vmess,
@@ -77,6 +82,7 @@ ProxyConfig _parseV2rayNJson(String link, String decoded) {
           alpn: str('alpn'),
           fingerprint: str('fp'),
           pinnedCertSha256: str('pcs'),
+          verifyCertName: str('vcn'),
           realityPublicKey: str('pbk'),
           realityShortId: str('sid'),
           spiderX: str('spx'),
@@ -148,7 +154,12 @@ ProxyConfig _parseVmessUrl(String link) {
   final name = uri.fragment.isNotEmpty
       ? uri.fragment
       : 'VMess ${uri.host}:$port';
-  if (isXrayTransport(network)) {
+  if (isXrayTransport(network) ||
+      needsXrayCertCheck(
+        security: uri.param(['security']),
+        pinnedCertSha256: uri.param(['pcs']),
+        verifyCertName: uri.param(['vcn']),
+      )) {
     return ProxyConfig(
       protocol: ProxyProtocol.vmess,
       name: name,

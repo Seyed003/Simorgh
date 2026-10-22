@@ -100,6 +100,11 @@ const pinnedCert =
 const vlessEncryption =
     'vless://$uuid@enc.example.com:443?encryption=mlkem768x25519plus.native.0rtt.L2GZcKEFIc5MmpwhNQ_hcFT9so-i1IerO3dK5uVIdxA&type=tcp&security=none#vless-enc';
 
+/// Fronted through a CDN: SNI firefox.com, the certificate checked against
+/// the CDN's own name (`vcn`), which only Xray can do.
+const vlessWsFronted =
+    'vless://$uuid@cdn.example.com:443?encryption=none&security=tls&sni=firefox.com&type=ws&host=x.global.ssl.fastly.net&path=%2Fws&vcn=www.fastly.com#fronted';
+
 /// A WARP config as the app builds it (reserved bytes, IPv6, keepalive).
 const warpLink =
     'wireguard://$wgPrivate@162.159.192.1:2408?publickey=bmXOC%2BF1FxEMF9dyiK2H5%2F1SUtzH0JuVo51h2wPfgyo%3D&address=172.16.0.2%2F32%2C2606%3A4700%3A110%3A8a36%3A%3A1%2F128&reserved=1,2,3&mtu=1280&keepalive=25#WARP';
@@ -173,6 +178,7 @@ final allValidLinks = <String>[
   vmessKcp,
   trojanXhttp,
   vlessEncryption,
+  vlessWsFronted,
   warpLink,
   cisco,
 ];
