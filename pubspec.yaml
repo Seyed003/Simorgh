@@ -2,7 +2,7 @@ name: aghelan_ghiamat
 description: "Simorgh (سیمرغ) - open-source VPN client for Android and Windows powered by sing-box."
 publish_to: 'none'
 
-version: 0.2.2+4
+version: 0.2.3+5
 
 environment:
   sdk: ^3.13.0
