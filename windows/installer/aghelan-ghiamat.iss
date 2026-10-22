@@ -57,7 +57,11 @@ Name: "{autoprograms}\{#AppName}"; Filename: "{app}\{#AppExe}"
 Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags: nowait postinstall skipifsilent
+; The app's manifest requires administrator. A postinstall entry runs as the
+; original (unelevated) user through CreateProcess, which cannot elevate and
+; fails with code 740; shellexec starts it like a double-click does, with the
+; UAC prompt, as the user whose profile holds the configs.
+Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags: nowait postinstall skipifsilent shellexec
 
 ; Configs and settings live in the user's profile and stay after an
 ; uninstall (a later install finds them again).
