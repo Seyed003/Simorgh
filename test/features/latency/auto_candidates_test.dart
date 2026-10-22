@@ -1,10 +1,12 @@
 import 'package:aghelan_ghiamat/core/singbox/link_parser.dart';
+import 'package:aghelan_ghiamat/core/singbox/protocols/openvpn.dart';
 import 'package:aghelan_ghiamat/features/latency/application/auto_candidates.dart';
 import 'package:aghelan_ghiamat/features/latency/domain/latency_result.dart';
 import 'package:aghelan_ghiamat/features/profiles/domain/profile.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../core/singbox/fixtures.dart';
+import '../../core/singbox/openvpn_fixtures.dart';
 
 void main() {
   final now = DateTime(2026, 10, 12, 12);
@@ -31,5 +33,27 @@ void main() {
     }, now: now);
     expect(picked, hasLength(autoCandidateLimit));
     expect(picked.first.id, 'p19');
+  });
+
+  test('unconfirmed candidates: list order, without rejected or login', () {
+    final needsLogin = Profile(
+      id: 'login',
+      config: parseOpenVpn(ovpnProfile),
+      createdAt: now,
+    );
+    final picked = pickUnverifiedAutoCandidates(
+      [...profiles(4), needsLogin],
+      {
+        'p0': LatencyResult.failure(LatencyFailure.unreachable, now),
+        'p1': LatencyResult.failure(LatencyFailure.invalidConfig, now),
+        'p2': LatencyResult.failure(LatencyFailure.coreError, now),
+        // p3 never tested
+      },
+    );
+    expect(picked.map((p) => p.id), ['p0', 'p2', 'p3']);
+    expect(
+      pickUnverifiedAutoCandidates(profiles(20), const {}),
+      hasLength(autoCandidateLimit),
+    );
   });
 }
