@@ -31,3 +31,18 @@ List<Profile> pickAutoCandidates(
   ]..sort((a, b) => a.delay.compareTo(b.delay));
   return [for (final w in working.take(limit)) w.profile];
 }
+
+/// The servers auto mode hands to the core when no test confirmed any: the
+/// test core can miss servers that work, so every server the core could
+/// load is tried, in list order. Servers the core rejected, and those that
+/// still need a login, are left out.
+List<Profile> pickUnverifiedAutoCandidates(
+  List<Profile> profiles,
+  Map<String, LatencyResult> results, {
+  int limit = autoCandidateLimit,
+}) => [
+  for (final p in profiles)
+    if (!p.config.needsLogin &&
+        results[p.id]?.failure != LatencyFailure.invalidConfig)
+      p,
+].take(limit).toList();

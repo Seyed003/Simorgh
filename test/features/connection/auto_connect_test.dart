@@ -26,6 +26,13 @@ import '../latency/latency_tester_test.dart' show stubApi;
 Future<void> _settle() =>
     Future<void>.delayed(const Duration(milliseconds: 20));
 
+/// Waits (up to a few seconds) until [done] holds.
+Future<void> _until(bool Function() done) async {
+  for (var i = 0; i < 300 && !done(); i++) {
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+  }
+}
+
 /// A speed run that never finishes on its own.
 class _EndlessSpeedTester extends SpeedTester {
   _EndlessSpeedTester(FakeVpnPlatform platform)
@@ -51,6 +58,7 @@ void main() {
     Map<String, Object> prefs = const {},
     bool auto = true,
     bool import = true,
+    TunnelProbe? probe,
   }) async {
     platform = fake ?? FakeVpnPlatform();
     final container = ProviderContainer(
@@ -70,6 +78,7 @@ void main() {
         speedTesterFactoryProvider.overrideWithValue(
           () => endlessSpeed = _EndlessSpeedTester(platform),
         ),
+        if (probe != null) tunnelProbeProvider.overrideWithValue(probe),
       ],
     );
     addTearDown(container.dispose);
@@ -145,14 +154,80 @@ void main() {
     expect(c.read(vpnControllerProvider).status, VpnStatus.connected);
   });
 
-  test('no working server is an error and starts nothing', () async {
-    final c = await create(delays: const {});
+  test(
+    'when the test confirms no server, the core tries them anyway',
+    () async {
+      // The test core can miss servers that work (another client connects
+      // with them), so they go to the urltest group in list order.
+      final c = await create(delays: const {});
+      await c.read(vpnControllerProvider.notifier).connect();
+      await _settle();
+      final state = c.read(vpnControllerProvider);
+      expect(state.status, VpnStatus.connected);
+      expect(state.error, isNull);
+      expect(state.autoProfileIds, ids(c));
+      final group = (lastConfig()['outbounds']! as List).first as Map;
+      expect(group['type'], 'urltest');
+    },
+  );
+
+  test('servers the core rejected are not tried', () async {
+    final c = await create(
+      delays: const {},
+      fake: FakeVpnPlatform()..checkErrors.add('initialize outbound[0]: bad'),
+    );
+    final [_, trojan, hy] = ids(c);
     await c.read(vpnControllerProvider.notifier).connect();
     await _settle();
-    final state = c.read(vpnControllerProvider);
-    expect(state.status, VpnStatus.disconnected);
-    expect(state.error!.code, VpnErrorCode.noWorkingServer);
-    expect(platform.requests, isEmpty);
+    expect(c.read(vpnControllerProvider).autoProfileIds, [trojan, hy]);
+  });
+
+  test(
+    'with every server rejected it is an error and starts nothing',
+    () async {
+      final c = await create(
+        delays: const {},
+        fake: FakeVpnPlatform()
+          ..checkErrors.addAll(List.filled(3, 'initialize outbound[0]: bad')),
+      );
+      await c.read(vpnControllerProvider.notifier).connect();
+      await _settle();
+      final state = c.read(vpnControllerProvider);
+      expect(state.status, VpnStatus.disconnected);
+      expect(state.error!.code, VpnErrorCode.noWorkingServer);
+      expect(platform.requests, isEmpty);
+    },
+  );
+
+  group('an unconfirmed connection', () {
+    setUp(() {
+      VpnController.healthCheckInterval = const Duration(milliseconds: 5);
+    });
+    tearDown(() {
+      VpnController.healthCheckInterval = const Duration(seconds: 20);
+    });
+
+    test('that carries nothing ends with the error, not a loop', () async {
+      final c = await create(delays: const {}, probe: (_) async => false);
+      await c.read(vpnControllerProvider.notifier).connect();
+      await _until(() => c.read(vpnControllerProvider).error != null);
+      final state = c.read(vpnControllerProvider);
+      expect(state.status, VpnStatus.disconnected);
+      expect(state.error!.code, VpnErrorCode.noWorkingServer);
+      expect(platform.requests, hasLength(1));
+      expect(platform.stopCalls, 1);
+    });
+
+    test('that carried traffic reconnects as usual when it dies', () async {
+      var probes = 0;
+      final c = await create(
+        delays: const {},
+        probe: (_) async => ++probes == 1,
+      );
+      await c.read(vpnControllerProvider.notifier).connect();
+      await _until(() => platform.requests.length == 2);
+      expect(platform.requests, hasLength(2));
+    });
   });
 
   test('disconnecting during the search cancels it', () async {

@@ -122,6 +122,13 @@ class VpnController extends Notifier<VpnState> {
   /// searching for a server notices it was cancelled.
   int _attempt = 0;
 
+  /// Auto mode connected to servers no test confirmed; cleared once the
+  /// tunnel carries traffic.
+  bool _autoUnverified = false;
+
+  /// Shown when the running connection stops without an error of its own.
+  VpnError? _errorOnStop;
+
   VpnPlatform get _platform => ref.read(vpnPlatformProvider);
 
   AppLocalizations get _l10n =>
@@ -176,6 +183,8 @@ class VpnController extends Notifier<VpnState> {
 
   Future<void> connect() async {
     final attempt = ++_attempt;
+    _autoUnverified = false;
+    _errorOnStop = null;
     // The free config follows the operator: on another SIM or Wi-Fi it
     // switches to the route found there before.
     await ref
@@ -231,10 +240,24 @@ class VpnController extends Notifier<VpnState> {
       (candidates, total) = await _autoCandidates();
     }
     if (attempt != _attempt) return;
+    var unverified = false;
+    if (candidates.isEmpty) {
+      // The test core can miss servers that work (manual mode and other
+      // clients do not wait for it), so let the core's own urltest try
+      // them. If none carries traffic, the dead-tunnel watch ends the
+      // connection with the same error instead of reconnecting.
+      candidates = pickUnverifiedAutoCandidates(
+        (await ref.read(profilesProvider.future)).profiles,
+        ref.read(latencyProvider).results,
+      );
+      if (attempt != _attempt) return;
+      unverified = true;
+    }
     if (candidates.isEmpty) {
       state = const VpnState(error: VpnError(VpnErrorCode.noWorkingServer));
       return;
     }
+    _autoUnverified = unverified;
     await _start(
       attempt,
       profileId: ProfilesState.autoId,
@@ -391,7 +414,8 @@ class VpnController extends Notifier<VpnState> {
         // A stale stop from the platform must not end a server search.
         if (state.findingServer) return;
         final dropped = error != null && state.isConnected && !_restartPending;
-        state = VpnState(error: error);
+        state = VpnState(error: error ?? _errorOnStop);
+        _errorOnStop = null;
         _connectIfRestartPending(error);
         if (dropped) unawaited(_reconnectAfterDrop());
       case VpnLogLine():
@@ -474,6 +498,7 @@ class VpnController extends Notifier<VpnState> {
     if (!ref.mounted || attempt != _attempt || !state.isConnected) return;
     if (alive) {
       _healthFailures = 0;
+      _autoUnverified = false;
       return;
     }
     if (++_healthFailures < healthFailuresToRecover) return;
@@ -484,6 +509,14 @@ class VpnController extends Notifier<VpnState> {
   /// servers again and (in auto mode) moves to one that works. Rate-limited
   /// so a stretch of failures cannot loop.
   Future<void> _recoverDeadTunnel() async {
+    if (_autoUnverified) {
+      // No test confirmed these servers and none carries traffic either:
+      // reconnecting would only try them again.
+      _autoUnverified = false;
+      _errorOnStop = const VpnError(VpnErrorCode.noWorkingServer);
+      await disconnect();
+      return;
+    }
     final now = DateTime.now();
     final last = _lastRecovery;
     if (last != null && now.difference(last) < recoveryCooldown) return;
