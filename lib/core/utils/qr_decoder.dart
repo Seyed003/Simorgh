@@ -77,6 +77,14 @@ abstract final class QrDecoder {
         return QRCodeReader().decode(bitmap, hints: hints).text;
       } on ReaderException {
         continue;
+      } on ArgumentError {
+        // zxing2 reports some malformed codes (an impossible version, a
+        // broken bit stream) as errors rather than ReaderExceptions.
+        continue;
+      } on StateError {
+        continue;
+      } on FormatException {
+        continue;
       }
     }
     return null;

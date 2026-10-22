@@ -182,6 +182,21 @@ $ovpnStaticKey</secret>
       expect(out.containsKey('tls'), isFalse);
     });
 
+    test('a bare key-direction does not break a static-key profile', () {
+      final config = parseOpenVpn('''
+dev tun
+remote 1.2.3.4 1194
+ifconfig 10.9.0.2 10.9.0.1
+secret [inline]
+key-direction
+cipher aes-256-cbc
+<secret>
+$ovpnStaticKey</secret>
+''');
+      expect(config.outbound['mode'], 'static_key');
+      expect(config.outbound.containsKey('key_direction'), isFalse);
+    });
+
     test('share links are not mistaken for profiles', () {
       expect(isOpenVpnProfile('vless://x@remote.example.com:443#a'), isFalse);
     });

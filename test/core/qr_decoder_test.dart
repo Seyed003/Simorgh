@@ -70,4 +70,32 @@ void main() {
     expect(QrDecoder.decodeImageBytes(img.encodePng(blank)), isNull);
     expect(QrDecoder.decodeImageBytes(Uint8List.fromList([1, 2, 3])), isNull);
   });
+
+  test('finder patterns that imply an impossible version are not decoded', () {
+    // Three finder patterns too close together for any QR version: zxing2
+    // reports this with an ArgumentError ("Version is 0"), not a
+    // ReaderException, and a photo can contain such shapes by chance.
+    const scale = 4, quiet = 4, span = 17;
+    const size = (span + quiet * 2) * scale;
+    final luma = Uint8List(size * size)..fillRange(0, size * size, 255);
+    void finder(int mx, int my) {
+      for (var y = 0; y < 7; y++) {
+        for (var x = 0; x < 7; x++) {
+          final ring = x == 0 || x == 6 || y == 0 || y == 6;
+          final core = x >= 2 && x <= 4 && y >= 2 && y <= 4;
+          if (!ring && !core) continue;
+          for (var py = 0; py < scale; py++) {
+            final row = ((my + y + quiet) * scale + py) * size;
+            final left = row + (mx + x + quiet) * scale;
+            luma.fillRange(left, left + scale, 0);
+          }
+        }
+      }
+    }
+
+    finder(0, 0);
+    finder(span - 7, 0);
+    finder(0, span - 7);
+    expect(QrDecoder.decodeLuminance(luma, size, size), isNull);
+  });
 }
